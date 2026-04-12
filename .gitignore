@@ -5,8 +5,8 @@
 *.log
 
 # === Herramientas educativas ===
-*.ctxt   # BlueJ files
-.mtj.tmp/ # J2ME temp
+*.ctxt
+.mtj.tmp/
 
 # === Paquetes ===
 *.jar
