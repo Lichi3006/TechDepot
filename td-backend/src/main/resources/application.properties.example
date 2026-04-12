@@ -1,0 +1,9 @@
+spring.application.name=techdepot
+
+spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=TechDepot;encrypt=true;trustServerCertificate=true;
+spring.datasource.username= YOUR_NAME
+spring.datasource.password= YOUR_PASSWORD
+spring.datasource.driverClassName=com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+spring.jpa.show-sql=true
+spring.jpa.hibernate.ddl-auto=update
