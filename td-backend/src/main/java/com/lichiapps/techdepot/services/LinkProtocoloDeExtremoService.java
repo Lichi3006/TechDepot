@@ -1,13 +1,12 @@
 package com.lichiapps.techdepot.services;
 
 import com.lichiapps.techdepot.entities.LinkProtocoloDeExtremo;
-import com.lichiapps.techdepot.repositories.LinkExtremoFisicoRepository;
 import com.lichiapps.techdepot.repositories.LinkProtocoloDeExtremoRepository;
 import com.lichiapps.techdepot.repositories.RefProtocoloRepository;
+import com.lichiapps.techdepot.repositories.LinkExtremoFisicoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -18,21 +17,17 @@ public class LinkProtocoloDeExtremoService {
     @Autowired private LinkExtremoFisicoRepository linkExtremoFisicoRepository;
 
     public LinkProtocoloDeExtremo saveLinkProtocoloDeExtremo(LinkProtocoloDeExtremo linkProtocoloDeExtremo){
-        List<String> errors = new ArrayList<>();
         if(linkProtocoloDeExtremo.getProtocolo() == null){
-            errors.add("El protocolo no puede ser nulo");
+            throw new IllegalArgumentException("El protocolo no puede ser nulo");
         }
         if(linkProtocoloDeExtremo.getExtremoFisico() == null){
-            errors.add("El extremo fisico no puede ser nulo");
+            throw new IllegalArgumentException("El extremo fisico no puede ser nulo");
         }
-        if(refProtocoloRepository.findById(linkProtocoloDeExtremo.getProtocolo().getId()).isPresent()){
-            errors.add("El protocolo no existe");
+        if(refProtocoloRepository.findById(linkProtocoloDeExtremo.getProtocolo().getId()).isEmpty()){
+            throw new IllegalArgumentException("El protocolo no existe");
         }
-        if(linkExtremoFisicoRepository.findById(linkProtocoloDeExtremo.getExtremoFisico().getId()).isPresent()){
-            errors.add("El extremo fisico no existe");
-        }
-        if(!errors.isEmpty()){
-            throw new IllegalArgumentException("Error/es: \n" + String.join("\n", errors));
+        if(linkExtremoFisicoRepository.findById(linkProtocoloDeExtremo.getExtremoFisico().getId()).isEmpty()){
+            throw new IllegalArgumentException("El extremo fisico no existe");
         }
         return linkProtocoloDeExtremoRepository.save(linkProtocoloDeExtremo);
     }
@@ -48,5 +43,4 @@ public class LinkProtocoloDeExtremoService {
     public void deleteLinkProtocoloDeExtremoById(Long id){
         linkProtocoloDeExtremoRepository.deleteById(id);
     }
-
 }

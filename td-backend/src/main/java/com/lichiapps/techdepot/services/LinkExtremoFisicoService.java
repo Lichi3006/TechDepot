@@ -7,7 +7,6 @@ import com.lichiapps.techdepot.repositories.RefPuertoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -18,21 +17,17 @@ public class LinkExtremoFisicoService {
     @Autowired private RefPuertoRepository refPuertoRepository;
 
     public LinkExtremoFisico saveLinkExtremoFisico(LinkExtremoFisico linkExtremoFisico){
-        List<String> errors = new ArrayList<>();
         if(linkExtremoFisico.getItem() == null){
-            errors.add("El item no puede ser nulo");
+            throw new IllegalArgumentException("El item no puede ser nulo");
         }
         if(linkExtremoFisico.getPuerto() == null){
-            errors.add("El puerto no puede ser nulo");
+            throw new IllegalArgumentException("El puerto no puede ser nulo");
         }
-        if(itemRepository.findById(linkExtremoFisico.getItem().getId()).isPresent()){
-            errors.add("El item no existe");
+        if(itemRepository.findById(linkExtremoFisico.getItem().getId()).isEmpty()){
+            throw new IllegalArgumentException("El item no existe");
         }
-        if(refPuertoRepository.findById(linkExtremoFisico.getPuerto().getId()).isPresent()){
-            errors.add("El puerto no existe");
-        }
-        if(!errors.isEmpty()){
-            throw new IllegalArgumentException("Error/es: \n" + String.join("\n", errors));
+        if(refPuertoRepository.findById(linkExtremoFisico.getPuerto().getId()).isEmpty()){
+            throw new IllegalArgumentException("El puerto no existe");
         }
         return linkExtremoFisicoRepository.save(linkExtremoFisico);
     }

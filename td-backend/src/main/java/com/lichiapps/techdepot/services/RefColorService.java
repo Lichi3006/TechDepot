@@ -13,11 +13,11 @@ public class RefColorService {
     @Autowired private RefColorRepository refColorRepository;
 
     public RefColor saveRefColor(RefColor newRefColor){
-        if (newRefColor.getNombre() == null){
-            throw new NullPointerException("El nombre del color no puede ser nulo");
+        if (newRefColor.getNombre() == null || newRefColor.getNombre().isBlank()){
+            throw new IllegalArgumentException("El nombre del color no puede ser nulo");
         }
         if (refColorRepository.findByNombre(newRefColor.getNombre()).isPresent()){
-            throw new IllegalArgumentException("El nombre del color ya existe");
+            throw new IllegalArgumentException("El color '" + newRefColor.getNombre() + "' ya existe");
         }
         return refColorRepository.save(newRefColor);
     }
@@ -35,6 +35,10 @@ public class RefColorService {
     }
 
     public void updateNombreRefColor(Long id, String nombre){
-        getRefColorById(id).setNombre(nombre);
+        RefColor color = getRefColorById(id);
+        if (color != null) {
+            color.setNombre(nombre);
+            refColorRepository.save(color);
+        }
     }
 }

@@ -7,7 +7,6 @@ import com.lichiapps.techdepot.repositories.RefCategoriaFuncionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -18,30 +17,29 @@ public class LinkCategoriaFuncionItemService {
     @Autowired private ItemRepository itemRepository;
 
     public LinkCategoriaFuncionItem saveLinkCategoriaFuncionItem(LinkCategoriaFuncionItem linkCategoriaFuncionItem){
-        List<String> errors = new ArrayList<>();
         if(linkCategoriaFuncionItem.getCategoriaFuncion() == null){
-            errors.add("La categoria funcion no puede ser nula");
+            throw new IllegalArgumentException("La categoria funcion no puede ser nula");
         }
         if(linkCategoriaFuncionItem.getItem() == null){
-            errors.add("El item no puede ser nulo");
+            throw new IllegalArgumentException("El item no puede ser nulo");
         }
-        if(refCategoriaFuncionRepository.findById(linkCategoriaFuncionItem.getCategoriaFuncion().getId()).isPresent()){
-            errors.add("La categoria funcion no existe");
+        if(refCategoriaFuncionRepository.findById(linkCategoriaFuncionItem.getCategoriaFuncion().getId()).isEmpty()){
+            throw new IllegalArgumentException("La categoria funcion no existe");
         }
-        if(itemRepository.findById(linkCategoriaFuncionItem.getItem().getId()).isPresent()){
-            errors.add("El item no existe");
-        }
-        if(!errors.isEmpty()){
-            throw new IllegalArgumentException("Error/es: \n" + String.join("\n", errors));
+        if(itemRepository.findById(linkCategoriaFuncionItem.getItem().getId()).isEmpty()){
+            throw new IllegalArgumentException("El item no existe");
         }
         return linkCategoriaFuncionItemRepository.save(linkCategoriaFuncionItem);
     }
+
     public List<LinkCategoriaFuncionItem> getAllLinkCategoriaFuncionItem(){
         return linkCategoriaFuncionItemRepository.findAll();
     }
+
     public LinkCategoriaFuncionItem getLinkCategoriaFuncionItemById(Long id){
         return linkCategoriaFuncionItemRepository.findById(id).orElse(null);
     }
+
     public void deleteLinkCategoriaFuncionItemById(Long id){
         linkCategoriaFuncionItemRepository.deleteById(id);
     }

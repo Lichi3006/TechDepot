@@ -7,7 +7,6 @@ import com.lichiapps.techdepot.repositories.RefCategoriaItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -18,30 +17,29 @@ public class LinkCategoriaItemService {
     @Autowired private RefCategoriaItemRepository refCategoriaItemRepository;
 
     public LinkCategoriaItem saveLinkCategoriaItem(LinkCategoriaItem linkCategoriaItem){
-        List<String> errors = new ArrayList<>();
         if(linkCategoriaItem.getItem() == null){
-            errors.add("El item no puede ser nulo");
+            throw new IllegalArgumentException("El item no puede ser nulo");
         }
         if(linkCategoriaItem.getCategoriaItem() == null){
-            errors.add("La categoriaItem no puede ser nula");
+            throw new IllegalArgumentException("La categoriaItem no puede ser nula");
         }
-        if(itemRepository.findById(linkCategoriaItem.getItem().getId()).isPresent()){
-            errors.add("El item no existe");
+        if(itemRepository.findById(linkCategoriaItem.getItem().getId()).isEmpty()){
+            throw new IllegalArgumentException("El item no existe");
         }
-        if(refCategoriaItemRepository.findById(linkCategoriaItem.getCategoriaItem().getId()).isPresent()){
-            errors.add("La categoriaItem no existe");
-        }
-        if(!errors.isEmpty()){
-            throw new IllegalArgumentException("Error/es: \n" + String.join("\n", errors));
+        if(refCategoriaItemRepository.findById(linkCategoriaItem.getCategoriaItem().getId()).isEmpty()){
+            throw new IllegalArgumentException("La categoriaItem no existe");
         }
         return linkCategoriaItemRepository.save(linkCategoriaItem);
     }
+
     public List<LinkCategoriaItem> getAllLinkCategoriaItem(){
         return linkCategoriaItemRepository.findAll();
     }
+
     public LinkCategoriaItem getLinkCategoriaItemById(Long id){
         return linkCategoriaItemRepository.findById(id).orElse(null);
     }
+
     public void deleteLinkCategoriaItemById(Long id){
         linkCategoriaItemRepository.deleteById(id);
     }

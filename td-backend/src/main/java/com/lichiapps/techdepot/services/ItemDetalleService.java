@@ -307,10 +307,4 @@ public class ItemDetalleService {
         eliminarDetalleFuente(idItem);
         eliminarDetalleHardware(idItem);
     }
-}es(idItem);
-        eliminarCategoriasItem(idItem);
-        eliminarDetalleCable(idItem);
-        eliminarDetalleFuente(idItem);
-        eliminarDetalleHardware(idItem);
-    }
 }

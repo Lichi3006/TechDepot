@@ -20,5 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Error de ejecución DDL en Hibernate al intentar modificar columnas con restricciones únicas (Unique Constraints).
+- Desactivación definitiva de DDL automático mediante `spring.jpa.hibernate.ddl-auto=none` en `application.properties`.
 - Eliminación de generación automática de constraints "basura" por parte de Hibernate mediante el ajuste de `@Column` y `ddl-auto=none`.
 - Problemas de rendimiento en `ItemDetalleService` al reemplazar escaneos completos de tablas (`findAll()`) por consultas filtradas por ID.
+- Corrupción de código y errores de sintaxis en `ItemDetalleService.java`.
+- Bug crítico de lógica inversa en múltiples servicios (`ColorService`, `DetalleCableService`, `LinkCategoriaFuncionItemService`, etc.) donde se lanzaban excepciones erróneas al encontrar entidades existentes.
+- Inconsistencias en tipos de retorno y dependencias redundantes en la capa de servicios del backend.
+- Falta de métodos de eliminación en cascada manual para `DetalleAlimentacionCable`.
+- Bug en `RefColorService` donde el método `updateNombreRefColor` no persistía los cambios en la base de datos.

@@ -10,4 +10,8 @@ import java.util.Optional;
 public interface DetalleAlimentacionCableRepository extends  JpaRepository<DetalleAlimentacionCable, Long>{
 
     Optional<DetalleAlimentacionCable> findByAmperajeMax(Short amperajeMax);
+
+    Optional<DetalleAlimentacionCable> findByDetalleCableId(Long detalleCableId);
+
+    void deleteByDetalleCableId(Long detalleCableId);
 }

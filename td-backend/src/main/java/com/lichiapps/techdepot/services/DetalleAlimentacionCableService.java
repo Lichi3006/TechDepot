@@ -12,28 +12,31 @@ import java.util.List;
 public class DetalleAlimentacionCableService {
 
     @Autowired private DetalleAlimentacionCableRepository detalleAlimentacionCableRepository;
-    @Autowired private DetalleCableService detalleCableRepository;
 
     public DetalleAlimentacionCable saveDetalleAlimentacionCable(DetalleAlimentacionCable detalleAlimentacionCable){
-        List<String> errors = new ArrayList<>();
         if(detalleAlimentacionCable.getDetalleCable() == null){
-            errors.add("El detalle cable no puede ser nulo");
+            throw new IllegalArgumentException("El detalle cable no puede ser nulo");
         }
         if(detalleAlimentacionCable.getAmperajeMax() == null){
-            errors.add("El amperaje max no puede ser nulo");
-        }
-        if(detalleAlimentacionCableRepository.findById(detalleAlimentacionCable.getDetalleCable().getId()).isPresent()){
-            errors.add("El detalle cable no existe");
+            throw new IllegalArgumentException("El amperaje max no puede ser nulo");
         }
         return detalleAlimentacionCableRepository.save(detalleAlimentacionCable);
     }
+
     public List<DetalleAlimentacionCable> getAllDetalleAlimentacionCable(){
         return detalleAlimentacionCableRepository.findAll();
     }
+
     public DetalleAlimentacionCable getDetalleAlimentacionCableById(Long id){
         return detalleAlimentacionCableRepository.findById(id).orElse(null);
     }
+
     public void deleteDetalleAlimentacionCableById(Long id){
         detalleAlimentacionCableRepository.deleteById(id);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void deleteDetalleAlimentacionCableByDetalleCableId(Long detalleCableId) {
+        detalleAlimentacionCableRepository.deleteByDetalleCableId(detalleCableId);
     }
 }
