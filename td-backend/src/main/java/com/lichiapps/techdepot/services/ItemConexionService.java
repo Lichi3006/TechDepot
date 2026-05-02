@@ -78,16 +78,12 @@ public class ItemConexionService {
      * @param idItem ID del item cuyas conexiones se eliminarán
      */
     public void eliminarConexiones(Long idItem) {
-        // Buscamos todos los extremos físicos de este item
-        List<LinkExtremoFisico> extremos = linkExtremoFisicoRepository.findAll().stream()
-                .filter(le -> le.getItem().getId().equals(idItem))
-                .toList();
+        // Buscamos todos los extremos físicos de este item usando el repositorio optimizado
+        List<LinkExtremoFisico> extremos = linkExtremoFisicoRepository.findByItemId(idItem);
 
-        // Para cada extremo, eliminamos primero sus protocolos
+        // Para cada extremo, eliminamos primero sus protocolos directamente desde el repositorio
         for (LinkExtremoFisico extremo : extremos) {
-            List<LinkProtocoloDeExtremo> protocolos = linkProtocoloDeExtremoRepository.findAll().stream()
-                    .filter(lp -> lp.getExtremoFisico().getId().equals(extremo.getId()))
-                    .toList();
+            List<LinkProtocoloDeExtremo> protocolos = linkProtocoloDeExtremoRepository.findByExtremoFisicoId(extremo.getId());
             linkProtocoloDeExtremoRepository.deleteAll(protocolos);
         }
 

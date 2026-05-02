@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface DetalleHardwareRepository extends  JpaRepository<DetalleHardware, Long>{
 
     Optional<DetalleHardware> findByModeloAlfanumerico(String modeloAlfanumerico);
+
+    List<DetalleHardware> findByItemId(Long itemId);
 }

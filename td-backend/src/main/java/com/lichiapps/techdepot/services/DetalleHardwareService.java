@@ -35,12 +35,12 @@ public class DetalleHardwareService {
     }
     public List<DetalleHardware> getAllDetalleHardwareByModeloAlfanumerico(String modeloAlfanumerico){
 
-        List<DetalleHardware> repositorio = new ArrayList<>();
-        repositorio = detalleHardwareRepository.findAll();
-
+        List<DetalleHardware> repositorio = detalleHardwareRepository.findAll();
         List<DetalleHardware> mismoModelo = new ArrayList<>();
+
         for (DetalleHardware detalleHardware : repositorio) {
-            if (detalleHardware.getModeloAlfanumerico() == modeloAlfanumerico){
+            if (detalleHardware.getModeloAlfanumerico() != null &&
+                    detalleHardware.getModeloAlfanumerico().equals(modeloAlfanumerico)){
                 mismoModelo.add(detalleHardware);
             }
         }

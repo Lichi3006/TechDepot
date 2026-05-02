@@ -9,5 +9,5 @@ import java.util.Optional;
 @Repository
 public interface DetalleAlimentacionCableRepository extends  JpaRepository<DetalleAlimentacionCable, Long>{
 
-    Optional<DetalleAlimentacionCable> findByAmperajeMax(Integer amperajeMax);
+    Optional<DetalleAlimentacionCable> findByAmperajeMax(Short amperajeMax);
 }

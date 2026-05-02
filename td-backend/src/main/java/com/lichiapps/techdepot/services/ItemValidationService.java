@@ -38,7 +38,7 @@ public class ItemValidationService {
     public void validarDatosObligatoriosCreate(ItemCreateDTO createDTO) {
         List<String> errors = new ArrayList<>();
 
-        // Verificamos campos que NO pueden ser nulos
+        // 1. Verificamos campos que NO pueden ser nulos
         if (createDTO.getIdEstado() == null) {
             errors.add("El ID del estado es obligatorio");
         }
@@ -46,9 +46,40 @@ public class ItemValidationService {
             errors.add("El ID del contenedor es obligatorio");
         }
 
+        // 2. Validamos consistencia entre Categorías y Detalles
+        if (createDTO.getIdsCategoriasItem() != null && !createDTO.getIdsCategoriasItem().isEmpty()) {
+            List<RefCategoriaItem> categorias = refCategoriaItemRepository.findAllById(createDTO.getIdsCategoriasItem());
+
+            for (RefCategoriaItem cat : categorias) {
+                String nombre = cat.getNombre().toUpperCase();
+
+                if (nombre.contains("CABLE") && createDTO.getDetalleCable() == null) {
+                    errors.add("Se especificó categoría CABLE pero falta el objeto 'detalleCable'");
+                }
+                if (nombre.contains("FUENTE") && createDTO.getDetalleFuente() == null) {
+                    errors.add("Se especificó categoría FUENTE pero falta el objeto 'detalleFuente'");
+                }
+                if (nombre.contains("HARDWARE") && createDTO.getDetalleHardware() == null) {
+                    errors.add("Se especificó categoría HARDWARE pero falta el objeto 'detalleHardware'");
+                }
+            }
+        }
+
+        // 3. Validaciones de campos internos de los detalles (si existen)
+        if (createDTO.getDetalleCable() != null) {
+            if (createDTO.getDetalleCable().getLargo() == null) errors.add("El largo del cable es obligatorio");
+            if (createDTO.getDetalleCable().getIdBlindajeExterno() == null) errors.add("El blindaje externo del cable es obligatorio");
+        }
+
+        if (createDTO.getDetalleHardware() != null) {
+            if (createDTO.getDetalleHardware().getModeloAlfanumerico() == null || createDTO.getDetalleHardware().getModeloAlfanumerico().isBlank()) {
+                errors.add("El modelo alfanumérico del hardware es obligatorio");
+            }
+        }
+
         // Si hay errores, los juntamos y lanzamos excepción
         if (!errors.isEmpty()) {
-            throw new IllegalArgumentException("Error/es: \n" + String.join("\n", errors));
+            throw new IllegalArgumentException("Error/es de validación: \n- " + String.join("\n- ", errors));
         }
     }
 

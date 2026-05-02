@@ -60,10 +60,8 @@ public class ItemDetalleService {
      * @param idItem ID del item cuyos colores se eliminarán
      */
     public void eliminarColores(Long idItem) {
-        // Buscamos todos los colores que pertenecen a este item
-        List<Color> colores = colorRepository.findAll().stream()
-                .filter(c -> c.getItem().getId().equals(idItem))
-                .toList();
+        // Buscamos todos los colores que pertenecen a este item usando el repositorio optimizado
+        List<Color> colores = colorRepository.findByItemId(idItem);
 
         // Los eliminamos todos
         colorRepository.deleteAll(colores);
@@ -110,9 +108,7 @@ public class ItemDetalleService {
      * @param idItem ID del item cuyas categorías se eliminarán
      */
     public void eliminarCategoriasItem(Long idItem) {
-        List<LinkCategoriaItem> categorias = linkCategoriaItemRepository.findAll().stream()
-                .filter(lc -> lc.getItem().getId().equals(idItem))
-                .toList();
+        List<LinkCategoriaItem> categorias = linkCategoriaItemRepository.findByItemId(idItem);
 
         linkCategoriaItemRepository.deleteAll(categorias);
     }
@@ -173,16 +169,12 @@ public class ItemDetalleService {
      * @param idItem ID del item cuyo detalle de cable se eliminará
      */
     public void eliminarDetalleCable(Long idItem) {
-        // Buscamos los cables de este item
-        List<DetalleCable> cables = detalleCableRepository.findAll().stream()
-                .filter(dc -> dc.getItem().getId().equals(idItem))
-                .toList();
+        // Buscamos los cables de este item usando el repositorio optimizado
+        List<DetalleCable> cables = detalleCableRepository.findByItemId(idItem);
 
         for (DetalleCable cable : cables) {
-            // Eliminamos detalle de alimentación asociado (ya no hay que borrar blindajes de tabla intermedia)
-            detalleAlimentacionCableService.getAllDetalleAlimentacionCable().stream()
-                    .filter(da -> da.getDetalleCable().getId().equals(cable.getId()))
-                    .forEach(da -> detalleAlimentacionCableService.deleteDetalleAlimentacionCableById(da.getId()));
+            // Eliminamos detalle de alimentación asociado directamente
+            detalleAlimentacionCableService.deleteDetalleAlimentacionCableByDetalleCableId(cable.getId());
         }
 
         // Finalmente eliminamos los cables
@@ -225,9 +217,7 @@ public class ItemDetalleService {
      * @param idItem ID del item cuyo detalle de fuente se eliminará
      */
     public void eliminarDetalleFuente(Long idItem) {
-        List<DetalleFuente> fuentes = detalleFuenteRepository.findAll().stream()
-                .filter(df -> df.getItem().getId().equals(idItem))
-                .toList();
+        List<DetalleFuente> fuentes = detalleFuenteRepository.findByItemId(idItem);
 
         detalleFuenteRepository.deleteAll(fuentes);
     }
@@ -252,30 +242,24 @@ public class ItemDetalleService {
      * @param hardwareDTO DTO con los datos del hardware
      */
     public void guardarDetalleHardware(Item item, ItemCreateDTO.DetalleHardwareCreateDTO hardwareDTO) {
-        if (hardwareDTO == null) {
-            return;
-        }
+        if (hardwareDTO == null) return;
 
-        // Validamos la categoría principal del hardware
-        RefCategoriaHardware refCategoriaHardware = validationService.validarExisteCategoriaHardware(hardwareDTO.getIdCategoriaHardwarePrincipal());
-
-        // Creamos el detalle del hardware
+        // 1. Creamos el detalle base
         DetalleHardware detalleHardware = new DetalleHardware();
         detalleHardware.setItem(item);
-        detalleHardware.setCategoriaHardware(refCategoriaHardware);
         detalleHardware.setModeloAlfanumerico(hardwareDTO.getModeloAlfanumerico());
 
         DetalleHardware hardwareGuardado = detalleHardwareRepository.save(detalleHardware);
 
-        // Guardamos las categorías adicionales (si las hay)
-        if (hardwareDTO.getIdsCategoriasHardware() != null && !hardwareDTO.getIdsCategoriasHardware().isEmpty()) {
-            for (Long idCategoriaHardware : hardwareDTO.getIdsCategoriasHardware()) {
-                RefCategoriaHardware refCatHardware = validationService.validarExisteCategoriaHardware(idCategoriaHardware);
+        // 2. Guardamos todas las categorías en la tabla puente LINK
+        if (hardwareDTO.getIdsCategoriasHardware() != null) {
+            for (Long idCat : hardwareDTO.getIdsCategoriasHardware()) {
+                RefCategoriaHardware refCat = validationService.validarExisteCategoriaHardware(idCat);
 
-                LinkCategoriaHardware linkCategoriaHardware = new LinkCategoriaHardware();
-                linkCategoriaHardware.setDetalleHardware(hardwareGuardado);
-                linkCategoriaHardware.setRefCategoriaHardware(refCatHardware);
-                linkCategoriaHardwareRepository.save(linkCategoriaHardware);
+                LinkCategoriaHardware link = new LinkCategoriaHardware();
+                link.setDetalleHardware(hardwareGuardado);
+                link.setRefCategoriaHardware(refCat);
+                linkCategoriaHardwareRepository.save(link);
             }
         }
     }
@@ -285,15 +269,11 @@ public class ItemDetalleService {
      * @param idItem ID del item cuyo detalle de hardware se eliminará
      */
     public void eliminarDetalleHardware(Long idItem) {
-        List<DetalleHardware> hardwares = detalleHardwareRepository.findAll().stream()
-                .filter(dh -> dh.getItem().getId().equals(idItem))
-                .toList();
+        List<DetalleHardware> hardwares = detalleHardwareRepository.findByItemId(idItem);
 
         for (DetalleHardware hardware : hardwares) {
-            // Eliminamos categorías asociadas
-            List<LinkCategoriaHardware> categoriasHW = linkCategoriaHardwareRepository.findAll().stream()
-                    .filter(lch -> lch.getDetalleHardware().getId().equals(hardware.getId()))
-                    .toList();
+            // Eliminamos categorías asociadas directamente
+            List<LinkCategoriaHardware> categoriasHW = linkCategoriaHardwareRepository.findByDetalleHardwareId(hardware.getId());
             linkCategoriaHardwareRepository.deleteAll(categoriasHW);
         }
 
@@ -322,6 +302,12 @@ public class ItemDetalleService {
      */
     public void eliminarTodosLosDetalles(Long idItem) {
         eliminarColores(idItem);
+        eliminarCategoriasItem(idItem);
+        eliminarDetalleCable(idItem);
+        eliminarDetalleFuente(idItem);
+        eliminarDetalleHardware(idItem);
+    }
+}es(idItem);
         eliminarCategoriasItem(idItem);
         eliminarDetalleCable(idItem);
         eliminarDetalleFuente(idItem);

@@ -4,6 +4,9 @@ import com.lichiapps.techdepot.entities.LinkExtremoFisico;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
-public interface LinkExtremoFisicoRepository extends  JpaRepository<LinkExtremoFisico, Long>{
+public interface LinkExtremoFisicoRepository extends JpaRepository<LinkExtremoFisico, Long> {
+    List<LinkExtremoFisico> findByItemId(Long itemId);
 }

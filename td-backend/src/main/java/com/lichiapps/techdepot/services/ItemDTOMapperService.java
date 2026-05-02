@@ -30,10 +30,24 @@ public class ItemDTOMapperService {
     @Autowired private ColorService colorService;
 
     public ItemDTO obtenerItemDTOPorId(Long idItem) {
-        return convertirListaAItemDTO(itemCrudService.obtenerTodosLosItems()).stream()
-                .filter(dto -> dto.getId().equals(idItem))
-                .findFirst()
-                .orElse(null);
+        Item item = itemCrudService.obtenerItemPorId(idItem);
+        if (item == null) return null;
+
+        // Para un solo item, traemos solo sus relaciones específicas de la BD
+        // Nota: Mantenemos el mismo patrón de convertirAItemDTO para reutilizar lógica
+        return convertirAItemDTO(
+                item,
+                linkExtremoFisicoService.getAllLinkExtremoFisico().stream().filter(l -> l.getItem().getId().equals(idItem)).toList(),
+                linkProtocoloDeExtremoService.getAllLinkProtocoloDeExtremo(), // Este es más difícil de filtrar sin ID de extremo, lo dejamos así por ahora o filtramos luego
+                linkCategoriaFuncionPuertoService.getAllLinkCategoriaFuncionPuerto(),
+                detalleCableService.getAllDetalleCable().stream().filter(d -> d.getItem().getId().equals(idItem)).toList(),
+                detalleHardwareService.getAllDetalleHardware().stream().filter(d -> d.getItem().getId().equals(idItem)).toList(),
+                linkCategoriaItemService.getAllLinkCategoriaItem().stream().filter(l -> l.getItem().getId().equals(idItem)).toList(),
+                detalleFuenteService.getAllDetalleFuentes().stream().filter(d -> d.getItem().getId().equals(idItem)).toList(),
+                colorService.getAllColors().stream().filter(c -> c.getItem().getId().equals(idItem)).toList(),
+                detalleAlimentacionCableService.getAllDetalleAlimentacionCable(),
+                linkCategoriaHardwareService.getAll()
+        );
     }
 
     public List<ItemDTO> convertirListaAItemDTO(List<Item> items) {

@@ -18,7 +18,7 @@ public class ItemController {
     @Autowired
     private ItemService itemService;
 
-    @GetMapping("/detallados")
+    @GetMapping
     public List<ItemDTO> getAllItemsDetallados() {
         return itemService.getAllItemsConDetalles();
     }

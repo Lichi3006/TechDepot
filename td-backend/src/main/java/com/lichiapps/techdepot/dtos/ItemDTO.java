@@ -27,9 +27,9 @@ public class ItemDTO {
     @Data
     public static class EspecificacionesDTO {
         private Integer largo;
-        private Integer amperajeMax;
-        private Integer amperaje;
-        private Integer voltaje;
+        private Short amperajeMax;
+        private Short amperaje;
+        private Short voltaje;
         private String modelo;
     }
 

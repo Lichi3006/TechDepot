@@ -1,114 +1,84 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Item, ItemCreateDTO } from './types/Item';
+import { itemService } from './services/itemService';
+import { Button } from './components/ui/Button';
+import { ItemTable } from './components/inventory/ItemTable';
 
-interface Item {
-    id: number; // IdItem
-    marca: string; // Nombre de REF_Marca
-    estado: string; // Nombre de REF_Estado
-    contenedor: string; // QrUUID de Contenedor
-    color: string; // Nombre de Color/REF_Color
+export default function App() {
+    const [items, setItems] = useState<Item[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
 
-    // Categorías: como un item puede tener muchas, usamos un array de strings
-    categorias: string[];
-
-    // Puertos y Protocolos: podríamos agruparlos para la vista de íconos
-    conexiones: {
-        puerto: string;
-        protocolo?: string;
-        genero: boolean; // BIT en SQL
-    }[];
-
-    tipo: 'CABLE/ADAPTADOR' | 'HARDWARE' | 'FUENTE';
-    especificaciones: {
-        amperajeMax?: number; // Para cables de poder o fuentes
-        voltaje?: number;     // Para fuentes
-        largo?: number;       // Para cables
-        modelo?: string;      // Para hardware
+    const cargarDatos = async () => {
+        try {
+            setLoading(true);
+            const data = await itemService.getAll();
+            setItems(data);
+        } catch (error) {
+            console.error("Error al cargar items:", error);
+        } finally {
+            setLoading(false);
+        }
     };
-}
 
- export default function App() {
-        // Inicializamos con los datos para evitar el bucle infinito
-        const [items] = useState<Item[]>([
-            {
-                id: 1,
-                marca: "Samsung",
-                estado: "Nuevo",
-                contenedor: "CONT-001-A2",
-                color: "Blanco",
-                categorias: ["Cables", "Energía", "USB-C"],
-                conexiones: [
-                    { puerto: "USB-C", protocolo: "Power Delivery 3.0", genero: true },
-                    { puerto: "USB-C", protocolo: "Power Delivery 3.0", genero: true }
-                ],
-                tipo: 'CABLE/ADAPTADOR',
-                especificaciones: { largo: 2, amperajeMax: 5 }
-            },
-            {
-                id: 2,
-                marca: "EVGA",
-                estado: "Usado",
-                contenedor: "CONT-999-F4",
-                color: "Negro",
-                categorias: ["Fuentes", "Hardware", "PC"],
-                conexiones: [{ puerto: "AC Plug", genero: true }],
-                tipo: 'FUENTE',
-                especificaciones: { voltaje: 12, amperajeMax: 60 }
-            },
-            {
-                id: 3,
-                marca: "TP-Link",
-                estado: "Nuevo",
-                contenedor: "CONT-005-B1",
-                color: "Gris",
-                categorias: ["Networking", "Switch", "Hardware"],
-                conexiones: [{ puerto: "RJ45", protocolo: "Gigabit Ethernet", genero: false }],
-                tipo: 'HARDWARE',
-                especificaciones: { modelo: "TL-SG108" }
+    useEffect(() => {
+        cargarDatos();
+    }, []);
+
+    const handleEliminar = async (id: number) => {
+        if (window.confirm("¿Estás seguro de eliminar este item?")) {
+            try {
+                await itemService.delete(id);
+                await cargarDatos();
+            } catch (error) {
+                alert("Error al eliminar el item");
             }
-        ]);
+        }
+    };
 
-     return (
-         <table
-             border={1}
-             style={{
-                 font : '16px Arial', // Bajé un poco el tamaño para que entre todo
-                 borderCollapse: 'collapse',
-                 width: '100%',
-                 textAlign: 'center',
-                 tableLayout: 'fixed'
-             }}
-         >
-             <thead>
-             <tr>
-                 <th>Conexiones</th>
-                 <th>Contenedor</th>
-                 <th>Marca</th>
-                 <th>Estado</th>
-                 <th>Color</th>
-                 <th>Especificaciones</th>
-             </tr>
-             </thead>
-             <tbody>
-             {/* PRIMER BUCLE: Genera una fila <tr> por cada Item */}
-             {items.map((item) => (
-                 <tr key={item.id}>
-                     <th>
-                         {item.conexiones.map((conexion, index) => (
-                             <div key={index}>
-                                 {conexion.puerto}  {conexion.protocolo ?? ''}  {conexion.genero}  {conexion.genero ? 'M' : 'F'}
-                            </div>
-                            ))}
-                     </th>
-                     <td>{item.contenedor}</td>
-                     <td>{item.marca}</td>
-                     <td>{item.estado}</td>
-                     <td>{item.color}</td>
-                     <td>
-                         {item.especificaciones.largo}  {item.especificaciones.amperajeMax}  {item.especificaciones.voltaje}  {item.especificaciones.modelo}
-                     </td>
-                 </tr>
-             ))}
-             </tbody>
-         </table>
-     );
+    const handleInsertarPrueba = async () => {
+        const itemPrueba: ItemCreateDTO = {
+            idEstado: 1,
+            idMarca: 1,
+            idContenedor: 1,
+            idsColores: [1],
+            idsCategoriasItem: [1],
+            conexiones: [
+                { idPuerto: 1, genero: true, idsProtocolos: [1] }
+            ],
+            detalleCable: {
+                largo: 120,
+                idBlindajeExterno: 1,
+                idBlindajeInterno: 1,
+                amperajeMax: 2
+            }
+        };
+
+        try {
+            await itemService.create(itemPrueba);
+            alert("¡Item de prueba creado!");
+            await cargarDatos();
+        } catch (error) {
+            console.error("Error al crear:", error);
+            alert("Error al crear el item. Revisa la consola.");
+        }
+    };
+
+    return (
+        <div style={{ padding: '30px', backgroundColor: '#f0f2f5', minHeight: '100vh' }}>
+            <header style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h1 style={{ margin: 0, color: '#1a1a1a' }}>TechDepot Inventory</h1>
+                <Button variant="success" onClick={handleInsertarPrueba}>
+                    + Nuevo Item (Prueba)
+                </Button>
+            </header>
+
+            {loading ? (
+                <div style={{ textAlign: 'center', padding: '50px' }}>
+                    <h2>Cargando inventario...</h2>
+                </div>
+            ) : (
+                <ItemTable items={items} onDeleteItem={handleEliminar} />
+            )}
+        </div>
+    );
 }

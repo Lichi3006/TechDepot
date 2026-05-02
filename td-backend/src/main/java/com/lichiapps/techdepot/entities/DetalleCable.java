@@ -9,6 +9,6 @@ public class DetalleCable {
 
     @ManyToOne @JoinColumn(name = "IdItem") private Item item;
     @Column(name = "Largo") private Integer largo;
-    @ManyToOne @JoinColumn(name = "IdREF_BlindajeExternoCable") private RefBlindajeExternoCable blindajeExterno;
-    @ManyToOne @JoinColumn(name = "IdREF_BlindajeInternoCable") private RefBlindajeInternoCable blindajeInterno;
+    @ManyToOne @JoinColumn(name = "IdREF_BlindajeExternoCable", foreignKey = @ForeignKey(name = "FK_DetalleCable_RefBlindajeExternoCable")) private RefBlindajeExternoCable blindajeExterno;
+    @ManyToOne @JoinColumn(name = "IdREF_BlindajeInternoCable", foreignKey = @ForeignKey(name = "FK_DetalleCable_RefBlindajeInternoCable")) private RefBlindajeInternoCable blindajeInterno;
 }

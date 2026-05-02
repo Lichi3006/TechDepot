@@ -35,19 +35,18 @@ public class ItemCreateDTO {
         private Integer largo;
         private Long idBlindajeExterno;        // ID de RefBlindajeExternoCable
         private Long idBlindajeInterno;
-        private Integer amperajeMax;           // Para cables de alimentación (opcional)
+        private Short amperajeMax;           // Para cables de alimentación (opcional)
     }
 
     @Data
     public static class DetalleFuenteCreateDTO {
-        private Integer amperaje;
-        private Integer voltaje;
+        private Short amperaje;
+        private Short voltaje;
     }
 
     @Data
     public static class DetalleHardwareCreateDTO {
         private String modeloAlfanumerico;
-        private Long idCategoriaHardwarePrincipal; // Para DetalleHardware
         private List<Long> idsCategoriasHardware;  // Para LinkCategoriaHardware
     }
 }

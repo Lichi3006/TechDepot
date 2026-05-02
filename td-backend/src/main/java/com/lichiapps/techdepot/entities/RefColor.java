@@ -13,6 +13,6 @@ public class RefColor {
     @Column(name = "IdREF_Color")
     private Long id;
 
-    @Column(name = "Nombre", unique = true, nullable = false, length = 20)
+    @Column(name = "Nombre", nullable = false)
     private String nombre;
 }

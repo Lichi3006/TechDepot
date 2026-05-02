@@ -13,10 +13,10 @@ public class LinkCategoriaHardware {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "IdDetalleHardware", nullable = false)
+    @JoinColumn(name = "IdDetalleHardware", nullable = false, foreignKey = @ForeignKey(name = "FK_LinkCategoriaHardware_DetalleHardware"))
     private DetalleHardware detalleHardware;
 
     @ManyToOne
-    @JoinColumn(name = "IdREF_CategoriaHardware", nullable = false)
+    @JoinColumn(name = "IdREF_CategoriaHardware", nullable = false, foreignKey = @ForeignKey(name = "FK_LinkCategoriaHardware_CategoriaHardware"))
     private RefCategoriaHardware refCategoriaHardware;
 }

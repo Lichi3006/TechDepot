@@ -6,10 +6,10 @@ import lombok.Data;
 public class DetalleAlimentacionCable {
 
     @Id @Column(name = "IdDetalleCable")
-    private Long id; // Sin GeneratedValue porque usa @MapsId
+    private Long id;
 
-    @OneToOne @MapsId @JoinColumn(name = "IdDetalleCable")
+    @OneToOne @MapsId @JoinColumn(name = "IdDetalleCable", foreignKey = @ForeignKey(name = "FK_DetalleAlimentacionCable_DetalleCable"))
     private DetalleCable detalleCable;
 
-    @Column(name = "AmperajeMax", nullable = false) private Integer amperajeMax;
+    @Column(name = "AmperajeMax", nullable = false) private Short amperajeMax;
 }
