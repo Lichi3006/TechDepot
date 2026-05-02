@@ -1,7 +1,8 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [react()],
-})
+/** @type {import('vite').UserConfig} */
+export default {
+  server: {
+    port: 5173,
+    open: true, // Esto intentará abrir el navegador automáticamente
+  },
+  plugins: [], // Por ahora vacío si no hay plugins específicos instalados
+}

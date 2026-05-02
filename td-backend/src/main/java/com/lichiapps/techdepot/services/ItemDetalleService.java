@@ -178,7 +178,7 @@ public class ItemDetalleService {
         }
 
         // Finalmente eliminamos los cables
-        detalleCableRepository.deleteAll(cables);
+        detalleCableRepository.deleteAll(cables);   
     }
 
     /**
