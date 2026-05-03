@@ -259,3 +259,72 @@ CREATE INDEX IX_DetalleHardware_Item ON DetalleHardware (IdItem);
 -- Índices en tablas maestras para búsquedas frecuentes
 CREATE INDEX IX_REF_Protocolo_Puerto ON REF_Protocolo (IdREF_Puerto);
 GO
+
+-- =============================================
+-- 9. DATOS SEMILLA (SEED DATA)
+-- Datos básicos para que el sistema "inteligente" pueda funcionar desde cero.
+-- =============================================
+
+-- 9.1 Estados Básicos
+INSERT INTO REF_Estado (Nombre) VALUES 
+('Nuevo'), 
+('Usado - Buen estado'), 
+('Usado - Desgaste'), 
+('Roto / Para reparar');
+GO
+
+-- 9.2 Categorías de Función (El motor lógico)
+-- IMPORTANTE: El orden de inserción define el ID (1=Energía, 2=Datos, 3=Video, 4=Audio)
+INSERT INTO REF_CategoriaFuncion (Nombre) VALUES 
+('Energía'), 
+('Datos'), 
+('Video'), 
+('Audio');
+GO
+
+-- 9.3 Tipos de Contenedor
+INSERT INTO REF_TipoContenedor (Nombre, Prefijo) VALUES 
+('Cables de Datos y Red', 'DAT'),
+('Cables y Fuentes de Poder', 'PWR'),
+('Cables de Video y Audio', 'VID'),
+('Equipamiento de Red', 'NET'),
+('Hardware General', 'HDW'),
+('Mixto / Varios', 'MIX');
+GO
+
+-- 9.4 Puertos Físicos Comunes
+-- IMPORTANTE: El orden define el ID (1=USB-C, 2=USB-A, 3=HDMI, 4=DP, 5=Schuko, 6=IEC, 7=RJ45)
+INSERT INTO REF_Puerto (Nombre) VALUES 
+('USB-C'), 
+('USB-A'), 
+('HDMI'), 
+('DisplayPort'), 
+('Schuko (Pared)'), 
+('IEC C13 (Fuente PC)'),
+('RJ45');
+GO
+
+-- 9.5 Capacidades de los Puertos (La matriz de inteligencia)
+-- USB-C (1) soporta: Energía (1), Datos (2), Video (3)
+INSERT INTO LINK_CategoriaFuncionPuerto (IdREF_Puerto, IdREF_CategoriaFuncion) VALUES (1, 1), (1, 2), (1, 3);
+-- USB-A (2) soporta: Energía (1), Datos (2)
+INSERT INTO LINK_CategoriaFuncionPuerto (IdREF_Puerto, IdREF_CategoriaFuncion) VALUES (2, 1), (2, 2);
+-- HDMI (3) y DP (4) soportan: Video (3), Audio (4)
+INSERT INTO LINK_CategoriaFuncionPuerto (IdREF_Puerto, IdREF_CategoriaFuncion) VALUES (3, 3), (3, 4), (4, 3), (4, 4);
+-- Schuko (5) e IEC C13 (6) soportan SOLO: Energía (1)
+INSERT INTO LINK_CategoriaFuncionPuerto (IdREF_Puerto, IdREF_CategoriaFuncion) VALUES (5, 1), (6, 1);
+-- RJ45 (7) soporta SOLO: Datos (2)
+INSERT INTO LINK_CategoriaFuncionPuerto (IdREF_Puerto, IdREF_CategoriaFuncion) VALUES (7, 2);
+GO
+
+-- 9.6 Protocolos para Puertos Complejos
+-- Protocolos USB-C
+INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (1, 2, 'USB 3.2 Gen 2');
+INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (1, 3, 'DisplayPort Alt Mode');
+INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (1, 1, 'Power Delivery (PD) 100W');
+-- Protocolos HDMI
+INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (3, 3, 'HDMI 2.0');
+INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (3, 3, 'HDMI 2.1');
+-- Protocolos RJ45
+INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (7, 2, 'Gigabit Ethernet (Cat6)');
+GO

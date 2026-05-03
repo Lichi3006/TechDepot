@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mapeo Ghost Mode en JPA: Refactorizacion de LINK_ProtocoloDeExtremo utilizando relaciones simples combinadas con propiedades manuales redundantes. Esto permite que Hibernate respete las reglas de integridad cruzadas de SQL Server sin intentar validarlas de forma redundante, resolviendo errores de mapeo en el arranque.
 - Optimizacion Mediante Indices: Adicion de Indices Non-Clustered en columnas de Foreign Keys criticas (IdItem, IdLINK_ExtremoFisico) para optimizar el rendimiento de las consultas del Facade Pattern y evitar escaneos completos de tablas.
 - Vista de Inferencia SQL: Creacion de v_InventarioDetallado que utiliza STRING_AGG para consolidar las funciones de un item en un solo campo dinamico.
+- Datos Semilla (Seed Data): Incorporacion de inserciones basicas en el script SQL maestro (Estados, Puertos, Protocolos y Capacidades) para facilitar la puesta en marcha inmediata del sistema.
 - Nueva arquitectura modular en el Frontend basada en paginas (InventoryPage, ItemEditorPage, ParametersPage) y layouts (MainLayout).
 - Navegacion del lado del cliente mediante react-router-dom.
 - Formulario de creacion dinamico (ItemForm) que consume datos reales de la base de datos.
