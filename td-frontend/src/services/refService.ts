@@ -24,7 +24,11 @@ export const refService = {
 
     // Contenedores
     getContenedores: () => api.get<Contenedor[]>('/contenedores').then(r => r.data),
-    saveContenedor: (data: Contenedor) => api.post<Contenedor>('/contenedores', data).then(r => r.data),
+    saveContenedor: (data: any) => api.post<Contenedor>('/contenedores', data).then(r => r.data),
+
+    // Tipos de Contenedor
+    getTiposContenedor: () => api.get<RefTipoContenedor[]>('/tipos-contenedor').then(r => r.data),
+    saveTipoContenedor: (data: RefTipoContenedor) => api.post<RefTipoContenedor>('/tipos-contenedor', data).then(r => r.data),
 
     // Categorías de Item
     getCategoriasItem: () => api.get<RefCategoriaItem[]>('/categorias-item').then(r => r.data),

@@ -8,18 +8,17 @@ public class LinkProtocoloDeExtremo {
     private Long id;
 
     @ManyToOne
-    @JoinColumns(value = {
-            @JoinColumn(name = "IdLINK_ExtremoFisico", referencedColumnName = "IdLINK_ExtremoFisico"),
-            @JoinColumn(name = "IdREF_Puerto", referencedColumnName = "IdREF_Puerto"),
-            @JoinColumn(name = "IdREF_CategoriaFuncion", referencedColumnName = "IdREF_CategoriaFuncion")
-    }, foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
+    @JoinColumn(name = "IdLINK_ExtremoFisico", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
     private LinkExtremoFisico extremoFisico;
 
     @ManyToOne
-    @JoinColumns(value = {
-            @JoinColumn(name = "IdREF_Protocolo", referencedColumnName = "IdREF_Protocolo"),
-            @JoinColumn(name = "IdREF_Puerto", referencedColumnName = "IdREF_Puerto", insertable = false, updatable = false),
-            @JoinColumn(name = "IdREF_CategoriaFuncion", referencedColumnName = "IdREF_CategoriaFuncion", insertable = false, updatable = false)
-    }, foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
+    @JoinColumn(name = "IdREF_Protocolo", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
     private RefProtocolo protocolo;
+
+    // Campos redundantes obligatorios para satisfacer la FK compuesta en SQL Server
+    @Column(name = "IdREF_Puerto", nullable = false)
+    private Long idPuerto;
+
+    @Column(name = "IdREF_CategoriaFuncion", nullable = false)
+    private Long idCategoriaFuncion;
 }

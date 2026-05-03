@@ -64,6 +64,14 @@ CREATE TABLE REF_CategoriaHardware
     CONSTRAINT PK_RefCategoriaHardware PRIMARY KEY (IdREF_CategoriaHardware)
 );
 
+CREATE TABLE REF_TipoContenedor
+(
+    IdREF_TipoContenedor BIGINT IDENTITY(1,1),
+    Nombre VARCHAR(50) UNIQUE NOT NULL, -- Ej: 'Cables de Datos'
+    Prefijo VARCHAR(5) UNIQUE NOT NULL,  -- Ej: 'DAT'
+    CONSTRAINT PK_RefTipoContenedor PRIMARY KEY (IdREF_TipoContenedor)
+);
+
 -- =============================================
 -- 2. CAPACIDADES DE LOS PUERTOS Y PROTOCOLOS
 -- =============================================
@@ -96,9 +104,11 @@ CREATE TABLE REF_Protocolo
 CREATE TABLE Contenedor
 (
     IdContenedor BIGINT IDENTITY(1,1),
+    IdREF_TipoContenedor BIGINT NOT NULL,
     QrUUID VARCHAR(36) UNIQUE NOT NULL,
     Nombre VARCHAR(100) NULL,
-    CONSTRAINT PK_Contenedor PRIMARY KEY (IdContenedor)
+    CONSTRAINT PK_Contenedor PRIMARY KEY (IdContenedor),
+    CONSTRAINT FK_Contenedor_RefTipoContenedor FOREIGN KEY (IdREF_TipoContenedor) REFERENCES REF_TipoContenedor (IdREF_TipoContenedor)
 );
 
 CREATE TABLE Item

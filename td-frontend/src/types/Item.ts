@@ -7,8 +7,12 @@ export interface RefBase {
 export interface RefMarca extends RefBase {}
 export interface RefEstado extends RefBase {}
 export interface RefColor extends RefBase {}
+export interface RefTipoContenedor extends RefBase {
+    prefijo: string;
+}
 export interface Contenedor extends RefBase {
-    descripcion?: string;
+    qrUUID?: string;
+    tipoContenedor?: RefTipoContenedor;
 }
 export interface RefCategoriaItem extends RefBase {}
 export interface RefPuerto extends RefBase {}

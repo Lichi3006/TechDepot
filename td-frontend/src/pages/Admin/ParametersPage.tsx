@@ -1,22 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { refService } from '../../services/refService.ts';
-import type { RefBase } from '../../types/Item.ts';
+import type { RefBase, RefTipoContenedor } from '../../types/Item.ts';
 import { Button } from '../../components/ui/Button.tsx';
 
 export default function ParametersPage() {
     const [marcas, setMarcas] = useState<RefBase[]>([]);
     const [colores, setColores] = useState<RefBase[]>([]);
     const [estados, setEstados] = useState<RefBase[]>([]);
+    const [contenedores, setContenedores] = useState<RefBase[]>([]);
+    const [tiposContenedor, setTiposContenedor] = useState<RefTipoContenedor[]>([]);
 
     const cargarTodos = async () => {
-        const [m, c, e] = await Promise.all([
+        const [m, c, e, cont, tc] = await Promise.all([
             refService.getMarcas(),
             refService.getColores(),
-            refService.getEstados()
+            refService.getEstados(),
+            refService.getContenedores(),
+            refService.getTiposContenedor()
         ]);
         setMarcas(m);
         setColores(c);
         setEstados(e);
+        setContenedores(cont);
+        setTiposContenedor(tc);
     };
 
     useEffect(() => {
@@ -24,6 +30,31 @@ export default function ParametersPage() {
     }, []);
 
     const handleAdd = async (tipo: string) => {
+        if (tipo === 'Contenedor') {
+            if (tiposContenedor.length === 0) {
+                alert("Primero debe crear al menos un Tipo de Contenedor (ej: DAT, PWR)");
+                return;
+            }
+            const idTipo = prompt("Seleccione el ID del Tipo de Contenedor:\n" + 
+                tiposContenedor.map(t => `${t.id}: ${t.nombre} (${t.prefijo})`).join('\n'));
+            
+            if (idTipo) {
+                await refService.saveContenedor({ tipoContenedor: { id: Number(idTipo) } });
+                cargarTodos();
+            }
+            return;
+        }
+
+        if (tipo === 'TipoContenedor') {
+            const nombre = prompt("Nombre del tipo (ej: Cables de Datos):");
+            const prefijo = prompt("Prefijo (ej: DAT):");
+            if (nombre && prefijo) {
+                await refService.saveTipoContenedor({ nombre, prefijo });
+                cargarTodos();
+            }
+            return;
+        }
+
         const nombre = prompt(`Nuevo nombre para ${tipo}:`);
         if (!nombre) return;
 
@@ -46,6 +77,8 @@ export default function ParametersPage() {
                 <ParameterList title="Marcas" items={marcas} onAdd={() => handleAdd('Marca')} />
                 <ParameterList title="Colores" items={colores} onAdd={() => handleAdd('Color')} />
                 <ParameterList title="Estados" items={estados} onAdd={() => handleAdd('Estado')} />
+                <ParameterList title="Tipos Contenedor" items={tiposContenedor} onAdd={() => handleAdd('TipoContenedor')} />
+                <ParameterList title="Contenedores" items={contenedores} onAdd={() => handleAdd('Contenedor')} />
             </div>
         </div>
     );

@@ -21,15 +21,21 @@ A partir de la versión 2.0 del esquema, hemos eliminado la categorización manu
 
 ### Mapeo Avanzado de JPA: Ghost Mode
 Para soportar las restricciones de integridad compuestas de SQL Server (donde una columna como `IdREF_Puerto` es parte de múltiples FKs), implementamos el **"Ghost Mode"**:
-- Se utilizan `@JoinColumns` compuestas.
-- Las columnas redundantes se marcan como `insertable = false, updatable = false`.
-- Se desactiva la validación de Hibernate mediante `foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT)`, delegando la responsabilidad total de la integridad al motor de base de datos.
+- Se utilizan relaciones simples `@ManyToOne` para la navegación de objetos.
+- Las columnas de validación redundantes exigidas por la DB (ej: `IdREF_Puerto`, `IdREF_CategoriaFuncion`) se mapean como propiedades `@Column` básicas.
+- Estas propiedades se pueblan manualmente en la capa de Servicio (`ItemConexionService`) antes de persistir, asegurando coherencia sin confundir al motor de mapeo de Hibernate con llaves compuestas complejas.
+- Se desactiva la validación de Hibernate mediante `foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT)`, delegando la responsabilidad total de la integridad al motor de base de datos SQL Server.
 
-### Optimización Mediante Índices y Vistas
-- **Índices No Agrupados**: Implementamos índices manuales en todas las Foreign Keys de las tablas `LINK_` y `DETALLE_` para evitar *Table Scans* durante las consultas del Facade.
-- **Vistas Lógicas**: Utilizamos la vista `v_InventarioDetallado` con `STRING_AGG` para consolidar las funciones de un item en un solo campo legible, reduciendo la carga de procesamiento en la capa de aplicación.
+## 3. Logística y Trazabilidad Física
 
-## 3. Optimización y Rendimiento
+### Nomenclatura Estándar de Contenedores
+Para facilitar la búsqueda física de hardware, el sistema implementa una convención de nombres automática y jerárquica:
+- **Catálogo de Tipos**: La tabla `REF_TipoContenedor` define los prefijos oficiales (ej: `DAT` para Datos, `PWR` para Energía).
+- **Algoritmo de Generación**: El `ContenedorService` orquesta la creación siguiendo el patrón `[PREFIJO]-[SECUENCIA]-[UUID_CORTO]`.
+  - **Secuencia**: Se calcula mediante un conteo en tiempo real de contenedores del mismo tipo, asegurando un orden lógico (01, 02, 03...).
+  - **Entropía de Seguridad**: Se adjuntan los últimos 4 caracteres del UUID para garantizar que, incluso ante colisiones teóricas o borrados, cada etiqueta física sea única e irrepetible.
+
+## 4. Optimización y Rendimiento
 
 ### Prevención de N+1 Queries
 El mapeo de entidades a DTOs en `ItemDTOMapperService` está optimizado para cargar todas las colecciones necesarias en una sola ráfaga de consultas controladas. La inferencia de categorías se realiza mediante lógica de Streams de Java para replicar la eficiencia de la vista SQL.

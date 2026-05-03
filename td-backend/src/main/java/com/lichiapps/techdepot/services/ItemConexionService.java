@@ -68,6 +68,10 @@ public class ItemConexionService {
             LinkProtocoloDeExtremo linkProtocolo = new LinkProtocoloDeExtremo();
             linkProtocolo.setExtremoFisico(extremo);
             linkProtocolo.setProtocolo(refProtocolo);
+            
+            // Seteamos los campos redundantes obligatorios para la integridad de SQL Server
+            linkProtocolo.setIdPuerto(extremo.getPuerto().getId());
+            linkProtocolo.setIdCategoriaFuncion(extremo.getCategoriaFuncion().getId());
 
             linkProtocoloDeExtremoRepository.save(linkProtocolo);
         }
