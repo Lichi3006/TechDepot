@@ -3,11 +3,12 @@ import type {
     RefMarca, 
     RefEstado, 
     RefColor, 
+    RefTipoContenedor,
     Contenedor, 
     RefCategoriaItem, 
     RefPuerto, 
     RefProtocolo 
-} from '../types/Item';
+} from '../types/Item.ts';
 
 export const refService = {
     // Marcas

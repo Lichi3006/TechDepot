@@ -7,9 +7,10 @@ export const MainLayout: React.FC = () => {
             <aside style={sidebarStyle}>
                 <h2 style={titleStyle}>TechDepot</h2>
                 <nav style={navStyle}>
-                    <Link to="/" style={linkStyle}>📦 Inventario</Link>
-                    <Link to="/admin/nuevo" style={linkStyle}>➕ Nuevo Item</Link>
-                    <Link to="/admin/parametros" style={linkStyle}>⚙️ Parámetros</Link>
+                    <Link to="/" style={linkStyle}>Inventario</Link>
+                    <Link to="/admin/nuevo" style={linkStyle}>Nuevo Item</Link>
+                    <Link to="/admin/contenedores/nuevo" style={linkStyle}>Nuevo Contenedor</Link>
+                    <Link to="/admin/parametros" style={linkStyle}>Parametros</Link>
                 </nav>
             </aside>
             <main style={mainStyle}>
