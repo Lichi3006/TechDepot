@@ -23,7 +23,7 @@ public class ItemValidationService {
     @Autowired private RefMarcaRepository refMarcaRepository;
     @Autowired private ContenedorRepository contenedorRepository;
     @Autowired private RefColorRepository refColorRepository;
-    @Autowired private RefCategoriaItemRepository refCategoriaItemRepository;
+    @Autowired private RefCategoriaFuncionRepository refCategoriaFuncionRepository;
     @Autowired private RefPuertoRepository refPuertoRepository;
     @Autowired private RefProtocoloRepository refProtocoloRepository;
     @Autowired private RefBlindajeExternoCableRepository refBlindajeExternoCableRepository;
@@ -46,22 +46,11 @@ public class ItemValidationService {
             errors.add("El ID del contenedor es obligatorio");
         }
 
-        // 2. Validamos consistencia entre Categorías y Detalles
-        if (createDTO.getIdsCategoriasItem() != null && !createDTO.getIdsCategoriasItem().isEmpty()) {
-            List<RefCategoriaItem> categorias = refCategoriaItemRepository.findAllById(createDTO.getIdsCategoriasItem());
-
-            for (RefCategoriaItem cat : categorias) {
-                String nombre = cat.getNombre().toUpperCase();
-
-                if (nombre.contains("CABLE") && createDTO.getDetalleCable() == null) {
-                    errors.add("Se especificó categoría CABLE pero falta el objeto 'detalleCable'");
-                }
-                if (nombre.contains("FUENTE") && createDTO.getDetalleFuente() == null) {
-                    errors.add("Se especificó categoría FUENTE pero falta el objeto 'detalleFuente'");
-                }
-                if (nombre.contains("HARDWARE") && createDTO.getDetalleHardware() == null) {
-                    errors.add("Se especificó categoría HARDWARE pero falta el objeto 'detalleHardware'");
-                }
+        // 2. Validaciones de conexiones
+        if (createDTO.getConexiones() != null) {
+            for (ItemCreateDTO.ConexionCreateDTO con : createDTO.getConexiones()) {
+                if (con.getIdPuerto() == null) errors.add("El ID del puerto es obligatorio en las conexiones");
+                if (con.getIdCategoriaFuncion() == null) errors.add("La categoría de función es obligatoria en las conexiones");
             }
         }
 
@@ -143,14 +132,14 @@ public class ItemValidationService {
     }
 
     /**
-     * Valida que una CategoriaItem exista en la BD y la retorna.
+     * Valida que una CategoriaFuncion exista en la BD y la retorna.
      * @param id ID de la categoría a buscar
-     * @return RefCategoriaItem encontrada
+     * @return RefCategoriaFuncion encontrada
      * @throws IllegalArgumentException si la categoría no existe
      */
-    public RefCategoriaItem validarExisteCategoriaItem(Long id) {
-        return refCategoriaItemRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("La categoría de item con ID " + id + " no existe"));
+    public RefCategoriaFuncion validarExisteCategoriaFuncion(Long id) {
+        return refCategoriaFuncionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("La categoría de función con ID " + id + " no existe"));
     }
 
     /**

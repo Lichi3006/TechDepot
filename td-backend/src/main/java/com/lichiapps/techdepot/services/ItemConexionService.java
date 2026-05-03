@@ -31,19 +31,21 @@ public class ItemConexionService {
         }
 
         for (ItemCreateDTO.ConexionCreateDTO conexionDTO : conexiones) {
-            // Validamos que el puerto exista
+            // Validamos que el puerto y la función existan
             RefPuerto refPuerto = validationService.validarExistePuerto(conexionDTO.getIdPuerto());
+            RefCategoriaFuncion refCatFun = validationService.validarExisteCategoriaFuncion(conexionDTO.getIdCategoriaFuncion());
 
             // Creamos el extremo físico (la conexión)
             LinkExtremoFisico linkExtremoFisico = new LinkExtremoFisico();
             linkExtremoFisico.setItem(item);
             linkExtremoFisico.setPuerto(refPuerto);
+            linkExtremoFisico.setCategoriaFuncion(refCatFun);
             linkExtremoFisico.setGenero(conexionDTO.getGenero()); // true = macho, false = hembra
 
             LinkExtremoFisico extremoGuardado = linkExtremoFisicoRepository.save(linkExtremoFisico);
 
             // Guardamos los protocolos de esta conexión
-            guardarProtocolosDeExtremo(extremoGuardado, conexionDTO.getIdsProtocolos(), conexionDTO.getGenero());
+            guardarProtocolosDeExtremo(extremoGuardado, conexionDTO.getIdsProtocolos());
         }
     }
 
@@ -52,9 +54,8 @@ public class ItemConexionService {
      * Un mismo puerto puede soportar varios protocolos (ej: USB-C puede tener USB 3.0, Thunderbolt, etc.)
      * @param extremo Extremo físico al que se le asignarán los protocolos
      * @param idsProtocolos Lista de IDs de RefProtocolo
-     * @param genero Género del extremo (true = macho, false = hembra)
      */
-    public void guardarProtocolosDeExtremo(LinkExtremoFisico extremo, List<Long> idsProtocolos, Boolean genero) {
+    public void guardarProtocolosDeExtremo(LinkExtremoFisico extremo, List<Long> idsProtocolos) {
         if (idsProtocolos == null || idsProtocolos.isEmpty()) {
             return;
         }
@@ -67,7 +68,6 @@ public class ItemConexionService {
             LinkProtocoloDeExtremo linkProtocolo = new LinkProtocoloDeExtremo();
             linkProtocolo.setExtremoFisico(extremo);
             linkProtocolo.setProtocolo(refProtocolo);
-            linkProtocolo.setGenero(genero);
 
             linkProtocoloDeExtremoRepository.save(linkProtocolo);
         }

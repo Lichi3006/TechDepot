@@ -30,7 +30,7 @@ public class RefColorService {
         refColorRepository.deleteById(id);
     }
 
-    public List<RefColor> getAllRefColors(){
+    public List<RefColor> getAllRefColores(){
         return refColorRepository.findAll();
     }
 

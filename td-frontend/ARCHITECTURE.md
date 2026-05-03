@@ -6,27 +6,26 @@ Este documento detalla la estructura y decisiones técnicas del frontend de Tech
 
 Hemos migrado de una Single Page Application (SPA) plana a una arquitectura basada en **Páginas y Layouts** para soportar el crecimiento del sistema:
 
-- **`/src/layouts`**: Contiene los marcos visuales de la aplicación (ej: `MainLayout` con Sidebar).
+- **`/src/layouts`**: Contiene los marcos visuales de la aplicación (ej: `MainLayout` con Sidebar fijo).
 - **`/src/pages`**: Secciones independientes de la aplicación:
-  - `InventoryPage`: Visualización y filtrado de stock.
+  - `InventoryPage`: Visualización y filtrado de stock con lógica de inferencia.
   - `ItemEditorPage`: Formulario de creación/edición de items.
-  - `ParametersPage`: Gestión de tablas maestras (REFs).
-- **`/src/services`**: Capa de comunicación con la API (Axios), separando la lógica de negocio de los componentes de UI.
-- **`/src/components`**: Componentes reutilizables divididos en `ui` (elementos básicos) y `inventory` (componentes de dominio).
+  - `ParametersPage`: Nueva sección administrativa para gestionar tablas maestras (REFs).
+- **`/src/services`**: Capa de comunicación con la API (Axios). Separamos `itemService` de `refService` para mayor claridad.
 
-## 2. Enrutamiento y Estado
+## 2. Enrutamiento y Navegación
 
-- **React Router DOM**: Implementado para gestionar la navegación sin recarga de página, permitiendo URLs limpias para cada sección.
-- **Estado Local**: Utilizamos `useState` y `useEffect` para la gestión de datos por página. En el futuro, se evaluará Context API para estados globales (ej: notificaciones).
+- **React Router DOM**: Implementado para gestionar URLs limpias (ej: `/admin/nuevo`). Permite el uso de botones de navegación del navegador sin perder el estado de la aplicación.
+- **Layouts con Outlet**: El Sidebar se mantiene consistente gracias al uso de `<Outlet />`, evitando re-renderizados innecesarios de la estructura principal.
 
-## 3. Robustez y Tipado
+## 3. Robustez y Calidad de Código
 
-- **TypeScript Estricto**: Uso de `verbatimModuleSyntax` para asegurar importaciones limpias y `import type` para separar tipos de lógica ejecutable.
-- **Renderización Defensiva**: Implementación de *Optional Chaining* (`?.`) y valores por defecto en componentes críticos para prevenir errores de "pantalla blanca" ante datos inconsistentes o nulos provenientes del backend.
+- **Renderización Defensiva**: Uso extensivo de *Optional Chaining* (`?.`) para manejar la asincronía y posibles nulos del backend, evitando el error de "pantalla blanca".
+- **TypeScript Estricto**: Configuración `verbatimModuleSyntax` para asegurar importaciones de tipos explícitas, mejorando la velocidad de compilación y la claridad del código.
 
-## 4. Flujo de Creación de Items
+## 4. Evolución V2: UI Inteligente
 
-El formulario de creación es dinámico:
-1. Al cargar, solicita todas las listas de referencia (Marcas, Estados, etc.) al backend.
-2. Permite la creación "al vuelo" de parámetros faltantes (ej: nueva Marca) mediante el servicio de referencias.
-3. Envía un `ItemCreateDTO` plano al backend, asegurando que solo se utilicen IDs válidos existentes en la base de datos.
+Con la llegada del esquema de base de datos V2, el frontend ha evolucionado:
+- **Formulario Dinámico**: Ya no se eligen categorías manualmente. Al elegir un puerto, el formulario consulta sus capacidades y permite seleccionar la función (Energía/Datos/Video).
+- **Inferencia Visual**: La tabla de inventario muestra la categoría calculada por el backend, reflejando fielmente la composición física de los items sin intervención del usuario.
+- **Administración en Vivo**: Capacidad de agregar nuevas marcas o parámetros directamente desde los formularios de carga, sincronizando con el backend mediante peticiones `POST` atómicas.

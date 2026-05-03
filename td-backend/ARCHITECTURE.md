@@ -11,30 +11,31 @@ El servicio `ItemService` actúa como el punto de entrada principal (Fachada) pa
 - `ItemDetalleService`: Gestión de atributos específicos (Cables, Fuentes, Hardware).
 - `ItemConexionService`: Lógica compleja de puertos y protocolos.
 
-## 2. Estrategia de Persistencia y Modelado de Datos
+## 2. Estrategia de Persistencia y Modelado de Datos (Evolución V2)
 
-### Modelo Relacional Estricto
-Nuestra base de datos sigue una convención de nomenclatura rigurosa para facilitar la trazabilidad:
-- **Tablas Maestras (`REF_`)**: Almacenan catálogos estáticos (ej: `REF_Marca`, `REF_Puerto`).
-- **Tablas Puente (`LINK_`)**: Representan relaciones Muchos-a-Muchos explícitas (ej: `LINK_CategoriaHardware`). **PROHIBIDO** el uso de `@ManyToMany` implícito de JPA para asegurar control total sobre las consultas.
+### El "Cerebro" de la DB: Inferencia de Categorías
+A partir de la versión 2.0 del esquema, hemos eliminado la categorización manual de los items. El sistema ahora utiliza un modelo de **Categorización Inferida**:
+- **Categoría por Función**: Cada extremo físico (`LINK_ExtremoFisico`) tiene una función obligatoria (Energía, Datos, Video, etc.).
+- **Validación por Puerto**: Una tabla puente (`LINK_CategoriaFuncionPuerto`) actúa como "matriz de capacidades", impidiendo que un puerto (ej: Schuko) asuma funciones que no le corresponden físicamente.
+- **Protocolos Coherentes**: Los protocolos ahora están vinculados a funciones específicas. No se puede asignar un protocolo de "Video" a un extremo declarado como "Datos".
 
-### Configuración de Hibernate (Control Manual)
-Para evitar que JPA altere la estructura de SQL Server sin supervisión:
-- `spring.jpa.hibernate.ddl-auto=none`: La base de datos es la "fuente de verdad". Los cambios se aplican mediante scripts SQL manuales.
-- `PhysicalNamingStrategyStandardImpl`: Configurado para respetar el Case-Sensitivity de SQL Server.
-- **Modo Fantasma**: En relaciones con FKs compuestas o redundantes, usamos `@JoinColumn(insertable = false, updatable = false)` junto con `ConstraintMode.NO_CONSTRAINT` para evitar que Hibernate intente validar restricciones que SQL Server ya gestiona.
+### Mapeo Avanzado de JPA: Ghost Mode
+Para soportar las restricciones de integridad compuestas de SQL Server (donde una columna como `IdREF_Puerto` es parte de múltiples FKs), implementamos el **"Ghost Mode"**:
+- Se utilizan `@JoinColumns` compuestas.
+- Las columnas redundantes se marcan como `insertable = false, updatable = false`.
+- Se desactiva la validación de Hibernate mediante `foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT)`, delegando la responsabilidad total de la integridad al motor de base de datos.
+
+### Optimización Mediante Índices y Vistas
+- **Índices No Agrupados**: Implementamos índices manuales en todas las Foreign Keys de las tablas `LINK_` y `DETALLE_` para evitar *Table Scans* durante las consultas del Facade.
+- **Vistas Lógicas**: Utilizamos la vista `v_InventarioDetallado` con `STRING_AGG` para consolidar las funciones de un item en un solo campo legible, reduciendo la carga de procesamiento en la capa de aplicación.
 
 ## 3. Optimización y Rendimiento
 
 ### Prevención de N+1 Queries
-El mapeo de entidades a DTOs en `ItemDTOMapperService` está optimizado para cargar todas las colecciones necesarias (Colores, Categorías, Conexiones) en una sola ráfaga de consultas controladas antes de procesar las listas, evitando el problema de rendimiento N+1.
-
-### Eficiencia en Memoria y Tipos de Datos
-- **IDs**: Siempre `Long` en Java y `BIGINT` en SQL para escalabilidad.
-- **Métricas Eléctricas**: Uso de `Short` (objeto) en Java para soportar nulos, mapeados mediante `@Column(columnDefinition = "TINYINT")` o `SMALLINT` en SQL para minimizar el consumo de almacenamiento por registro.
+El mapeo de entidades a DTOs en `ItemDTOMapperService` está optimizado para cargar todas las colecciones necesarias en una sola ráfaga de consultas controladas. La inferencia de categorías se realiza mediante lógica de Streams de Java para replicar la eficiencia de la vista SQL.
 
 ## 4. Flujo de Datos
-1. **Entrada**: `ItemCreateDTO` recibe IDs planos.
-2. **Validación**: Se verifica la existencia de cada ID contra la BD.
-3. **Persistencia**: Guardado secuencial y explícito (sin `CascadeType.ALL` en relaciones críticas).
-4. **Salida**: `ItemDTO` devuelve objetos legibles con nombres y descripciones resueltas.
+1. **Entrada**: `ItemCreateDTO` recibe IDs planos y definiciones de funciones por conexión.
+2. **Validación**: `ItemValidationService` actúa como "policía", verificando que cada conexión tenga su función y que las referencias existan.
+3. **Persistencia**: Guardado secuencial y explícito (sin `CascadeType.ALL`).
+4. **Salida**: `ItemDTO` devuelve la `categoriaCalculada` (inferida) y detalles resueltos.

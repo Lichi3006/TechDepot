@@ -12,9 +12,6 @@ public class ItemCreateDTO {
 
     private List<Long> idsColores;   // IDs de RefColor
 
-    // Categorías del item
-    private List<Long> idsCategoriasItem; // IDs de RefCategoriaItem (ej: CABLE, FUENTE)
-
     // Conexiones físicas
     private List<ConexionCreateDTO> conexiones;
 
@@ -26,6 +23,7 @@ public class ItemCreateDTO {
     @Data
     public static class ConexionCreateDTO {
         private Long idPuerto;           // ID de RefPuerto
+        private Long idCategoriaFuncion; // ID de RefCategoriaFuncion (Energía, Datos, etc.)
         private Boolean genero;          // true=macho, false=hembra
         private List<Long> idsProtocolos; // IDs de RefProtocolo
     }

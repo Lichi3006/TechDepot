@@ -7,23 +7,22 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Servicio de mapeo para transformar entidades Item a ItemDTO.
  * Recopila todos los datos relacionados de un Item y los convierte a un formato legible para el frontend.
- * Optimizada para no repetir llamadas a la base de datos dentro de bucles.
+ * Ahora incluye la lógica de inferencia de categoría basada en los extremos físicos.
  */
 @Service
 public class ItemDTOMapperService {
 
-    // === SERVICIOS PARA OBTENER DATOS RELACIONADOS ===
     @Autowired private ItemCrudService itemCrudService;
     @Autowired private LinkExtremoFisicoService linkExtremoFisicoService;
     @Autowired private LinkProtocoloDeExtremoService linkProtocoloDeExtremoService;
-    @Autowired private LinkCategoriaFuncionPuertoService linkCategoriaFuncionPuertoService;
     @Autowired private DetalleCableService detalleCableService;
     @Autowired private DetalleAlimentacionCableService detalleAlimentacionCableService;
-    @Autowired private LinkCategoriaItemService linkCategoriaItemService;
     @Autowired private DetalleFuenteService detalleFuenteService;
     @Autowired private DetalleHardwareService detalleHardwareService;
     @Autowired private LinkCategoriaHardwareService linkCategoriaHardwareService;
@@ -33,16 +32,12 @@ public class ItemDTOMapperService {
         Item item = itemCrudService.obtenerItemPorId(idItem);
         if (item == null) return null;
 
-        // Para un solo item, traemos solo sus relaciones específicas de la BD
-        // Nota: Mantenemos el mismo patrón de convertirAItemDTO para reutilizar lógica
         return convertirAItemDTO(
                 item,
                 linkExtremoFisicoService.getAllLinkExtremoFisico().stream().filter(l -> l.getItem().getId().equals(idItem)).toList(),
-                linkProtocoloDeExtremoService.getAllLinkProtocoloDeExtremo(), // Este es más difícil de filtrar sin ID de extremo, lo dejamos así por ahora o filtramos luego
-                linkCategoriaFuncionPuertoService.getAllLinkCategoriaFuncionPuerto(),
+                linkProtocoloDeExtremoService.getAllLinkProtocoloDeExtremo(),
                 detalleCableService.getAllDetalleCable().stream().filter(d -> d.getItem().getId().equals(idItem)).toList(),
                 detalleHardwareService.getAllDetalleHardware().stream().filter(d -> d.getItem().getId().equals(idItem)).toList(),
-                linkCategoriaItemService.getAllLinkCategoriaItem().stream().filter(l -> l.getItem().getId().equals(idItem)).toList(),
                 detalleFuenteService.getAllDetalleFuentes().stream().filter(d -> d.getItem().getId().equals(idItem)).toList(),
                 colorService.getAllColors().stream().filter(c -> c.getItem().getId().equals(idItem)).toList(),
                 detalleAlimentacionCableService.getAllDetalleAlimentacionCable(),
@@ -53,38 +48,18 @@ public class ItemDTOMapperService {
     public List<ItemDTO> convertirListaAItemDTO(List<Item> items) {
         List<ItemDTO> itemsDTO = new ArrayList<>();
 
-        // Cargamos TODAS las entidades relacionadas una sola vez (evita N+1 queries)
         List<LinkExtremoFisico> linkExtremoFisicos = linkExtremoFisicoService.getAllLinkExtremoFisico();
         List<LinkProtocoloDeExtremo> linkProtocoloDeExtremos = linkProtocoloDeExtremoService.getAllLinkProtocoloDeExtremo();
-        List<LinkCategoriaFuncionPuerto> linkCategoriaFuncionPuertos = linkCategoriaFuncionPuertoService.getAllLinkCategoriaFuncionPuerto();
         List<DetalleCable> detalleCables = detalleCableService.getAllDetalleCable();
         List<DetalleHardware> detalleHardwares = detalleHardwareService.getAllDetalleHardware();
-        List<LinkCategoriaItem> linkCategoriasItems = linkCategoriaItemService.getAllLinkCategoriaItem();
         List<DetalleFuente> detalleFuentes = detalleFuenteService.getAllDetalleFuentes();
         List<Color> colores = colorService.getAllColors();
-
-        // --- MOVIDAS ARRIBA PARA OPTIMIZAR (Antes estaban en el for) ---
         List<DetalleAlimentacionCable> alimentaciones = detalleAlimentacionCableService.getAllDetalleAlimentacionCable();
         List<LinkCategoriaHardware> categoriasHardware = linkCategoriaHardwareService.getAll();
 
-        // Convertimos cada item
         for (Item item : items) {
-            ItemDTO itemDTO = convertirAItemDTO(
-                    item,
-                    linkExtremoFisicos,
-                    linkProtocoloDeExtremos,
-                    linkCategoriaFuncionPuertos,
-                    detalleCables,
-                    detalleHardwares,
-                    linkCategoriasItems,
-                    detalleFuentes,
-                    colores,
-                    alimentaciones,    // <--- Pasamos la lista completa
-                    categoriasHardware // <--- Pasamos la lista completa
-            );
-            itemsDTO.add(itemDTO);
+            itemsDTO.add(convertirAItemDTO(item, linkExtremoFisicos, linkProtocoloDeExtremos, detalleCables, detalleHardwares, detalleFuentes, colores, alimentaciones, categoriasHardware));
         }
-
         return itemsDTO;
     }
 
@@ -92,142 +67,89 @@ public class ItemDTOMapperService {
             Item item,
             List<LinkExtremoFisico> linkExtremoFisicos,
             List<LinkProtocoloDeExtremo> linkProtocoloDeExtremos,
-            List<LinkCategoriaFuncionPuerto> linkCategoriaFuncionPuertos,
             List<DetalleCable> detalleCables,
             List<DetalleHardware> detalleHardwares,
-            List<LinkCategoriaItem> linkCategoriasItems,
             List<DetalleFuente> detalleFuentes,
             List<Color> colores,
             List<DetalleAlimentacionCable> alimentaciones,
             List<LinkCategoriaHardware> categoriasHardware
     ) {
-        // Inicializamos las estructuras del DTO
-        List<ItemDTO.ConexionDTO> conexionesDTO = new ArrayList<>();
-        ItemDTO.EspecificacionesDTO especificacionesDTO = new ItemDTO.EspecificacionesDTO();
-        ItemDTO.CategoriasDTO categoriasDTO = new ItemDTO.CategoriasDTO();
-        List<String> categoriasFuncionPuerto = new ArrayList<>();
-        List<String> categoriasItem = new ArrayList<>();
-        List<String> coloresItem = new ArrayList<>();
-
-        // === DATOS BÁSICOS DEL ITEM ===
         ItemDTO itemDTO = new ItemDTO();
         itemDTO.setId(item.getId());
         itemDTO.setEstado(item.getEstado() != null ? item.getEstado().getNombre() : null);
         itemDTO.setMarca(item.getMarca() != null ? item.getMarca().getNombre() : null);
-        itemDTO.setContenedor(item.getContenedor() != null ? item.getContenedor().getQrUUID() : null);
+        itemDTO.setContenedor(item.getContenedor() != null ? item.getContenedor().getNombre() : null); // Usamos nombre en vez de UUID para UX
 
-        // === CONEXIONES FÍSICAS ===
+        // === CONEXIONES E INFERENCIA DE CATEGORÍA ===
         List<LinkExtremoFisico> extremosDelItem = linkExtremoFisicos.stream()
                 .filter(link -> link.getItem().getId().equals(item.getId()))
                 .toList();
 
-        if (!extremosDelItem.isEmpty()) {
-            for (LinkExtremoFisico extremo : extremosDelItem) {
-                ItemDTO.ConexionDTO conexionDTO = new ItemDTO.ConexionDTO();
-                conexionDTO.setGenero(extremo.getGenero());
-                conexionDTO.setPuerto(extremo.getPuerto().getNombre());
+        List<ItemDTO.ConexionDTO> conexionesDTO = new ArrayList<>();
+        Set<String> funcionesUnicas = extremosDelItem.stream()
+                .map(ext -> ext.getCategoriaFuncion().getNombre())
+                .collect(Collectors.toSet());
+        
+        itemDTO.setCategoriaCalculada(String.join(" + ", funcionesUnicas));
 
-                List<LinkCategoriaFuncionPuerto> categoriasPuerto = linkCategoriaFuncionPuertos.stream()
-                        .filter(link -> link.getPuerto().getId().equals(extremo.getPuerto().getId()))
-                        .toList();
-                for (LinkCategoriaFuncionPuerto catPuerto : categoriasPuerto) {
-                    categoriasFuncionPuerto.add(catPuerto.getCategoriaFuncion().getNombre());
-                }
+        for (LinkExtremoFisico extremo : extremosDelItem) {
+            ItemDTO.ConexionDTO conDTO = new ItemDTO.ConexionDTO();
+            conDTO.setGenero(extremo.getGenero());
+            conDTO.setPuerto(extremo.getPuerto().getNombre());
+            conDTO.setCategoriaFuncion(extremo.getCategoriaFuncion().getNombre());
 
-                List<LinkProtocoloDeExtremo> protocolosDelExtremo = linkProtocoloDeExtremos.stream()
-                        .filter(link -> link.getExtremoFisico().getId().equals(extremo.getId()))
-                        .toList();
-                if (!protocolosDelExtremo.isEmpty()) {
-                    List<String> protocolos = new ArrayList<>();
-                    for (LinkProtocoloDeExtremo protocolo : protocolosDelExtremo) {
-                        protocolos.add(protocolo.getProtocolo().getNombre());
-                    }
-                    conexionDTO.setProtocolo(protocolos);
-                }
-
-                conexionesDTO.add(conexionDTO);
-            }
-            itemDTO.setConexiones(conexionesDTO);
-        }
-        categoriasDTO.setCategoriaPuerto(categoriasFuncionPuerto);
-
-        // === DETALLE CABLE ===
-        DetalleCable detalleCable = detalleCables.stream()
-                .filter(detalle -> detalle.getItem().getId().equals(item.getId()))
-                .findFirst()
-                .orElse(null);
-
-        if (detalleCable != null) {
-            especificacionesDTO.setLargo(detalleCable.getLargo());
-
-            ItemDTO.ProteccionDTO proteccion = new ItemDTO.ProteccionDTO();
-            proteccion.setBlindajeExterno(detalleCable.getBlindajeExterno() != null ? detalleCable.getBlindajeExterno().getNombre() : null);
-
-            // Usamos la nueva relación directa del blindaje interno
-            proteccion.setBlindajeInterno(detalleCable.getBlindajeInterno() != null ? detalleCable.getBlindajeInterno().getNombre() : null);
-
-            // Detalle de alimentación - AHORA USA LA LISTA PASADA POR PARÁMETRO
-            DetalleAlimentacionCable alimentacion = alimentaciones.stream()
-                    .filter(da -> da.getDetalleCable().getId().equals(detalleCable.getId()))
-                    .findFirst()
-                    .orElse(null);
-            if (alimentacion != null) {
-                especificacionesDTO.setAmperajeMax(alimentacion.getAmperajeMax());
-            }
-
-            itemDTO.setProteccion(proteccion);
-        }
-
-        // === DETALLE HARDWARE ===
-        DetalleHardware detalleHardware = detalleHardwares.stream()
-                .filter(detalle -> detalle.getItem().getId().equals(item.getId()))
-                .findFirst()
-                .orElse(null);
-
-        if (detalleHardware != null) {
-            especificacionesDTO.setModelo(detalleHardware.getModeloAlfanumerico());
-
-            // Categorías del hardware - AHORA USA LA LISTA PASADA POR PARÁMETRO
-            List<String> catsHard = categoriasHardware.stream()
-                    .filter(l -> l.getDetalleHardware().getId().equals(detalleHardware.getId()))
-                    .map(l -> l.getRefCategoriaHardware().getNombre())
+            List<String> protocolos = linkProtocoloDeExtremos.stream()
+                    .filter(link -> link.getExtremoFisico().getId().equals(extremo.getId()))
+                    .map(link -> link.getProtocolo().getNombre())
                     .toList();
-            categoriasDTO.setCategoriaHardware(catsHard);
+            conDTO.setProtocolo(protocolos);
+            conexionesDTO.add(conDTO);
         }
+        itemDTO.setConexiones(conexionesDTO);
 
-        // === CATEGORÍAS DEL ITEM ===
-        List<LinkCategoriaItem> categoriasDelItem = linkCategoriasItems.stream()
-                .filter(link -> link.getItem().getId().equals(item.getId()))
-                .toList();
-        if (!categoriasDelItem.isEmpty()) {
-            for (LinkCategoriaItem cat : categoriasDelItem) {
-                categoriasItem.add(cat.getCategoriaItem().getNombre());
-            }
-            categoriasDTO.setCategoriaItem(categoriasItem);
-        }
-        itemDTO.setCategorias(categoriasDTO);
-
-        // === DETALLE FUENTE ===
-        DetalleFuente detalleFuente = detalleFuentes.stream()
-                .filter(detalle -> detalle.getItem().getId().equals(item.getId()))
+        // === ESPECIFICACIONES Y DETALLES ===
+        ItemDTO.EspecificacionesDTO especDTO = new ItemDTO.EspecificacionesDTO();
+        
+        // Cable
+        detalleCables.stream()
+                .filter(d -> d.getItem().getId().equals(item.getId()))
                 .findFirst()
-                .orElse(null);
-        if (detalleFuente != null) {
-            especificacionesDTO.setVoltaje(detalleFuente.getVoltaje());
-            especificacionesDTO.setAmperaje(detalleFuente.getAmperaje());
-        }
-        itemDTO.setEspecificaciones(especificacionesDTO);
+                .ifPresent(cable -> {
+                    especDTO.setLargo(cable.getLargo());
+                    ItemDTO.ProteccionDTO protDTO = new ItemDTO.ProteccionDTO();
+                    protDTO.setBlindajeExterno(cable.getBlindajeExterno() != null ? cable.getBlindajeExterno().getNombre() : null);
+                    protDTO.setBlindajeInterno(cable.getBlindajeInterno() != null ? cable.getBlindajeInterno().getNombre() : null);
+                    itemDTO.setProteccion(protDTO);
 
-        // === COLORES ===
-        List<Color> coloresDelItem = colores.stream()
-                .filter(color -> color.getItem().getId().equals(item.getId()))
+                    alimentaciones.stream()
+                            .filter(a -> a.getDetalleCable().getId().equals(cable.getId()))
+                            .findFirst()
+                            .ifPresent(a -> especDTO.setAmperajeMax(a.getAmperajeMax()));
+                });
+
+        // Hardware
+        detalleHardwares.stream()
+                .filter(d -> d.getItem().getId().equals(item.getId()))
+                .findFirst()
+                .ifPresent(hw -> especDTO.setModelo(hw.getModeloAlfanumerico()));
+
+        // Fuente
+        detalleFuentes.stream()
+                .filter(d -> d.getItem().getId().equals(item.getId()))
+                .findFirst()
+                .ifPresent(f -> {
+                    especDTO.setVoltaje(f.getVoltaje());
+                    especDTO.setAmperaje(f.getAmperaje());
+                });
+
+        itemDTO.setEspecificaciones(especDTO);
+
+        // Colores
+        List<String> coloresItem = colores.stream()
+                .filter(c -> c.getItem().getId().equals(item.getId()))
+                .map(c -> c.getRefColor().getNombre())
                 .toList();
-        if (!coloresDelItem.isEmpty()) {
-            for (Color color : coloresDelItem) {
-                coloresItem.add(color.getRefColor().getNombre());
-            }
-            itemDTO.setColor(coloresItem);
-        }
+        itemDTO.setColor(coloresItem);
 
         return itemDTO;
     }

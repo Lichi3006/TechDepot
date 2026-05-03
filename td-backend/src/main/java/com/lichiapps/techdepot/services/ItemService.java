@@ -45,22 +45,19 @@ public class ItemService {
         // 3. Guardamos los colores
         detalleService.guardarColores(itemGuardado, createDTO.getIdsColores());
 
-        // 4. Guardamos las categorías del item (CABLE, FUENTE, etc.)
-        detalleService.guardarCategoriasItem(itemGuardado, createDTO.getIdsCategoriasItem());
-
-        // 5. Guardamos las conexiones físicas (puertos y protocolos)
+        // 4. Guardamos las conexiones físicas (puertos y protocolos)
         conexionService.guardarConexiones(itemGuardado, createDTO.getConexiones());
 
-        // 6. Guardamos el detalle de cable (si aplica)
+        // 5. Guardamos el detalle de cable (si aplica)
         detalleService.guardarDetalleCable(itemGuardado, createDTO.getDetalleCable());
 
-        // 7. Guardamos el detalle de fuente (si aplica)
+        // 6. Guardamos el detalle de fuente (si aplica)
         detalleService.guardarDetalleFuente(itemGuardado, createDTO.getDetalleFuente());
 
-        // 8. Guardamos el detalle de hardware (si aplica)
+        // 7. Guardamos el detalle de hardware (si aplica)
         detalleService.guardarDetalleHardware(itemGuardado, createDTO.getDetalleHardware());
 
-        // 9. Retornamos el ItemDTO completo
+        // 8. Retornamos el ItemDTO completo
         return mapperService.obtenerItemDTOPorId(itemGuardado.getId());
     }
 

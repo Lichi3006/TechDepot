@@ -23,7 +23,6 @@ public class ItemDetalleService {
 
     // === REPOSITORIOS ===
     @Autowired private ColorRepository colorRepository;
-    @Autowired private LinkCategoriaItemRepository linkCategoriaItemRepository;
     @Autowired private DetalleCableRepository detalleCableRepository;
     @Autowired private DetalleFuenteRepository detalleFuenteRepository;
     @Autowired private DetalleHardwareRepository detalleHardwareRepository;
@@ -75,52 +74,6 @@ public class ItemDetalleService {
     public void actualizarColores(Item item, List<Long> idsColores) {
         eliminarColores(item.getId());
         guardarColores(item, idsColores);
-    }
-
-    // ==========================================
-    // CATEGORÍAS DEL ITEM
-    // ==========================================
-
-    /**
-     * Guarda las categorías de un Item (ej: CABLE, FUENTE, HARDWARE).
-     * @param item Item al que se le asignarán las categorías
-     * @param idsCategoriasItem Lista de IDs de RefCategoriaItem
-     */
-    public void guardarCategoriasItem(Item item, List<Long> idsCategoriasItem) {
-        if (idsCategoriasItem == null || idsCategoriasItem.isEmpty()) {
-            return;
-        }
-
-        for (Long idCategoriaItem : idsCategoriasItem) {
-            // Validamos que la categoría exista
-            RefCategoriaItem refCategoriaItem = validationService.validarExisteCategoriaItem(idCategoriaItem);
-
-            // Creamos la relación Item-Categoría
-            LinkCategoriaItem linkCategoriaItem = new LinkCategoriaItem();
-            linkCategoriaItem.setItem(item);
-            linkCategoriaItem.setCategoriaItem(refCategoriaItem);
-            linkCategoriaItemRepository.save(linkCategoriaItem);
-        }
-    }
-
-    /**
-     * Elimina todas las categorías de un Item.
-     * @param idItem ID del item cuyas categorías se eliminarán
-     */
-    public void eliminarCategoriasItem(Long idItem) {
-        List<LinkCategoriaItem> categorias = linkCategoriaItemRepository.findByItemId(idItem);
-
-        linkCategoriaItemRepository.deleteAll(categorias);
-    }
-
-    /**
-     * Actualiza las categorías de un Item.
-     * @param item Item a actualizar
-     * @param idsCategoriasItem Nuevos IDs de categorías
-     */
-    public void actualizarCategoriasItem(Item item, List<Long> idsCategoriasItem) {
-        eliminarCategoriasItem(item.getId());
-        guardarCategoriasItem(item, idsCategoriasItem);
     }
 
     // ==========================================
@@ -302,7 +255,6 @@ public class ItemDetalleService {
      */
     public void eliminarTodosLosDetalles(Long idItem) {
         eliminarColores(idItem);
-        eliminarCategoriasItem(idItem);
         eliminarDetalleCable(idItem);
         eliminarDetalleFuente(idItem);
         eliminarDetalleHardware(idItem);

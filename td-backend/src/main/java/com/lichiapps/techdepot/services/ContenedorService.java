@@ -21,7 +21,7 @@ public class ContenedorService {
     public List<Contenedor> getAllContenedores(){
         return contenedorRepository.findAll();
     }
-    public void DeleteContenedorById(Long id){
+    public void deleteContenedorById(Long id){
         contenedorRepository.deleteById(id);
     }
     public Contenedor getContenedorById(Long id){

@@ -7,7 +7,8 @@ public class LinkExtremoFisico {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "IdLINK_ExtremoFisico")
     private Long id;
 
-    @ManyToOne @JoinColumn(name = "IdItem", nullable = false, foreignKey = @ForeignKey(name = "FK_LinkExtremoFisico_Item")) private Item item;
-    @ManyToOne @JoinColumn(name = "IdREF_Puerto", nullable = false, foreignKey = @ForeignKey(name = "FK_LinkExtremoFisico_RefPuerto")) private RefPuerto puerto;
+    @ManyToOne @JoinColumn(name = "IdItem", nullable = false) private Item item;
+    @ManyToOne @JoinColumn(name = "IdREF_Puerto", nullable = false) private RefPuerto puerto;
+    @ManyToOne @JoinColumn(name = "IdREF_CategoriaFuncion", nullable = false) private RefCategoriaFuncion categoriaFuncion;
     @Column(name = "Genero", nullable = false) private Boolean genero;
 }

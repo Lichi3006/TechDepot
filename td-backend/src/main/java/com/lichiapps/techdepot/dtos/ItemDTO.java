@@ -10,7 +10,7 @@ public class ItemDTO {
     private String estado;     // De RefEstado
     private String contenedor; // El QrUUID de Contenedor
     private List <String> color;      // De Color/RefColor
-    private CategoriasDTO categorias; // De LinkCategoriaItem
+    private String categoriaCalculada;
 
     private List<ConexionDTO> conexiones; // De LinkExtremoFisico
     private String tipo;
@@ -20,6 +20,7 @@ public class ItemDTO {
     @Data
     public static class ConexionDTO {
         private String puerto;
+        private String categoriaFuncion;
         private List<String> protocolo;
         private boolean genero;
     }
@@ -31,13 +32,6 @@ public class ItemDTO {
         private Short amperaje;
         private Short voltaje;
         private String modelo;
-    }
-
-    @Data
-    public static class CategoriasDTO {
-        private List<String> categoriaPuerto;
-        private List<String> categoriaItem;  // 'CABLE', 'FUENTE', etc.
-        private List<String> categoriaHardware;
     }
 
     @Data
