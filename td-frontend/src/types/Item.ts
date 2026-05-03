@@ -1,9 +1,25 @@
+// Interfaces para tablas maestras (REF_)
+export interface RefBase {
+    id?: number;
+    nombre: string;
+}
+
+export interface RefMarca extends RefBase {}
+export interface RefEstado extends RefBase {}
+export interface RefColor extends RefBase {}
+export interface Contenedor extends RefBase {
+    descripcion?: string;
+}
+export interface RefCategoriaItem extends RefBase {}
+export interface RefPuerto extends RefBase {}
+export interface RefProtocolo extends RefBase {}
+
 export interface Item {
     id: number;
     marca: string;
     estado: string;
     contenedor: string;
-    color: string[]; // En el backend es una lista
+    color: string[];
     categorias: Categorias;
     conexiones: Conexion[];
     especificaciones: Especificaciones;

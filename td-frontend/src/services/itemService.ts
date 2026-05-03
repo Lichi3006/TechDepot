@@ -1,5 +1,5 @@
 import api from './api';
-import { Item, ItemCreateDTO } from '../types/Item';
+import type { Item, ItemCreateDTO } from '../types/Item';
 
 /**
  * Servicio para gestionar las peticiones de Items al Backend.

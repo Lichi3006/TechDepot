@@ -1,5 +1,5 @@
 import React from 'react';
-import { Item } from '../../types/Item';
+import type { Item } from '../../types/Item';
 
 interface ItemTableProps {
     items: Item[];
@@ -28,23 +28,23 @@ export const ItemTable: React.FC<ItemTableProps> = ({ items, onDeleteItem }) => 
                     {items.map((item) => (
                         <tr key={item.id} style={rowStyle}>
                             <td style={cellStyle}>
-                                {item.conexiones.map((con, i) => (
+                                {item.conexiones?.map((con, i) => (
                                     <div key={i} style={{ marginBottom: '4px' }}>
-                                        <span title={con.protocolo.join(', ')}>
+                                        <span title={con.protocolo?.join(', ')}>
                                             {con.puerto} ({con.genero ? 'M' : 'H'})
                                         </span>
                                     </div>
-                                ))}
+                                )) || '-'}
                             </td>
                             <td style={cellStyle}>{item.contenedor}</td>
                             <td style={cellStyle}>{item.marca || '-'}</td>
                             <td style={cellStyle}>{item.estado}</td>
-                            <td style={cellStyle}>{item.color.join(', ')}</td>
+                            <td style={cellStyle}>{item.color?.join(', ') || '-'}</td>
                             <td style={cellStyle}>
                                 <div style={{ fontSize: '0.9em' }}>
-                                    {item.especificaciones.largo && <div>Largo: {item.especificaciones.largo}cm</div>}
-                                    {item.especificaciones.voltaje && <div>Voltaje: {item.especificaciones.voltaje}V</div>}
-                                    {item.especificaciones.modelo && <div>Mod: {item.especificaciones.modelo}</div>}
+                                    {item.especificaciones?.largo && <div>Largo: {item.especificaciones.largo}cm</div>}
+                                    {item.especificaciones?.voltaje && <div>Voltaje: {item.especificaciones.voltaje}V</div>}
+                                    {item.especificaciones?.modelo && <div>Mod: {item.especificaciones.modelo}</div>}
                                 </div>
                             </td>
                             <td style={cellStyle}>

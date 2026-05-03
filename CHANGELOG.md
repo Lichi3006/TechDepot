@@ -8,23 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Nueva entidad `LinkCategoriaHardware` para soportar relaciones Muchos-a-Muchos entre `DetalleHardware` y categorías, eliminando la limitación de categoría única.
-- Métodos de búsqueda optimizados `findByItemId` en múltiples repositorios para mejorar el rendimiento de filtrado en la base de datos.
-- Documentación técnica: `ARCHITECTURE.md` y `CHANGELOG.md`.
-- Validaciones de consistencia cruzada en `ItemValidationService` para asegurar que cada categoría tenga su detalle correspondiente.
+- Nueva arquitectura modular en el Frontend basada en páginas (`InventoryPage`, `ItemEditorPage`, `ParametersPage`) y layouts (`MainLayout`).
+- Navegación del lado del cliente mediante `react-router-dom`.
+- Formulario de creación dinámico (`ItemForm`) que consume datos reales de la base de datos.
+- Nueva sección de "Parámetros" para gestionar listas maestras (Marcas, Colores, Estados) de forma independiente.
+- Controladores Backend para entidades de referencia: `RefEstadoController`, `RefColorController`, `ContenedorController`, `RefCategoriaItemController`, `RefPuertoController`, `RefProtocoloController`.
+- Servicio de referencias en el Frontend (`refService.ts`) para centralizar la gestión de tablas maestras.
+- Botón de creación rápida de marcas directamente desde el formulario de items.
 
 ### Changed
-- Refactorización de métricas eléctricas (Voltaje, Amperaje) de tipos primitivos a `Short` para permitir valores nulos y optimizar el almacenamiento en SQL Server mediante `TINYINT/SMALLINT`.
-- Actualización de la estrategia de borrado en `ItemService` para ser más granular y eficiente.
-- Mejora en `ItemDTOMapperService` para optimizar la obtención de un único Item por ID y agregada protección contra nulos en el mapeo de contenedores.
+- Refactorización de `App.tsx` para actuar como enrutador principal del sistema.
+- Mejora en la resiliencia del Frontend mediante el uso de "Optional Chaining" y valores por defecto en la renderización de tablas.
 
 ### Fixed
-- Error de ejecución DDL en Hibernate al intentar modificar columnas con restricciones únicas (Unique Constraints).
-- Desactivación definitiva de DDL automático mediante `spring.jpa.hibernate.ddl-auto=none` en `application.properties`.
-- Eliminación de generación automática de constraints "basura" por parte de Hibernate mediante el ajuste de `@Column` y `ddl-auto=none`.
-- Problemas de rendimiento en `ItemDetalleService` al reemplazar escaneos completos de tablas (`findAll()`) por consultas filtradas por ID.
-- Corrupción de código y errores de sintaxis en `ItemDetalleService.java`.
-- Bug crítico de lógica inversa en múltiples servicios (`ColorService`, `DetalleCableService`, `LinkCategoriaFuncionItemService`, etc.) donde se lanzaban excepciones erróneas al encontrar entidades existentes.
-- Inconsistencias en tipos de retorno y dependencias redundantes en la capa de servicios del backend.
-- Falta de métodos de eliminación en cascada manual para `DetalleAlimentacionCable`.
-- Bug en `RefColorService` donde el método `updateNombreRefColor` no persistía los cambios en la base de datos.
+- Errores de compilación de TypeScript relacionados con `verbatimModuleSyntax` mediante el uso de `import type`.
+- Problemas de carga en blanco del Frontend causados por datos incompletos del backend.
+- Fallo en la creación de items de prueba debido a IDs inexistentes (reemplazado por selección dinámica).
+- Desbloqueo de repositorio Git tras rebase fallido y sincronización con el remote principal.
