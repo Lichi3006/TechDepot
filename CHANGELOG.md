@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Sistema de Colores HEX**: Evolucion de la gestion de colores hacia un modelo hibrido que soporta codigos HEX directamente en la base de datos, permitiendo una personalizacion total por item.
 - **Color Picker Dinamico**: Integracion de la libreria `react-colorful` en el frontend, proporcionando un mapa de color interactivo para la seleccion precisa de tonos.
 - **Paleta de Presets**: Nueva grilla de colores comunes (Negro, Blanco, Gris, etc.) en el formulario para una carga rapida basada en el catalogo `REF_Color`.
-- **Visualizacion en Tabla**: Los colores de los items ahora se representan mediante circulos de color generados por CSS en la tabla de inventario, mejorando el feedback visual inmediato.
+- Visualizacion en Tabla: Los colores de los items ahora se representan mediante circulos de color generados por CSS en la tabla de inventario, mejorando el feedback visual inmediato.
+- Inferencia Automatica de Funcion: Implementacion de logica en el frontend para derivar la categoria de funcion (Energia/Datos/Video) segun el puerto o protocolo seleccionado, eliminando la intervencion manual del usuario.
+- Matriz de Capacidades: Nuevo endpoint en /api/puertos-capacidades para exponer la relacion formal entre hardware y funcionalidad.
 - Base de Datos V2: Implementacion de un esquema relacional inteligente que elimina la categorizacion manual de items, delegando la responsabilidad a la composicion fisica de los extremos.
 - Inferencia de Categoria por Funcion: Integracion de IdREF_CategoriaFuncion en cada extremo fisico (LINK_ExtremoFisico), validado contra una matriz de capacidades por puerto (LINK_CategoriaFuncionPuerto).
 - Mapeo Ghost Mode en JPA: Refactorizacion de LINK_ProtocoloDeExtremo utilizando relaciones simples combinadas con propiedades manuales redundantes. Esto permite que Hibernate respete las reglas de integridad cruzadas de SQL Server sin intentar validarlas de forma redundante, resolviendo errores de mapeo en el arranque.

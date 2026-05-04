@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { 
-    ItemCreateDTO, RefMarca, RefEstado, RefColor, Contenedor, RefCategoriaFuncion, RefPuerto, RefProtocolo 
+    ItemCreateDTO, RefMarca, RefEstado, RefColor, Contenedor, RefCategoriaFuncion, RefPuerto, RefProtocolo, LinkPuertoCapacidad 
 } from '../../types/Item.ts';
 import { refService } from '../../services/refService.ts';
 import { Button } from '../ui/Button.tsx';
@@ -16,37 +16,41 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
     const [estados, setEstados] = useState<RefEstado[]>([]);
     const [coloresPresets, setColoresPresets] = useState<RefColor[]>([]);
     const [contenedores, setContenedores] = useState<Contenedor[]>([]);
-    const [categoriasFuncion, setCategoriasFuncion] = useState<RefCategoriaFuncion[]>([]);
     const [puertos, setPuertos] = useState<RefPuerto[]>([]);
-    const [_protocolos, _setProtocolos] = useState<RefProtocolo[]>([]);
+    const [protocolos, setProtocolos] = useState<RefProtocolo[]>([]);
+    const [capacidades, setCapacidades] = useState<LinkPuertoCapacidad[]>([]);
 
     const [idEstado, setIdEstado] = useState<number>(0);
     const [idMarca, setIdMarca] = useState<number | undefined>(undefined);
     const [idContenedor, setIdContenedor] = useState<number>(0);
     const [selectedColoresHex, setSelectedColoresHex] = useState<string[]>([]);
     
-    // Conexiones (Mínimo 1 para items básicos)
-    const [conexiones, setConexiones] = useState<{idPuerto: number, idCategoriaFuncion: number, genero: boolean, idsProtocolos: number[]}[]>([]);
+    const [conexiones, setConexiones] = useState<{
+        idPuerto: number, 
+        idCategoriaFuncion: number, 
+        genero: boolean, 
+        idsProtocolos: number[]
+    }[]>([]);
 
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [m, e, c, cont, cf, p, prot] = await Promise.all([
+                const [m, e, c, cont, p, prot, cap] = await Promise.all([
                     refService.getMarcas(),
                     refService.getEstados(),
                     refService.getColores(),
                     refService.getContenedores(),
-                    refService.getCategoriasFuncion(),
                     refService.getPuertos(),
-                    refService.getProtocolos()
+                    refService.getProtocolos(),
+                    refService.getPuertosCapacidades()
                 ]);
                 setMarcas(m);
                 setEstados(e);
                 setColoresPresets(c);
                 setContenedores(cont);
-                setCategoriasFuncion(cf);
                 setPuertos(p);
-                _setProtocolos(prot);
+                setProtocolos(prot);
+                setCapacidades(cap);
             } catch (error) {
                 console.error("Error al cargar datos del formulario:", error);
             }
@@ -58,14 +62,49 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
         setConexiones([...conexiones, { idPuerto: 0, idCategoriaFuncion: 0, genero: true, idsProtocolos: [] }]);
     };
 
+    const updateConexion = (index: number, field: string, value: any) => {
+        const newCons = [...conexiones];
+        const con = { ...newCons[index], [field]: value };
+
+        // Lógica de Inferencia Automática de Función
+        if (field === 'idPuerto') {
+            const portCaps = capacidades.filter(cap => cap.puerto.id === value);
+            // Si el puerto solo tiene UNA capacidad posible, la asignamos de una
+            if (portCaps.length === 1) {
+                con.idCategoriaFuncion = portCaps[0].categoriaFuncion.id!;
+            } else {
+                con.idCategoriaFuncion = 0; // Reset si es ambiguo
+            }
+            con.idsProtocolos = []; // Reset protocolos al cambiar puerto
+        }
+
+        if (field === 'idsProtocolos') {
+            // Si elige protocolos, la función la dicta el primer protocolo elegido
+            if (value.length > 0) {
+                const prot = protocolos.find(p => p.id === value[0]);
+                if (prot) con.idCategoriaFuncion = prot.categoriaFuncion.id!;
+            }
+        }
+
+        newCons[index] = con;
+        setConexiones(newCons);
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Validación: cada conexión debe tener una función inferida
+        if (conexiones.some(c => c.idCategoriaFuncion === 0)) {
+            alert("Hay conexiones con función ambigua. Seleccione un protocolo para definir qué hace el puerto.");
+            return;
+        }
+
         const dto: ItemCreateDTO = {
             idEstado,
             idMarca,
             idContenedor,
             coloresHex: selectedColoresHex,
-            idsCategoriasItem: [], // Obsoleto
+            idsCategoriasItem: [], 
             conexiones: conexiones
         };
         onSave(dto);
@@ -108,57 +147,59 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
                     <Button type="button" onClick={handleAddConexion} variant="success">+ Agregar Extremo</Button>
                 </div>
                 
-                {conexiones.map((con, index) => (
-                    <div key={index} style={conexionCardStyle}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px', gap: '10px' }}>
-                            <div>
-                                <label style={smallLabelStyle}>Puerto:</label>
-                                <select 
-                                    value={con.idPuerto} 
-                                    onChange={(e) => {
-                                        const newCons = [...conexiones];
-                                        newCons[index].idPuerto = Number(e.target.value);
-                                        setConexiones(newCons);
-                                    }}
-                                    style={inputStyle}
-                                >
-                                    <option value="0">Seleccione...</option>
-                                    {puertos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-                                </select>
+                {conexiones.map((con, index) => {
+                    const availableProtocols = protocolos.filter(p => p.puerto.id === con.idPuerto);
+                    const currentFunctionName = capacidades.find(c => c.categoriaFuncion.id === con.idCategoriaFuncion)?.categoriaFuncion.nombre;
+
+                    return (
+                        <div key={index} style={conexionCardStyle}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px', gap: '10px' }}>
+                                <div>
+                                    <label style={smallLabelStyle}>Puerto:</label>
+                                    <select 
+                                        value={con.idPuerto} 
+                                        onChange={(e) => updateConexion(index, 'idPuerto', Number(e.target.value))}
+                                        style={inputStyle}
+                                    >
+                                        <option value="0">Seleccione...</option>
+                                        {puertos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={smallLabelStyle}>Protocolo (Opcional):</label>
+                                    <select 
+                                        multiple
+                                        value={con.idsProtocolos.map(String)} 
+                                        onChange={(e) => {
+                                            const values = Array.from(e.target.selectedOptions, option => Number(option.value));
+                                            updateConexion(index, 'idsProtocolos', values);
+                                        }}
+                                        style={{ ...inputStyle, height: '60px' }}
+                                        disabled={con.idPuerto === 0}
+                                    >
+                                        {availableProtocols.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={smallLabelStyle}>Género:</label>
+                                    <select 
+                                        value={con.genero ? 'M' : 'H'} 
+                                        onChange={(e) => updateConexion(index, 'genero', e.target.value === 'M')}
+                                        style={inputStyle}
+                                    >
+                                        <option value="M">Macho</option>
+                                        <option value="H">Hembra</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div>
-                                <label style={smallLabelStyle}>Funcion:</label>
-                                <select 
-                                    value={con.idCategoriaFuncion} 
-                                    onChange={(e) => {
-                                        const newCons = [...conexiones];
-                                        newCons[index].idCategoriaFuncion = Number(e.target.value);
-                                        setConexiones(newCons);
-                                    }}
-                                    style={inputStyle}
-                                >
-                                    <option value="0">Seleccione...</option>
-                                    {categoriasFuncion.map(f => <option key={f.id} value={f.id}>{f.nombre}</option>)}
-                                </select>
-                            </div>
-                            <div>
-                                <label style={smallLabelStyle}>Genero:</label>
-                                <select 
-                                    value={con.genero ? 'M' : 'H'} 
-                                    onChange={(e) => {
-                                        const newCons = [...conexiones];
-                                        newCons[index].genero = e.target.value === 'M';
-                                        setConexiones(newCons);
-                                    }}
-                                    style={inputStyle}
-                                >
-                                    <option value="M">Macho</option>
-                                    <option value="H">Hembra</option>
-                                </select>
-                            </div>
+                            {con.idCategoriaFuncion !== 0 && (
+                                <div style={{ marginTop: '10px', fontSize: '0.85rem', color: '#2e7d32' }}>
+                                    <strong>Función detectada:</strong> {currentFunctionName}
+                                </div>
+                            )}
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             <div style={footerStyle}>

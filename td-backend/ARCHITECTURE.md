@@ -8,8 +8,8 @@ Este documento detalla las decisiones arquitectónicas y patrones de diseño imp
 El servicio ItemService actúa como el punto de entrada principal (Fachada) para todas las operaciones relacionadas con el inventario. Su responsabilidad es orquestar la lógica delegando en servicios especializados para mantener el principio de responsabilidad única (SRP):
 - ItemValidationService: Validaciones de integridad y existencia.
 - ItemCrudService: Operaciones básicas de persistencia del item base.
-- ItemDetalleService: Gestión de atributos específicos (Cables, Fuentes, Hardware).
-- ItemConexionService: Lógica compleja de puertos y protocolos.
+- `ItemDetalleService`: Gestión de atributos específicos (Cables, Fuentes, Hardware).
+- `ItemConexionService`: Lógica compleja de puertos y protocolos. Ahora incluye autodetección de funciones basada en la matriz de capacidades expuesta por `LinkCategoriaFuncionPuertoController`.
 
 ## 2. Estrategia de Persistencia y Modelado de Datos (Evolución V2)
 

@@ -7,7 +7,8 @@ import type {
     Contenedor, 
     RefCategoriaFuncion, 
     RefPuerto, 
-    RefProtocolo 
+    RefProtocolo,
+    LinkPuertoCapacidad
 } from '../types/Item.ts';
 
 export const refService = {
@@ -38,6 +39,7 @@ export const refService = {
     // Puertos
     getPuertos: () => api.get<RefPuerto[]>('/puertos').then(r => r.data),
     savePuerto: (data: RefPuerto) => api.post<RefPuerto>('/puertos', data).then(r => r.data),
+    getPuertosCapacidades: () => api.get<LinkPuertoCapacidad[]>('/puertos-capacidades').then(r => r.data),
 
     // Protocolos
     getProtocolos: () => api.get<RefProtocolo[]>('/protocolos').then(r => r.data),

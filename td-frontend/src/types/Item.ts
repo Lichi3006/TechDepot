@@ -18,7 +18,17 @@ export interface Contenedor extends RefBase {
 }
 export interface RefCategoriaFuncion extends RefBase {}
 export interface RefPuerto extends RefBase {}
-export interface RefProtocolo extends RefBase {}
+
+export interface RefProtocolo extends RefBase {
+    puerto: RefPuerto;
+    categoriaFuncion: RefCategoriaFuncion;
+}
+
+export interface LinkPuertoCapacidad {
+    id: number;
+    puerto: RefPuerto;
+    categoriaFuncion: RefCategoriaFuncion;
+}
 
 export interface Item {
     id: number;
@@ -64,7 +74,6 @@ export interface ItemCreateDTO {
     idMarca?: number;
     idContenedor: number;
     coloresHex: string[];
-    idsCategoriasItem: number[];
     conexiones: ConexionCreateDTO[];
     detalleCable?: DetalleCableCreateDTO;
     detalleFuente?: DetalleFuenteCreateDTO;
@@ -73,6 +82,7 @@ export interface ItemCreateDTO {
 
 export interface ConexionCreateDTO {
     idPuerto: number;
+    idCategoriaFuncion: number;
     genero: boolean;
     idsProtocolos: number[];
 }
