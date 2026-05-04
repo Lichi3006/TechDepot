@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Metodos del Backend españolizados para mantener convencion (ej: getAllRefColors a getAllRefColores).
 
 ### Fixed
+- Error de compilacion en RefCategoriaFuncionController debido a nombre de metodo incorrecto (getAllRefCategoriaFuncion).
 - Error Critico de Arranque: Resolucion de Error starting ApplicationContext (MappingException) mediante el desacoplamiento de llaves compuestas en Hibernate, manteniendo la integridad referencial en SQL Server.
 - Errores de compilacion de TypeScript relacionados con verbatimModuleSyntax mediante el uso de import type.
 - Problemas de carga en blanco del Frontend causados por datos incompletos del backend.

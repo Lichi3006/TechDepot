@@ -12,6 +12,6 @@ import java.util.List;
 public class RefCategoriaFuncionController {
     @Autowired private RefCategoriaFuncionService service;
     
-    @GetMapping public List<RefCategoriaFuncion> getAll() { return service.getAllRefCategoriaFunciones(); }
+    @GetMapping public List<RefCategoriaFuncion> getAll() { return service.getAllRefCategoriaFuncion(); }
     @PostMapping public RefCategoriaFuncion save(@RequestBody RefCategoriaFuncion entity) { return service.saveRefCategoriaFuncion(entity); }
 }
