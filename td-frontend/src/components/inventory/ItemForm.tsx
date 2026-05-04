@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { 
-    ItemCreateDTO, RefMarca, RefEstado, RefColor, Contenedor, RefCategoriaFuncion, RefPuerto, RefProtocolo, LinkPuertoCapacidad 
+    ItemCreateDTO, RefMarca, RefEstado, RefColor, Contenedor, RefPuerto, RefProtocolo, LinkPuertoCapacidad 
 } from '../../types/Item.ts';
 import { refService } from '../../services/refService.ts';
 import { Button } from '../ui/Button.tsx';
@@ -20,9 +20,10 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
     const [protocolos, setProtocolos] = useState<RefProtocolo[]>([]);
     const [capacidades, setCapacidades] = useState<LinkPuertoCapacidad[]>([]);
 
-    const [idEstado, setIdEstado] = useState<number>(0);
+    // Estados con null/undefined para indicar "no seleccionado"
+    const [idEstado, setIdEstado] = useState<number | undefined>(undefined);
     const [idMarca, setIdMarca] = useState<number | undefined>(undefined);
-    const [idContenedor, setIdContenedor] = useState<number>(0);
+    const [idContenedor, setIdContenedor] = useState<number | undefined>(undefined);
     const [selectedColoresHex, setSelectedColoresHex] = useState<string[]>([]);
     
     const [conexiones, setConexiones] = useState<{
@@ -34,26 +35,24 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
 
     useEffect(() => {
         const loadData = async () => {
-            try {
-                const [m, e, c, cont, p, prot, cap] = await Promise.all([
-                    refService.getMarcas(),
-                    refService.getEstados(),
-                    refService.getColores(),
-                    refService.getContenedores(),
-                    refService.getPuertos(),
-                    refService.getProtocolos(),
-                    refService.getPuertosCapacidades()
-                ]);
-                setMarcas(m);
-                setEstados(e);
-                setColoresPresets(c);
-                setContenedores(cont);
-                setPuertos(p);
-                setProtocolos(prot);
-                setCapacidades(cap);
-            } catch (error) {
-                console.error("Error al cargar datos del formulario:", error);
-            }
+            const safeLoad = async (fetcher: () => Promise<any>, setter: (data: any) => void, label: string) => {
+                try {
+                    const data = await fetcher();
+                    setter(data);
+                } catch (e) {
+                    console.error(`Error cargando ${label}:`, e);
+                }
+            };
+
+            await Promise.all([
+                safeLoad(refService.getMarcas, setMarcas, "Marcas"),
+                safeLoad(refService.getEstados, setEstados, "Estados"),
+                safeLoad(refService.getColores, setColoresPresets, "Colores"),
+                safeLoad(refService.getContenedores, setContenedores, "Contenedores"),
+                safeLoad(refService.getPuertos, setPuertos, "Puertos"),
+                safeLoad(refService.getProtocolos, setProtocolos, "Protocolos"),
+                safeLoad(refService.getPuertosCapacidades, setCapacidades, "Capacidades")
+            ]);
         };
         loadData();
     }, []);
@@ -66,20 +65,17 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
         const newCons = [...conexiones];
         const con = { ...newCons[index], [field]: value };
 
-        // Lógica de Inferencia Automática de Función
         if (field === 'idPuerto') {
             const portCaps = capacidades.filter(cap => cap.puerto.id === value);
-            // Si el puerto solo tiene UNA capacidad posible, la asignamos de una
             if (portCaps.length === 1) {
                 con.idCategoriaFuncion = portCaps[0].categoriaFuncion.id!;
             } else {
-                con.idCategoriaFuncion = 0; // Reset si es ambiguo
+                con.idCategoriaFuncion = 0;
             }
-            con.idsProtocolos = []; // Reset protocolos al cambiar puerto
+            con.idsProtocolos = [];
         }
 
         if (field === 'idsProtocolos') {
-            // Si elige protocolos, la función la dicta el primer protocolo elegido
             if (value.length > 0) {
                 const prot = protocolos.find(p => p.id === value[0]);
                 if (prot) con.idCategoriaFuncion = prot.categoriaFuncion.id!;
@@ -93,42 +89,61 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         
-        // Validación: cada conexión debe tener una función inferida
+        if (!idEstado) return alert("El estado es obligatorio");
+        if (!idContenedor) return alert("El contenedor es obligatorio");
+
         if (conexiones.some(c => c.idCategoriaFuncion === 0)) {
-            alert("Hay conexiones con función ambigua. Seleccione un protocolo para definir qué hace el puerto.");
+            alert("Hay conexiones con funcion ambigua. Seleccione un protocolo para definir que hace el puerto.");
             return;
         }
 
         const dto: ItemCreateDTO = {
-            idEstado,
-            idMarca,
-            idContenedor,
+            idEstado: idEstado!,
+            idMarca: idMarca || undefined, // Evitamos mandar 0
+            idContenedor: idContenedor!,
             coloresHex: selectedColoresHex,
-            idsCategoriasItem: [], 
-            conexiones: conexiones
+            conexiones: conexiones.map(c => ({
+                ...c,
+                idsProtocolos: c.idsProtocolos
+            }))
         };
+        
         onSave(dto);
     };
 
     return (
         <form onSubmit={handleSubmit} style={formStyle}>
             <div style={sectionStyle}>
-                <h3>Información Básica</h3>
+                <h3>Informacion Basica</h3>
                 
                 <label style={labelStyle}>Estado:</label>
-                <select value={idEstado} onChange={(e) => setIdEstado(Number(e.target.value))} required style={inputStyle}>
+                <select 
+                    value={idEstado || ""} 
+                    onChange={(e) => setIdEstado(e.target.value ? Number(e.target.value) : undefined)} 
+                    required 
+                    style={inputStyle}
+                >
                     <option value="">Seleccione...</option>
                     {estados.map(e => <option key={e.id} value={e.id}>{e.nombre}</option>)}
                 </select>
 
                 <label style={labelStyle}>Marca:</label>
-                <select value={idMarca} onChange={(e) => setIdMarca(Number(e.target.value))} style={inputStyle}>
+                <select 
+                    value={idMarca || ""} 
+                    onChange={(e) => setIdMarca(e.target.value ? Number(e.target.value) : undefined)} 
+                    style={inputStyle}
+                >
                     <option value="">Ninguna / Generica</option>
                     {marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
                 </select>
 
                 <label style={labelStyle}>Contenedor:</label>
-                <select value={idContenedor} onChange={(e) => setIdContenedor(Number(e.target.value))} required style={inputStyle}>
+                <select 
+                    value={idContenedor || ""} 
+                    onChange={(e) => setIdContenedor(e.target.value ? Number(e.target.value) : undefined)} 
+                    required 
+                    style={inputStyle}
+                >
                     <option value="">Seleccione...</option>
                     {contenedores.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
                 </select>
@@ -149,7 +164,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
                 
                 {conexiones.map((con, index) => {
                     const availableProtocols = protocolos.filter(p => p.puerto.id === con.idPuerto);
-                    const currentFunctionName = capacidades.find(c => c.categoriaFuncion.id === con.idCategoriaFuncion)?.categoriaFuncion.nombre;
+                    const currentFunction = capacidades.find(c => c.categoriaFuncion.id === con.idCategoriaFuncion)?.categoriaFuncion;
 
                     return (
                         <div key={index} style={conexionCardStyle}>
@@ -181,7 +196,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
                                     </select>
                                 </div>
                                 <div>
-                                    <label style={smallLabelStyle}>Género:</label>
+                                    <label style={smallLabelStyle}>Genero:</label>
                                     <select 
                                         value={con.genero ? 'M' : 'H'} 
                                         onChange={(e) => updateConexion(index, 'genero', e.target.value === 'M')}
@@ -194,12 +209,13 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
                             </div>
                             {con.idCategoriaFuncion !== 0 && (
                                 <div style={{ marginTop: '10px', fontSize: '0.85rem', color: '#2e7d32' }}>
-                                    <strong>Función detectada:</strong> {currentFunctionName}
+                                    <strong>Funcion detectada:</strong> {currentFunction?.nombre}
                                 </div>
                             )}
                         </div>
                     );
                 })}
+                {conexiones.length === 0 && <p style={{ color: '#666' }}>No hay conexiones agregadas.</p>}
             </div>
 
             <div style={footerStyle}>

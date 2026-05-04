@@ -14,28 +14,26 @@ export default function ParametersPage() {
     const [categoriasFuncion, setCategoriasFuncion] = useState<RefCategoriaFuncion[]>([]);
 
     const cargarTodos = async () => {
-        try {
-            const [m, c, e, cont, tc, p, prot, cf] = await Promise.all([
-                refService.getMarcas(),
-                refService.getColores(),
-                refService.getEstados(),
-                refService.getContenedores(),
-                refService.getTiposContenedor(),
-                refService.getPuertos(),
-                refService.getProtocolos(),
-                refService.getCategoriasFuncion()
-            ]);
-            setMarcas(m);
-            setColores(c);
-            setEstados(e);
-            setContenedores(cont);
-            setTiposContenedor(tc);
-            setPuertos(p);
-            setProtocolos(prot);
-            setCategoriasFuncion(cf);
-        } catch (error) {
-            console.error("Error al cargar parametros:", error);
-        }
+        // Cargamos cada uno por separado para que si uno falla no rompa el resto
+        const safeLoad = async (fetcher: () => Promise<any>, setter: (data: any) => void, label: string) => {
+            try {
+                const data = await fetcher();
+                setter(data);
+            } catch (e) {
+                console.error(`Error cargando ${label}:`, e);
+            }
+        };
+
+        await Promise.all([
+            safeLoad(refService.getMarcas, setMarcas, "Marcas"),
+            safeLoad(refService.getColores, setColores, "Colores"),
+            safeLoad(refService.getEstados, setEstados, "Estados"),
+            safeLoad(refService.getContenedores, setContenedores, "Contenedores"),
+            safeLoad(refService.getTiposContenedor, setTiposContenedor, "Tipos de Contenedor"),
+            safeLoad(refService.getPuertos, setPuertos, "Puertos"),
+            safeLoad(refService.getProtocolos, setProtocolos, "Protocolos"),
+            safeLoad(refService.getCategoriasFuncion, setCategoriasFuncion, "Funciones")
+        ]);
     };
 
     useEffect(() => {
@@ -52,8 +50,10 @@ export default function ParametersPage() {
                 tiposContenedor.map(t => `${t.id}: ${t.nombre} (${t.prefijo})`).join('\n'));
             
             if (idTipo) {
-                await refService.saveContenedor({ tipoContenedor: { id: Number(idTipo) } });
-                cargarTodos();
+                try {
+                    await refService.saveContenedor({ tipoContenedor: { id: Number(idTipo) } });
+                    cargarTodos();
+                } catch (e) { alert("Error al guardar contenedor"); }
             }
             return;
         }
@@ -62,8 +62,10 @@ export default function ParametersPage() {
             const nombre = prompt("Nombre del tipo (ej: Cables de Datos):");
             const prefijo = prompt("Prefijo (ej: DAT):");
             if (nombre && prefijo) {
-                await refService.saveTipoContenedor({ nombre, prefijo });
-                cargarTodos();
+                try {
+                    await refService.saveTipoContenedor({ nombre, prefijo });
+                    cargarTodos();
+                } catch (e) { alert("Error al guardar tipo"); }
             }
             return;
         }
@@ -73,7 +75,16 @@ export default function ParametersPage() {
 
         try {
             if (tipo === 'Marca') await refService.saveMarca({ nombre });
-            if (tipo === 'Color') await refService.saveColor({ nombre });
+            if (tipo === 'Color') {
+                const codigoHex = prompt("Ingrese el codigo HEX (ej: #FF5733):", "#000000");
+                if (codigoHex) {
+                    if (!/^#[0-9A-F]{6}$/i.test(codigoHex)) {
+                        alert("Formato HEX invalido (debe ser #RRGGBB)");
+                        return;
+                    }
+                    await refService.saveColor({ nombre, codigoHex });
+                } else return;
+            }
             if (tipo === 'Estado') await refService.saveEstado({ nombre });
             if (tipo === 'Puerto') await refService.savePuerto({ nombre });
             if (tipo === 'Funcion') await refService.saveCategoriaFuncion({ nombre });
@@ -102,7 +113,7 @@ export default function ParametersPage() {
     );
 }
 
-const ParameterList = ({ title, items, onAdd }: { title: string, items: RefBase[], onAdd: () => void }) => (
+const ParameterList = ({ title, items, onAdd }: { title: string, items: any[], onAdd: () => void }) => (
     <div style={cardStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
             <h3 style={{ margin: 0 }}>{title}</h3>
@@ -110,8 +121,12 @@ const ParameterList = ({ title, items, onAdd }: { title: string, items: RefBase[
         </div>
         <ul style={listStyle}>
             {items.map(i => (
-                <li key={i.id} style={itemStyle}>{i.nombre}</li>
+                <li key={i.id} style={itemStyle}>
+                    {i.codigoHex && <span style={{ ...miniSquareStyle, backgroundColor: i.codigoHex, display: 'inline-block', marginRight: '5px' }}></span>}
+                    {i.nombre} {i.prefijo && `(${i.prefijo})`}
+                </li>
             ))}
+            {items.length === 0 && <li style={{ ...itemStyle, color: '#999' }}>Vacio o Error</li>}
         </ul>
     </div>
 );
@@ -134,12 +149,21 @@ const listStyle: React.CSSProperties = {
     listStyle: 'none',
     padding: 0,
     margin: 0,
-    maxHeight: '200px',
+    maxHeight: '300px',
     overflowY: 'auto'
 };
 
 const itemStyle: React.CSSProperties = {
     padding: '8px 0',
     borderBottom: '1px solid #eee',
-    fontSize: '0.9rem'
+    fontSize: '0.9rem',
+    display: 'flex',
+    alignItems: 'center'
+};
+
+const miniSquareStyle: React.CSSProperties = {
+    width: '12px',
+    height: '12px',
+    borderRadius: '2px',
+    border: '1px solid #ddd'
 };
