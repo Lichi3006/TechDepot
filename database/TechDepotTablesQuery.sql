@@ -303,7 +303,8 @@ INSERT INTO REF_Puerto (Nombre) VALUES
 ('RJ45'),
 ('Jack 3.5mm (TRS)'),
 ('Jack 6.35mm (Instrumento)'),
-('XLR (Canon)');
+('XLR (Canon)'),
+('Enchufe Pared Arg (Tipo I)');
 GO
 
 -- 9.5 Capacidades de los Puertos (La matriz de inteligencia)

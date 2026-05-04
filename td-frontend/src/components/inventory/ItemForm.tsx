@@ -20,7 +20,6 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
     const [protocolos, setProtocolos] = useState<RefProtocolo[]>([]);
     const [capacidades, setCapacidades] = useState<LinkPuertoCapacidad[]>([]);
 
-    // Estados con null/undefined para indicar "no seleccionado"
     const [idEstado, setIdEstado] = useState<number | undefined>(undefined);
     const [idMarca, setIdMarca] = useState<number | undefined>(undefined);
     const [idContenedor, setIdContenedor] = useState<number | undefined>(undefined);
@@ -99,7 +98,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
 
         const dto: ItemCreateDTO = {
             idEstado: idEstado!,
-            idMarca: idMarca || undefined, // Evitamos mandar 0
+            idMarca: idMarca || undefined,
             idContenedor: idContenedor!,
             coloresHex: selectedColoresHex,
             conexiones: conexiones.map(c => ({
@@ -190,7 +189,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
                                             updateConexion(index, 'idsProtocolos', values);
                                         }}
                                         style={{ ...inputStyle, height: '60px' }}
-                                        disabled={con.idPuerto === 0}
+                                        disabled={con.idPuerto === 0 || availableProtocols.length === 0}
                                     >
                                         {availableProtocols.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
                                     </select>
