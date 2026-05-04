@@ -147,7 +147,7 @@ public class ItemDTOMapperService {
         // Colores
         List<String> coloresItem = colores.stream()
                 .filter(c -> c.getItem().getId().equals(item.getId()))
-                .map(c -> c.getRefColor().getNombre())
+                .map(Color::getCodigoHex)
                 .toList();
         itemDTO.setColor(coloresItem);
 

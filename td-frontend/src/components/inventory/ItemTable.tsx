@@ -43,7 +43,23 @@ export const ItemTable: React.FC<ItemTableProps> = ({ items, onDeleteItem }) => 
                             <td style={cellStyle}>{item.contenedor}</td>
                             <td style={cellStyle}>{item.marca || '-'}</td>
                             <td style={cellStyle}>{item.estado}</td>
-                            <td style={cellStyle}>{item.color?.join(', ') || '-'}</td>
+                            <td style={cellStyle}>
+                                <div style={{ display: 'flex', gap: '4px' }}>
+                                    {item.color?.map(hex => (
+                                        <div 
+                                            key={hex} 
+                                            title={hex}
+                                            style={{ 
+                                                width: '20px', 
+                                                height: '20px', 
+                                                borderRadius: '50%', 
+                                                backgroundColor: hex,
+                                                border: '1px solid #ddd'
+                                            }}
+                                        ></div>
+                                    )) || '-'}
+                                </div>
+                            </td>
                             <td style={cellStyle}>
                                 <div style={{ fontSize: '0.9em' }}>
                                     {item.especificaciones?.largo && <div>Largo: {item.especificaciones.largo}cm</div>}

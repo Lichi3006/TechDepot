@@ -43,7 +43,7 @@ public class ItemService {
         Item itemGuardado = crudService.crearItemBase(createDTO);
 
         // 3. Guardamos los colores
-        detalleService.guardarColores(itemGuardado, createDTO.getIdsColores());
+        detalleService.guardarColores(itemGuardado, createDTO.getColoresHex());
 
         // 4. Guardamos las conexiones físicas (puertos y protocolos)
         conexionService.guardarConexiones(itemGuardado, createDTO.getConexiones());

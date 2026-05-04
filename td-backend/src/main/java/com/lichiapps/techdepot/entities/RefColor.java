@@ -15,4 +15,7 @@ public class RefColor {
 
     @Column(name = "Nombre", nullable = false)
     private String nombre;
+
+    @Column(name = "CodigoHex", nullable = false, length = 7)
+    private String codigoHex;
 }

@@ -10,7 +10,7 @@ public class ItemCreateDTO {
     private Long idMarca;            // ID de RefMarca (puede ser null)
     private Long idContenedor;       // ID de Contenedor existente
 
-    private List<Long> idsColores;   // IDs de RefColor
+    private List<String> coloresHex; // Codigos HEX de los colores
 
     // Conexiones físicas
     private List<ConexionCreateDTO> conexiones;

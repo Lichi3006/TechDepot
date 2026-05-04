@@ -4,6 +4,7 @@ import type {
 } from '../../types/Item.ts';
 import { refService } from '../../services/refService.ts';
 import { Button } from '../ui/Button.tsx';
+import { ColorPickerPalette } from '../shared/ColorPickerPalette.tsx';
 
 interface ItemFormProps {
     onSave: (item: ItemCreateDTO) => Promise<void>;
@@ -13,7 +14,7 @@ interface ItemFormProps {
 export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
     const [marcas, setMarcas] = useState<RefMarca[]>([]);
     const [estados, setEstados] = useState<RefEstado[]>([]);
-    const [colores, setColores] = useState<RefColor[]>([]);
+    const [coloresPresets, setColoresPresets] = useState<RefColor[]>([]);
     const [contenedores, setContenedores] = useState<Contenedor[]>([]);
     const [categoriasFuncion, setCategoriasFuncion] = useState<RefCategoriaFuncion[]>([]);
     const [puertos, setPuertos] = useState<RefPuerto[]>([]);
@@ -22,7 +23,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
     const [idEstado, setIdEstado] = useState<number>(0);
     const [idMarca, setIdMarca] = useState<number | undefined>(undefined);
     const [idContenedor, setIdContenedor] = useState<number>(0);
-    const [selectedColores, setSelectedColores] = useState<number[]>([]);
+    const [selectedColoresHex, setSelectedColoresHex] = useState<string[]>([]);
     
     // Conexiones (Mínimo 1 para items básicos)
     const [conexiones, setConexiones] = useState<{idPuerto: number, idCategoriaFuncion: number, genero: boolean, idsProtocolos: number[]}[]>([]);
@@ -41,7 +42,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
                 ]);
                 setMarcas(m);
                 setEstados(e);
-                setColores(c);
+                setColoresPresets(c);
                 setContenedores(cont);
                 setCategoriasFuncion(cf);
                 setPuertos(p);
@@ -63,8 +64,8 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
             idEstado,
             idMarca,
             idContenedor,
-            idsColores: selectedColores,
-            idsCategoriasItem: [], // Obsoleto, pero mantenido en interfaz por compatibilidad momentanea
+            coloresHex: selectedColoresHex,
+            idsCategoriasItem: [], // Obsoleto
             conexiones: conexiones
         };
         onSave(dto);
@@ -94,20 +95,11 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
                 </select>
 
                 <label style={labelStyle}>Colores:</label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '15px' }}>
-                    {colores.map(c => (
-                        <label key={c.id} style={{ fontSize: '0.9em' }}>
-                            <input 
-                                type="checkbox" 
-                                checked={selectedColores.includes(c.id!)}
-                                onChange={(e) => {
-                                    if (e.target.checked) setSelectedColores([...selectedColores, c.id!]);
-                                    else setSelectedColores(selectedColores.filter(id => id !== c.id));
-                                }}
-                            /> {c.nombre}
-                        </label>
-                    ))}
-                </div>
+                <ColorPickerPalette 
+                    selectedColors={selectedColoresHex} 
+                    presets={coloresPresets} 
+                    onChange={setSelectedColoresHex} 
+                />
             </div>
 
             <div style={sectionStyle}>

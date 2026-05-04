@@ -35,21 +35,18 @@ public class ItemDetalleService {
     /**
      * Guarda los colores de un Item.
      * @param item Item al que se le asignarán los colores
-     * @param idsColores Lista de IDs de RefColor
+     * @param coloresHex Lista de códigos HEX
      */
-    public void guardarColores(Item item, List<Long> idsColores) {
-        if (idsColores == null || idsColores.isEmpty()) {
+    public void guardarColores(Item item, List<String> coloresHex) {
+        if (coloresHex == null || coloresHex.isEmpty()) {
             return; // Si no hay colores, no hacemos nada
         }
 
-        for (Long idColor : idsColores) {
-            // Validamos que el color exista
-            RefColor refColor = validationService.validarExisteColor(idColor);
-
-            // Creamos la relación Item-Color
+        for (String hex : coloresHex) {
+            // Creamos la relación Item-Color directamente con el HEX
             Color color = new Color();
             color.setItem(item);
-            color.setRefColor(refColor);
+            color.setCodigoHex(hex);
             colorRepository.save(color);
         }
     }
@@ -69,11 +66,11 @@ public class ItemDetalleService {
     /**
      * Actualiza los colores de un Item (elimina los viejos y guarda los nuevos).
      * @param item Item a actualizar
-     * @param idsColores Nuevos IDs de colores
+     * @param coloresHex Nuevos códigos HEX
      */
-    public void actualizarColores(Item item, List<Long> idsColores) {
+    public void actualizarColores(Item item, List<String> coloresHex) {
         eliminarColores(item.getId());
-        guardarColores(item, idsColores);
+        guardarColores(item, coloresHex);
     }
 
     // ==========================================

@@ -7,6 +7,8 @@ public class Color {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "IdColor")
     private Long id;
 
-    @ManyToOne @JoinColumn(name = "IdItem", foreignKey = @ForeignKey(name = "FK_Color_Item")) private Item item;
-    @ManyToOne @JoinColumn(name = "IdREF_Color", nullable = false, foreignKey = @ForeignKey(name = "FK_Color_RefColor")) private RefColor refColor;
+    @ManyToOne @JoinColumn(name = "IdItem", nullable = false) private Item item;
+    
+    @Column(name = "CodigoHex", nullable = false, length = 7) 
+    private String codigoHex;
 }

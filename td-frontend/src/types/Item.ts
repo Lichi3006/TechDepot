@@ -6,7 +6,9 @@ export interface RefBase {
 
 export interface RefMarca extends RefBase {}
 export interface RefEstado extends RefBase {}
-export interface RefColor extends RefBase {}
+export interface RefColor extends RefBase {
+    codigoHex: string;
+}
 export interface RefTipoContenedor extends RefBase {
     prefijo: string;
 }
@@ -61,7 +63,7 @@ export interface ItemCreateDTO {
     idEstado: number;
     idMarca?: number;
     idContenedor: number;
-    idsColores: number[];
+    coloresHex: string[];
     idsCategoriasItem: number[];
     conexiones: ConexionCreateDTO[];
     detalleCable?: DetalleCableCreateDTO;

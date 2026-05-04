@@ -40,6 +40,7 @@ CREATE TABLE REF_Color
 (
     IdREF_Color BIGINT IDENTITY(1,1),
     Nombre VARCHAR(36) UNIQUE NOT NULL,
+    CodigoHex VARCHAR(7) NOT NULL, -- Agregado para soporte de Color Picker
     CONSTRAINT PK_RefColor PRIMARY KEY (IdREF_Color)
 );
 
@@ -131,10 +132,9 @@ CREATE TABLE Color
 (
     IdColor BIGINT IDENTITY(1,1),
     IdItem BIGINT NOT NULL,
-    IdREF_Color BIGINT NOT NULL,
+    CodigoHex VARCHAR(7) NOT NULL, -- Ahora guarda el HEX directamente para permitir colores custom
     CONSTRAINT PK_Color PRIMARY KEY (IdColor),
-    CONSTRAINT FK_Color_Item FOREIGN KEY (IdItem) REFERENCES Item (IdItem),
-    CONSTRAINT FK_Color_RefColor FOREIGN KEY (IdREF_Color) REFERENCES REF_Color (IdREF_Color)
+    CONSTRAINT FK_Color_Item FOREIGN KEY (IdItem) REFERENCES Item (IdItem)
 );
 
 -- =============================================
