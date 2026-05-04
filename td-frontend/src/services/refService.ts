@@ -5,7 +5,7 @@ import type {
     RefColor, 
     RefTipoContenedor,
     Contenedor, 
-    RefCategoriaItem, 
+    RefCategoriaFuncion, 
     RefPuerto, 
     RefProtocolo 
 } from '../types/Item.ts';
@@ -31,9 +31,9 @@ export const refService = {
     getTiposContenedor: () => api.get<RefTipoContenedor[]>('/tipos-contenedor').then(r => r.data),
     saveTipoContenedor: (data: RefTipoContenedor) => api.post<RefTipoContenedor>('/tipos-contenedor', data).then(r => r.data),
 
-    // Categorías de Item
-    getCategoriasItem: () => api.get<RefCategoriaItem[]>('/categorias-item').then(r => r.data),
-    saveCategoriaItem: (data: RefCategoriaItem) => api.post<RefCategoriaItem>('/categorias-item', data).then(r => r.data),
+    // Categorías de Función
+    getCategoriasFuncion: () => api.get<RefCategoriaFuncion[]>('/categorias-funcion').then(r => r.data),
+    saveCategoriaFuncion: (data: RefCategoriaFuncion) => api.post<RefCategoriaFuncion>('/categorias-funcion', data).then(r => r.data),
 
     // Puertos
     getPuertos: () => api.get<RefPuerto[]>('/puertos').then(r => r.data),

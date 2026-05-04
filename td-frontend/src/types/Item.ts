@@ -14,7 +14,7 @@ export interface Contenedor extends RefBase {
     qrUUID?: string;
     tipoContenedor?: RefTipoContenedor;
 }
-export interface RefCategoriaItem extends RefBase {}
+export interface RefCategoriaFuncion extends RefBase {}
 export interface RefPuerto extends RefBase {}
 export interface RefProtocolo extends RefBase {}
 
@@ -24,6 +24,7 @@ export interface Item {
     estado: string;
     contenedor: string;
     color: string[];
+    categoriaCalculada: string;
     categorias: Categorias;
     conexiones: Conexion[];
     especificaciones: Especificaciones;

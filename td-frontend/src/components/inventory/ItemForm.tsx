@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { 
-    ItemCreateDTO, RefMarca, RefEstado, RefColor, Contenedor, RefCategoriaItem, RefPuerto, RefProtocolo 
+    ItemCreateDTO, RefMarca, RefEstado, RefColor, Contenedor, RefCategoriaFuncion, RefPuerto, RefProtocolo 
 } from '../../types/Item.ts';
 import { refService } from '../../services/refService.ts';
 import { Button } from '../ui/Button.tsx';
@@ -11,54 +11,50 @@ interface ItemFormProps {
 }
 
 export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
-    // Datos maestros cargados de la DB
     const [marcas, setMarcas] = useState<RefMarca[]>([]);
     const [estados, setEstados] = useState<RefEstado[]>([]);
     const [colores, setColores] = useState<RefColor[]>([]);
     const [contenedores, setContenedores] = useState<Contenedor[]>([]);
-    const [categoriasItem, setCategoriasItem] = useState<RefCategoriaItem[]>([]);
-    const [_puertos, _setPuertos] = useState<RefPuerto[]>([]);
+    const [categoriasFuncion, setCategoriasFuncion] = useState<RefCategoriaFuncion[]>([]);
+    const [puertos, setPuertos] = useState<RefPuerto[]>([]);
     const [_protocolos, _setProtocolos] = useState<RefProtocolo[]>([]);
 
-    // Estado del formulario
     const [idEstado, setIdEstado] = useState<number>(0);
     const [idMarca, setIdMarca] = useState<number | undefined>(undefined);
     const [idContenedor, setIdContenedor] = useState<number>(0);
     const [selectedColores, setSelectedColores] = useState<number[]>([]);
-    const [selectedCategorias, setSelectedCategorias] = useState<number[]>([]);
     
-    // Conexiones
-    const [conexiones, _setConexiones] = useState<{idPuerto: number, genero: boolean, idsProtocolos: number[]}[]>([]);
+    // Conexiones (Mínimo 1 para items básicos)
+    const [conexiones, setConexiones] = useState<{idPuerto: number, idCategoriaFuncion: number, genero: boolean, idsProtocolos: number[]}[]>([]);
 
     useEffect(() => {
         const loadData = async () => {
-            const [m, e, c, cont, cat, p, prot] = await Promise.all([
-                refService.getMarcas(),
-                refService.getEstados(),
-                refService.getColores(),
-                refService.getContenedores(),
-                refService.getCategoriasItem(),
-                refService.getPuertos(),
-                refService.getProtocolos()
-            ]);
-            setMarcas(m);
-            setEstados(e);
-            setColores(c);
-            setContenedores(cont);
-            setCategoriasItem(cat);
-            _setPuertos(p);
-            _setProtocolos(prot);
+            try {
+                const [m, e, c, cont, cf, p, prot] = await Promise.all([
+                    refService.getMarcas(),
+                    refService.getEstados(),
+                    refService.getColores(),
+                    refService.getContenedores(),
+                    refService.getCategoriasFuncion(),
+                    refService.getPuertos(),
+                    refService.getProtocolos()
+                ]);
+                setMarcas(m);
+                setEstados(e);
+                setColores(c);
+                setContenedores(cont);
+                setCategoriasFuncion(cf);
+                setPuertos(p);
+                _setProtocolos(prot);
+            } catch (error) {
+                console.error("Error al cargar datos del formulario:", error);
+            }
         };
         loadData();
     }, []);
 
-    const handleAddMarca = async () => {
-        const nombre = prompt("Nueva Marca:");
-        if (nombre) {
-            const nueva = await refService.saveMarca({ nombre });
-            setMarcas([...marcas, nueva]);
-            setIdMarca(nueva.id);
-        }
+    const handleAddConexion = () => {
+        setConexiones([...conexiones, { idPuerto: 0, idCategoriaFuncion: 0, genero: true, idsProtocolos: [] }]);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -68,7 +64,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
             idMarca,
             idContenedor,
             idsColores: selectedColores,
-            idsCategoriasItem: selectedCategorias,
+            idsCategoriasItem: [], // Obsoleto, pero mantenido en interfaz por compatibilidad momentanea
             conexiones: conexiones
         };
         onSave(dto);
@@ -86,13 +82,10 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
                 </select>
 
                 <label style={labelStyle}>Marca:</label>
-                <div style={{ display: 'flex', gap: '5px' }}>
-                    <select value={idMarca} onChange={(e) => setIdMarca(Number(e.target.value))} style={inputStyle}>
-                        <option value="">Ninguna</option>
-                        {marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
-                    </select>
-                    <Button type="button" onClick={handleAddMarca}>+</Button>
-                </div>
+                <select value={idMarca} onChange={(e) => setIdMarca(Number(e.target.value))} style={inputStyle}>
+                    <option value="">Ninguna / Generica</option>
+                    {marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
+                </select>
 
                 <label style={labelStyle}>Contenedor:</label>
                 <select value={idContenedor} onChange={(e) => setIdContenedor(Number(e.target.value))} required style={inputStyle}>
@@ -115,22 +108,65 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
                         </label>
                     ))}
                 </div>
+            </div>
 
-                <label style={labelStyle}>Categorías:</label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '15px' }}>
-                    {categoriasItem.map(cat => (
-                        <label key={cat.id} style={{ fontSize: '0.9em' }}>
-                            <input 
-                                type="checkbox" 
-                                checked={selectedCategorias.includes(cat.id!)}
-                                onChange={(e) => {
-                                    if (e.target.checked) setSelectedCategorias([...selectedCategorias, cat.id!]);
-                                    else setSelectedCategorias(selectedCategorias.filter(id => id !== cat.id));
-                                }}
-                            /> {cat.nombre}
-                        </label>
-                    ))}
+            <div style={sectionStyle}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3>Conexiones y Extremos</h3>
+                    <Button type="button" onClick={handleAddConexion} variant="success">+ Agregar Extremo</Button>
                 </div>
+                
+                {conexiones.map((con, index) => (
+                    <div key={index} style={conexionCardStyle}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px', gap: '10px' }}>
+                            <div>
+                                <label style={smallLabelStyle}>Puerto:</label>
+                                <select 
+                                    value={con.idPuerto} 
+                                    onChange={(e) => {
+                                        const newCons = [...conexiones];
+                                        newCons[index].idPuerto = Number(e.target.value);
+                                        setConexiones(newCons);
+                                    }}
+                                    style={inputStyle}
+                                >
+                                    <option value="0">Seleccione...</option>
+                                    {puertos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label style={smallLabelStyle}>Funcion:</label>
+                                <select 
+                                    value={con.idCategoriaFuncion} 
+                                    onChange={(e) => {
+                                        const newCons = [...conexiones];
+                                        newCons[index].idCategoriaFuncion = Number(e.target.value);
+                                        setConexiones(newCons);
+                                    }}
+                                    style={inputStyle}
+                                >
+                                    <option value="0">Seleccione...</option>
+                                    {categoriasFuncion.map(f => <option key={f.id} value={f.id}>{f.nombre}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label style={smallLabelStyle}>Genero:</label>
+                                <select 
+                                    value={con.genero ? 'M' : 'H'} 
+                                    onChange={(e) => {
+                                        const newCons = [...conexiones];
+                                        newCons[index].genero = e.target.value === 'M';
+                                        setConexiones(newCons);
+                                    }}
+                                    style={inputStyle}
+                                >
+                                    <option value="M">Macho</option>
+                                    <option value="H">Hembra</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
 
             <div style={footerStyle}>
@@ -141,7 +177,6 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
     );
 };
 
-
 const formStyle: React.CSSProperties = {
     backgroundColor: '#fff',
     padding: '20px',
@@ -151,7 +186,17 @@ const formStyle: React.CSSProperties = {
 };
 
 const sectionStyle: React.CSSProperties = {
-    marginBottom: '20px'
+    marginBottom: '30px',
+    borderBottom: '1px solid #eee',
+    paddingBottom: '20px'
+};
+
+const conexionCardStyle: React.CSSProperties = {
+    padding: '15px',
+    backgroundColor: '#f9f9f9',
+    borderRadius: '6px',
+    marginBottom: '10px',
+    border: '1px solid #eee'
 };
 
 const labelStyle: React.CSSProperties = {
@@ -160,10 +205,16 @@ const labelStyle: React.CSSProperties = {
     fontWeight: 'bold'
 };
 
+const smallLabelStyle: React.CSSProperties = {
+    fontSize: '0.85em',
+    display: 'block',
+    marginBottom: '3px'
+};
+
 const inputStyle: React.CSSProperties = {
     width: '100%',
     padding: '8px',
-    marginBottom: '15px',
+    marginBottom: '10px',
     borderRadius: '4px',
     border: '1px solid #ccc'
 };

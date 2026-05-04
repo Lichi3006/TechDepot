@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { refService } from '../../services/refService.ts';
-import type { RefBase, RefTipoContenedor } from '../../types/Item.ts';
+import type { RefBase, RefTipoContenedor, RefCategoriaFuncion } from '../../types/Item.ts';
 import { Button } from '../../components/ui/Button.tsx';
 
 export default function ParametersPage() {
@@ -9,20 +9,33 @@ export default function ParametersPage() {
     const [estados, setEstados] = useState<RefBase[]>([]);
     const [contenedores, setContenedores] = useState<RefBase[]>([]);
     const [tiposContenedor, setTiposContenedor] = useState<RefTipoContenedor[]>([]);
+    const [puertos, setPuertos] = useState<RefBase[]>([]);
+    const [protocolos, setProtocolos] = useState<RefBase[]>([]);
+    const [categoriasFuncion, setCategoriasFuncion] = useState<RefCategoriaFuncion[]>([]);
 
     const cargarTodos = async () => {
-        const [m, c, e, cont, tc] = await Promise.all([
-            refService.getMarcas(),
-            refService.getColores(),
-            refService.getEstados(),
-            refService.getContenedores(),
-            refService.getTiposContenedor()
-        ]);
-        setMarcas(m);
-        setColores(c);
-        setEstados(e);
-        setContenedores(cont);
-        setTiposContenedor(tc);
+        try {
+            const [m, c, e, cont, tc, p, prot, cf] = await Promise.all([
+                refService.getMarcas(),
+                refService.getColores(),
+                refService.getEstados(),
+                refService.getContenedores(),
+                refService.getTiposContenedor(),
+                refService.getPuertos(),
+                refService.getProtocolos(),
+                refService.getCategoriasFuncion()
+            ]);
+            setMarcas(m);
+            setColores(c);
+            setEstados(e);
+            setContenedores(cont);
+            setTiposContenedor(tc);
+            setPuertos(p);
+            setProtocolos(prot);
+            setCategoriasFuncion(cf);
+        } catch (error) {
+            console.error("Error al cargar parametros:", error);
+        }
     };
 
     useEffect(() => {
@@ -32,7 +45,7 @@ export default function ParametersPage() {
     const handleAdd = async (tipo: string) => {
         if (tipo === 'Contenedor') {
             if (tiposContenedor.length === 0) {
-                alert("Primero debe crear al menos un Tipo de Contenedor (ej: DAT, PWR)");
+                alert("Primero debe crear al menos un Tipo de Contenedor");
                 return;
             }
             const idTipo = prompt("Seleccione el ID del Tipo de Contenedor:\n" + 
@@ -62,6 +75,8 @@ export default function ParametersPage() {
             if (tipo === 'Marca') await refService.saveMarca({ nombre });
             if (tipo === 'Color') await refService.saveColor({ nombre });
             if (tipo === 'Estado') await refService.saveEstado({ nombre });
+            if (tipo === 'Puerto') await refService.savePuerto({ nombre });
+            if (tipo === 'Funcion') await refService.saveCategoriaFuncion({ nombre });
             cargarTodos();
         } catch (e) {
             alert("Error al guardar");
@@ -74,9 +89,12 @@ export default function ParametersPage() {
             <p>Gestioná las listas maestras que aparecen en los formularios.</p>
 
             <div style={gridStyle}>
+                <ParameterList title="Estados" items={estados} onAdd={() => handleAdd('Estado')} />
+                <ParameterList title="Funciones" items={categoriasFuncion} onAdd={() => handleAdd('Funcion')} />
+                <ParameterList title="Puertos" items={puertos} onAdd={() => handleAdd('Puerto')} />
+                <ParameterList title="Protocolos" items={protocolos} onAdd={() => { alert("Para agregar un protocolo, use el formulario avanzado (futuro)"); }} />
                 <ParameterList title="Marcas" items={marcas} onAdd={() => handleAdd('Marca')} />
                 <ParameterList title="Colores" items={colores} onAdd={() => handleAdd('Color')} />
-                <ParameterList title="Estados" items={estados} onAdd={() => handleAdd('Estado')} />
                 <ParameterList title="Tipos Contenedor" items={tiposContenedor} onAdd={() => handleAdd('TipoContenedor')} />
                 <ParameterList title="Contenedores" items={contenedores} onAdd={() => handleAdd('Contenedor')} />
             </div>
@@ -116,7 +134,7 @@ const listStyle: React.CSSProperties = {
     listStyle: 'none',
     padding: 0,
     margin: 0,
-    maxHeight: '300px',
+    maxHeight: '200px',
     overflowY: 'auto'
 };
 

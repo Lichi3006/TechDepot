@@ -16,6 +16,7 @@ export const ItemTable: React.FC<ItemTableProps> = ({ items, onDeleteItem }) => 
                 <thead>
                     <tr style={headerRowStyle}>
                         <th>Conexiones</th>
+                        <th>Tipo (Inferido)</th>
                         <th>Contenedor</th>
                         <th>Marca</th>
                         <th>Estado</th>
@@ -35,6 +36,9 @@ export const ItemTable: React.FC<ItemTableProps> = ({ items, onDeleteItem }) => 
                                         </span>
                                     </div>
                                 )) || '-'}
+                            </td>
+                            <td style={cellStyle}>
+                                <strong style={{ color: '#2e7d32' }}>{item.categoriaCalculada || 'Sin Categoría'}</strong>
                             </td>
                             <td style={cellStyle}>{item.contenedor}</td>
                             <td style={cellStyle}>{item.marca || '-'}</td>
