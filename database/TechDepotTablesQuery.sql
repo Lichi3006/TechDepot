@@ -293,7 +293,6 @@ INSERT INTO REF_TipoContenedor (Nombre, Prefijo) VALUES
 GO
 
 -- 9.4 Puertos Físicos Comunes
--- IMPORTANTE: El orden define el ID (1=USB-C, 2=USB-A, 3=HDMI, 4=DP, 5=Schuko, 6=IEC, 7=RJ45)
 INSERT INTO REF_Puerto (Nombre) VALUES 
 ('USB-C'), 
 ('USB-A'), 
@@ -301,30 +300,40 @@ INSERT INTO REF_Puerto (Nombre) VALUES
 ('DisplayPort'), 
 ('Schuko (Pared)'), 
 ('IEC C13 (Fuente PC)'),
-('RJ45');
+('RJ45'),
+('Jack 3.5mm (TRS)'),
+('Jack 6.35mm (Instrumento)'),
+('XLR (Canon)');
 GO
 
 -- 9.5 Capacidades de los Puertos (La matriz de inteligencia)
--- USB-C (1) soporta: Energía (1), Datos (2), Video (3)
+-- USB-C (1) -> Energía (1), Datos (2), Video (3)
 INSERT INTO LINK_CategoriaFuncionPuerto (IdREF_Puerto, IdREF_CategoriaFuncion) VALUES (1, 1), (1, 2), (1, 3);
--- USB-A (2) soporta: Energía (1), Datos (2)
+-- USB-A (2) -> Energía (1), Datos (2)
 INSERT INTO LINK_CategoriaFuncionPuerto (IdREF_Puerto, IdREF_CategoriaFuncion) VALUES (2, 1), (2, 2);
--- HDMI (3) y DP (4) soportan: Video (3), Audio (4)
+-- HDMI (3) y DP (4) -> Video (3), Audio (4)
 INSERT INTO LINK_CategoriaFuncionPuerto (IdREF_Puerto, IdREF_CategoriaFuncion) VALUES (3, 3), (3, 4), (4, 3), (4, 4);
--- Schuko (5) e IEC C13 (6) soportan SOLO: Energía (1)
+-- Schuko (5) e IEC C13 (6) -> Energía (1)
 INSERT INTO LINK_CategoriaFuncionPuerto (IdREF_Puerto, IdREF_CategoriaFuncion) VALUES (5, 1), (6, 1);
--- RJ45 (7) soporta SOLO: Datos (2)
+-- RJ45 (7) -> Datos (2)
 INSERT INTO LINK_CategoriaFuncionPuerto (IdREF_Puerto, IdREF_CategoriaFuncion) VALUES (7, 2);
+-- Jacks y XLR (8, 9, 10) -> Audio (4)
+INSERT INTO LINK_CategoriaFuncionPuerto (IdREF_Puerto, IdREF_CategoriaFuncion) VALUES (8, 4), (9, 4), (10, 4);
 GO
 
 -- 9.6 Protocolos para Puertos Complejos
--- Protocolos USB-C
-INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (1, 2, 'USB 3.2 Gen 2');
-INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (1, 3, 'DisplayPort Alt Mode');
-INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (1, 1, 'Power Delivery (PD) 100W');
--- Protocolos HDMI
-INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (3, 3, 'HDMI 2.0');
-INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (3, 3, 'HDMI 2.1');
--- Protocolos RJ45
-INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (7, 2, 'Gigabit Ethernet (Cat6)');
+-- USB-C
+INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES 
+(1, 2, 'USB 2.0'), (1, 2, 'USB 3.0 (5Gbps)'), (1, 2, 'USB 3.1 (10Gbps)'), (1, 2, 'USB 3.2 Gen 2x2 (20Gbps)'), (1, 2, 'USB4 (40Gbps)'),
+(1, 2, 'Thunderbolt 3'), (1, 2, 'Thunderbolt 4'), (1, 3, 'DisplayPort Alt Mode'), (1, 1, 'Power Delivery (PD) 60W'), (1, 1, 'Power Delivery (PD) 100W');
+-- USB-A
+INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (2, 2, 'USB 1.1'), (2, 2, 'USB 2.0'), (2, 2, 'USB 3.0 (Superspeed)'), (2, 2, 'USB 3.1 Gen 2');
+-- HDMI
+INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (3, 3, 'HDMI 1.4'), (3, 3, 'HDMI 2.0'), (3, 3, 'HDMI 2.1');
+-- DisplayPort
+INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (4, 3, 'DisplayPort 1.2'), (4, 3, 'DisplayPort 1.4'), (4, 3, 'DisplayPort 2.0'), (4, 3, 'DisplayPort 2.1');
+-- RJ45 (Ethernet)
+INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (7, 2, 'Ethernet Cat5 (100Mbps)'), (7, 2, 'Ethernet Cat5e (1Gbps)'), (7, 2, 'Ethernet Cat6 (1Gbps)'), (7, 2, 'Ethernet Cat6a (10Gbps)'), (7, 2, 'Ethernet Cat7 (10Gbps)');
+-- Audio (Jacks / XLR)
+INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (8, 4, 'Audio Analogo (Stereo)'), (9, 4, 'Audio Analogo (Mono/Instrumento)'), (10, 4, 'Audio Balanceado (Mono)');
 GO

@@ -207,11 +207,6 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
                                     </select>
                                 </div>
                             </div>
-                            {con.idCategoriaFuncion !== 0 && (
-                                <div style={{ marginTop: '10px', fontSize: '0.85rem', color: '#2e7d32' }}>
-                                    <strong>Funcion detectada:</strong> {currentFunction?.nombre}
-                                </div>
-                            )}
                         </div>
                     );
                 })}

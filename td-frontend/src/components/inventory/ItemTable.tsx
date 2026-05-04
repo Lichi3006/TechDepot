@@ -11,12 +11,12 @@ interface ItemTableProps {
  */
 export const ItemTable: React.FC<ItemTableProps> = ({ items, onDeleteItem }) => {
     return (
-        <div style={{ overflowX: 'auto', marginTop: '20px' }}>
+        <div style={{ overflowX: 'auto', fontFamily: 'sans-serif' }}>
             <table style={tableStyle}>
                 <thead>
                     <tr style={headerRowStyle}>
                         <th>Conexiones</th>
-                        <th>Tipo (Inferido)</th>
+                        <th>Tipo</th>
                         <th>Contenedor</th>
                         <th>Marca</th>
                         <th>Estado</th>

@@ -23,7 +23,8 @@ export const MainLayout: React.FC = () => {
 const layoutStyle: React.CSSProperties = {
     display: 'flex',
     minHeight: '100vh',
-    backgroundColor: '#f0f2f5'
+    backgroundColor: '#f0f2f5',
+    fontFamily: 'sans-serif'
 };
 
 const sidebarStyle: React.CSSProperties = {
