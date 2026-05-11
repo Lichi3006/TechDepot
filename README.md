@@ -1,8 +1,6 @@
 <p align="center">
-  <img src="media/logo.svg" alt="TechDepot Logo" width="180">
+  <img src="media/logo.svg" alt="TechDepot Logo" width="250">
 </p>
-
-# TechDepot
 
 ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/spring_boot-%236DB33F.svg?style=for-the-badge&logo=spring-boot&logoColor=white)
