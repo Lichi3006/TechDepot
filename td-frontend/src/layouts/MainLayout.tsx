@@ -5,7 +5,9 @@ export const MainLayout: React.FC = () => {
     return (
         <div style={layoutStyle}>
             <aside style={sidebarStyle}>
-                <h2 style={titleStyle}>TechDepot</h2>
+                <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                    <img src="/media/logo.svg" alt="Logo" style={{ width: '120px' }} />
+                </div>
                 <nav style={navStyle}>
                     <Link to="/" style={linkStyle}>Inventario</Link>
                     <Link to="/admin/nuevo" style={linkStyle}>Nuevo Item</Link>

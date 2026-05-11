@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="media/logo.svg" alt="TechDepot Logo" width="180">
+</p>
+
 # TechDepot
 
 ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
