@@ -6,6 +6,10 @@ import com.lichiapps.techdepot.repositories.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.lichiapps.techdepot.dtos.ItemFilterDTO;
+import com.lichiapps.techdepot.repositories.ItemSpecification;
+import org.springframework.data.jpa.domain.Specification;
+
 import java.util.List;
 
 /**
@@ -18,6 +22,14 @@ public class ItemCrudService {
 
     @Autowired private ItemRepository itemRepository;
     @Autowired private ItemValidationService validationService;
+
+    /**
+     * Obtiene los items que coincidan con los filtros dinámicos.
+     */
+    public List<Item> obtenerItemsFiltrados(ItemFilterDTO filters) {
+        Specification<Item> spec = ItemSpecification.withFilters(filters);
+        return itemRepository.findAll(spec);
+    }
 
     /**
      * Crea y guarda un Item base con sus campos principales (estado, marca, contenedor).

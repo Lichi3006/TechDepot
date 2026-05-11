@@ -12,6 +12,7 @@ export default function App() {
                 <Route path="/" element={<MainLayout />}>
                     <Route index element={<InventoryPage />} />
                     <Route path="admin/nuevo" element={<ItemEditorPage />} />
+                    <Route path="admin/items/edit/:id" element={<ItemEditorPage />} />
                     <Route path="admin/contenedores/nuevo" element={<ContainerEditorPage />} />
                     <Route path="admin/parametros" element={<ParametersPage />} />
                 </Route>

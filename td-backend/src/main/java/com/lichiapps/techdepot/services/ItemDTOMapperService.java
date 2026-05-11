@@ -2,6 +2,7 @@ package com.lichiapps.techdepot.services;
 
 import com.lichiapps.techdepot.dtos.ItemDTO;
 import com.lichiapps.techdepot.entities.*;
+import com.lichiapps.techdepot.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,51 +13,91 @@ import java.util.stream.Collectors;
 
 /**
  * Servicio de mapeo para transformar entidades Item a ItemDTO.
- * Recopila todos los datos relacionados de un Item y los convierte a un formato legible para el frontend.
- * Ahora incluye la lógica de inferencia de categoría basada en los extremos físicos.
+ * Recopila todos los datos relacionados de un Item de forma optimizada.
  */
 @Service
 public class ItemDTOMapperService {
 
     @Autowired private ItemCrudService itemCrudService;
-    @Autowired private LinkExtremoFisicoService linkExtremoFisicoService;
-    @Autowired private LinkProtocoloDeExtremoService linkProtocoloDeExtremoService;
-    @Autowired private DetalleCableService detalleCableService;
-    @Autowired private DetalleAlimentacionCableService detalleAlimentacionCableService;
-    @Autowired private DetalleFuenteService detalleFuenteService;
-    @Autowired private DetalleHardwareService detalleHardwareService;
-    @Autowired private LinkCategoriaHardwareService linkCategoriaHardwareService;
-    @Autowired private ColorService colorService;
+    
+    // Repositorios para consultas directas y optimizadas
+    @Autowired private ColorRepository colorRepository;
+    @Autowired private DetalleCableRepository detalleCableRepository;
+    @Autowired private DetalleFuenteRepository detalleFuenteRepository;
+    @Autowired private DetalleHardwareRepository detalleHardwareRepository;
+    @Autowired private LinkExtremoFisicoRepository linkExtremoFisicoRepository;
+    @Autowired private LinkProtocoloDeExtremoRepository linkProtocoloDeExtremoRepository;
+    @Autowired private DetalleAlimentacionCableRepository detalleAlimentacionCableRepository;
+    @Autowired private LinkCategoriaHardwareRepository linkCategoriaHardwareRepository;
 
+    /**
+     * Obtiene el DTO de un item específico de forma optimizada.
+     */
     public ItemDTO obtenerItemDTOPorId(Long idItem) {
         Item item = itemCrudService.obtenerItemPorId(idItem);
         if (item == null) return null;
 
-        return convertirAItemDTO(
-                item,
-                linkExtremoFisicoService.getAllLinkExtremoFisico().stream().filter(l -> l.getItem().getId().equals(idItem)).toList(),
-                linkProtocoloDeExtremoService.getAllLinkProtocoloDeExtremo(),
-                detalleCableService.getAllDetalleCable().stream().filter(d -> d.getItem().getId().equals(idItem)).toList(),
-                detalleHardwareService.getAllDetalleHardware().stream().filter(d -> d.getItem().getId().equals(idItem)).toList(),
-                detalleFuenteService.getAllDetalleFuentes().stream().filter(d -> d.getItem().getId().equals(idItem)).toList(),
-                colorService.getAllColors().stream().filter(c -> c.getItem().getId().equals(idItem)).toList(),
-                detalleAlimentacionCableService.getAllDetalleAlimentacionCable(),
-                linkCategoriaHardwareService.getAll()
-        );
+        // Consultas quirúrgicas por ItemID
+        List<LinkExtremoFisico> extremos = linkExtremoFisicoRepository.findByItemId(idItem);
+        List<Color> colores = colorRepository.findByItemId(idItem);
+        List<DetalleCable> cables = detalleCableRepository.findByItemId(idItem);
+        List<DetalleHardware> hardwares = detalleHardwareRepository.findByItemId(idItem);
+        List<DetalleFuente> fuentes = detalleFuenteRepository.findByItemId(idItem);
+
+        // Protocolos (dependen de los extremos encontrados)
+        List<LinkProtocoloDeExtremo> protocolos = new ArrayList<>();
+        for (LinkExtremoFisico ext : extremos) {
+            protocolos.addAll(linkProtocoloDeExtremoRepository.findByExtremoFisicoId(ext.getId()));
+        }
+
+        // Alimentación (depende de los cables encontrados)
+        List<DetalleAlimentacionCable> alimentaciones = new ArrayList<>();
+        for (DetalleCable cable : cables) {
+            detalleAlimentacionCableRepository.findByDetalleCableId(cable.getId()).ifPresent(alimentaciones::add);
+        }
+
+        // Categorías Hardware (dependen de los hardwares encontrados)
+        List<LinkCategoriaHardware> categoriasHW = new ArrayList<>();
+        for (DetalleHardware hw : hardwares) {
+            categoriasHW.addAll(linkCategoriaHardwareRepository.findByDetalleHardwareId(hw.getId()));
+        }
+
+        return convertirAItemDTO(item, extremos, protocolos, cables, hardwares, fuentes, colores, alimentaciones, categoriasHW);
     }
 
+    /**
+     * Convierte una lista de items a DTO evitando el problema de N+1 queries.
+     * Utiliza consultas con cláusula IN para traer solo lo necesario de la BD.
+     */
     public List<ItemDTO> convertirListaAItemDTO(List<Item> items) {
+        if (items.isEmpty()) return new ArrayList<>();
+
+        List<Long> itemIds = items.stream().map(Item::getId).toList();
+
+        // 1. Traemos los datos de primer nivel (relacionados directamente con Item)
+        List<LinkExtremoFisico> linkExtremoFisicos = linkExtremoFisicoRepository.findByItemIdIn(itemIds);
+        List<DetalleCable> detalleCables = detalleCableRepository.findByItemIdIn(itemIds);
+        List<DetalleHardware> detalleHardwares = detalleHardwareRepository.findByItemIdIn(itemIds);
+        List<DetalleFuente> detalleFuentes = detalleFuenteRepository.findByItemIdIn(itemIds);
+        List<Color> colores = colorRepository.findByItemIdIn(itemIds);
+
+        // 2. Extraemos los IDs intermedios para el segundo nivel de relaciones
+        List<Long> extremoIds = linkExtremoFisicos.stream().map(LinkExtremoFisico::getId).toList();
+        List<Long> cableIds = detalleCables.stream().map(DetalleCable::getId).toList();
+        List<Long> hardwareIds = detalleHardwares.stream().map(DetalleHardware::getId).toList();
+
+        // 3. Traemos los datos de segundo nivel
+        List<LinkProtocoloDeExtremo> linkProtocoloDeExtremos = extremoIds.isEmpty() ? new ArrayList<>() :
+                linkProtocoloDeExtremoRepository.findByExtremoFisicoIdIn(extremoIds);
+        
+        List<DetalleAlimentacionCable> alimentaciones = cableIds.isEmpty() ? new ArrayList<>() :
+                detalleAlimentacionCableRepository.findByDetalleCableIdIn(cableIds);
+        
+        List<LinkCategoriaHardware> categoriasHardware = hardwareIds.isEmpty() ? new ArrayList<>() :
+                linkCategoriaHardwareRepository.findByDetalleHardwareIdIn(hardwareIds);
+
+        // 4. Mapeamos cada item utilizando los datos precargados en memoria
         List<ItemDTO> itemsDTO = new ArrayList<>();
-
-        List<LinkExtremoFisico> linkExtremoFisicos = linkExtremoFisicoService.getAllLinkExtremoFisico();
-        List<LinkProtocoloDeExtremo> linkProtocoloDeExtremos = linkProtocoloDeExtremoService.getAllLinkProtocoloDeExtremo();
-        List<DetalleCable> detalleCables = detalleCableService.getAllDetalleCable();
-        List<DetalleHardware> detalleHardwares = detalleHardwareService.getAllDetalleHardware();
-        List<DetalleFuente> detalleFuentes = detalleFuenteService.getAllDetalleFuentes();
-        List<Color> colores = colorService.getAllColors();
-        List<DetalleAlimentacionCable> alimentaciones = detalleAlimentacionCableService.getAllDetalleAlimentacionCable();
-        List<LinkCategoriaHardware> categoriasHardware = linkCategoriaHardwareService.getAll();
-
         for (Item item : items) {
             itemsDTO.add(convertirAItemDTO(item, linkExtremoFisicos, linkProtocoloDeExtremos, detalleCables, detalleHardwares, detalleFuentes, colores, alimentaciones, categoriasHardware));
         }

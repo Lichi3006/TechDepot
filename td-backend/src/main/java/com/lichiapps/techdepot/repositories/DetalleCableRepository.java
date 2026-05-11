@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface DetalleCableRepository extends  JpaRepository<DetalleCable, Long>{
+public interface DetalleCableRepository extends JpaRepository<DetalleCable, Long> {
     List<DetalleCable> findByItemId(Long itemId);
+    List<DetalleCable> findByItemIdIn(List<Long> itemIds);
 }

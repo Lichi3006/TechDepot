@@ -69,9 +69,10 @@ public class ItemConexionService {
             linkProtocolo.setExtremoFisico(extremo);
             linkProtocolo.setProtocolo(refProtocolo);
             
-            // Seteamos los campos redundantes obligatorios para la integridad de SQL Server
+            // IMPORTANTE: Seteamos los campos redundantes usando los datos del PROTOCOLO
+            // Esto permite que si el puerto es USB-C, un protocolo sea de Datos y otro de Energia
             linkProtocolo.setIdPuerto(extremo.getPuerto().getId());
-            linkProtocolo.setIdCategoriaFuncion(extremo.getCategoriaFuncion().getId());
+            linkProtocolo.setIdCategoriaFuncion(refProtocolo.getCategoriaFuncion().getId());
 
             linkProtocoloDeExtremoRepository.save(linkProtocolo);
         }

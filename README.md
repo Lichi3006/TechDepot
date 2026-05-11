@@ -77,3 +77,19 @@ To protect sensitive credentials, the main configuration file is not included in
    ```properties
    spring.datasource.username= YOUR_USER
    spring.datasource.password= YOUR_PASSWORD
+   ```
+
+---
+
+## 🚀 Cómo Ejecutar (Unified Runner)
+
+Para simplificar el desarrollo, he creado scripts que lanzan tanto el Backend como el Frontend simultáneamente en ventanas de terminal separadas:
+
+*   **Windows (Doble clic)**: Ejecutá el archivo `dev.bat` en la raíz del proyecto.
+*   **PowerShell**: Ejecutá `./dev.ps1` desde la raíz.
+
+Esto iniciará:
+*   **Backend**: `http://localhost:8080`
+*   **Frontend**: `http://localhost:5173` (Vite)
+
+---

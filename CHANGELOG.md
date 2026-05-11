@@ -8,7 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Sistema de Colores HEX**: Evolucion de la gestion de colores hacia un modelo hibrido que soporta codigos HEX directamente en la base de datos, permitiendo una personalizacion total por item.
+- **Sistema de Filtrado Avanzado**: Implementacion de un motor de busqueda dinamico tipo e-commerce que permite filtrar el inventario por marcas, estados, puertos, funciones y categorias de hardware de forma simultanea.
+- **Búsqueda Global por Texto**: Integracion de busqueda por coincidencia parcial en marcas y modelos de hardware directamente desde la barra de herramientas.
+- **Infraestructura de Consultas Dinámicas**: Incorporacion de `JpaSpecificationExecutor` y el patron `Specification` en el backend para generar consultas SQL optimizadas basadas en criterios variables.
+- **Componente FilterBar**: Nuevo componente interactivo en el frontend con selectores multiples (checkboxes) y limpieza de filtros, mejorando significativamente la UX en la navegacion del inventario.
+- **Controlador de Categorías de Hardware**: Nuevo endpoint `/api/categorias-hardware` para permitir la gestion y filtrado por tipos especificos de componentes.
+- **Funcionalidad de Actualización (Update)**: Implementacion completa del endpoint `PUT /api/items/{id}` para la modificacion integral de items y sus detalles, manteniendo la consistencia transaccional.
+- **Estrategia de Detalle Extendida**: Evolucion del patron Strategy (`ItemDetalleHandler`) para incluir metodos de validacion y actualizacion polimorfica, permitiendo que cada tipo de hardware gestione su propio ciclo de vida.
+
+### Fixed
+- **Selección Multifunción y Protocolos**: Se corrigio la limitacion que impedia seleccionar multiples protocolos o funciones simultaneas en puertos con capacidades mixtas (ej: USB-A con Datos y Energia).
+- **Logica Agnostica de Puertos**: Eliminacion de cualquier restriccion implicita que favoreciera al USB-C; ahora todos los puertos permiten seleccion multiple de protocolos segun su matriz de capacidades.
+- **Estabilidad del Frontend**: Resolucion de conflictos de tipos en TypeScript y nombres de metodos inconsistentes en servicios.
+
+### Changed
+- **Refactorización SOLID de Validaciones**: Las reglas de validacion especificas por tipo de hardware se movieron desde `ItemValidationService` hacia sus respectivos manejadores (`Strategy Pattern`), cumpliendo estrictamente con el principio de Abierto/Cerrado (OCP).
+- **Optimización de Mapeo (Performance)**: Refactorizacion critica de `ItemDTOMapperService` para utilizar consultas con clausulas `IN` (`findByItemIdIn`) en lugar de `findAll()`. Esta mejora elimina escaneos completos de tablas y asegura la escalabilidad del sistema ante grandes volumenes de datos.
+- **Manejo de Colores HEX**: Evolucion de la gestion de colores hacia un modelo hibrido que soporta codigos HEX directamente en la base de datos, permitiendo una personalizacion total por item.
 - **Color Picker Dinamico**: Integracion de la libreria `react-colorful` en el frontend, proporcionando un mapa de color interactivo para la seleccion precisa de tonos.
 - **Paleta de Presets**: Nueva grilla de colores comunes (Negro, Blanco, Gris, etc.) en el formulario para una carga rapida basada en el catalogo `REF_Color`.
 - Visualizacion en Tabla: Los colores de los items ahora se representan mediante circulos de color generados por CSS en la tabla de inventario, mejorando el feedback visual inmediato.
@@ -29,6 +45,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Controladores y Servicios de Gestion de Tipos: Nuevos endpoints en /api/tipos-contenedor para administrar las categorias de almacenamiento de forma independiente.
 
 ### Changed
+- **Reordenamiento de Formulario de Items**: Se ha movido la seleccion del tipo de componente (Fuente, Cable, Hardware, Otro) al inicio del formulario para dictar el flujo de carga.
+- **Logica de Filtrado Dinamico**:
+    - **FUENTE**: Ahora restringe la seleccion de puertos y protocolos exclusivamente a aquellos con capacidad de Energia (ID 1). Pre-selecciona automaticamente la funcion de energia.
+    - **CABLE**: Permite libertad total de puertos, eliminando restricciones previas de funciones de datos/video/audio.
+    - **HARDWARE / OTRO**: Mantienen acceso a todo el catalogo de puertos para maxima flexibilidad hibrida.
+    - **Soporte para Puertos "Dumb"**: Se corrigio el error que bloqueaba el guardado de puertos sin protocolos (ej: Schuko). Ahora, si un puerto tiene una unica funcion posible, se selecciona automaticamente; si tiene varias pero no usa protocolos, se habilita un selector manual de funcion.
+- **Items Híbridos y Multifunción**: Se elimino la restriccion "Fatal" que obligaba a todas las conexiones de un item a tener la misma funcion. Ahora es posible crear items que combinen Video, Datos y Energia (ej: adaptadores USB-C a HDMI+PD).
+- **Corrección de Mapeo de Protocolos**: Se habilito el soporte para guardar múltiples protocolos de diferentes categorías en un mismo puerto (ej: USB 3.0 para Datos y PD para Energía en el mismo USB-C), eliminando errores de integridad referencial.
+- **Actualizacion de Directrices IA**: Se incorporaron reglas explicitas en `GEMINI.md` sobre el cierre de sesiones y limpieza de procesos en el puerto 8080.
 - Frontend Dirigido por Tipos: El flujo de creacion de contenedores ahora exige la seleccion de un tipo formal de la base de datos, garantizando la consistencia de los prefijos generados.
 - Refactorizacion de Mapeo y DTOs: El ItemDTOMapperService ahora calcula la categoria del item en tiempo real basandose en la interseccion de funciones de sus extremos.
 - Depuracion Estructural: Eliminacion completa de entidades, repositorios y servicios obsoletos relacionados con LinkCategoriaItem y RefCategoriaItem.

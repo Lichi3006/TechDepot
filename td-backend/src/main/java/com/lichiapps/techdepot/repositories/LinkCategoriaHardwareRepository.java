@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface LinkCategoriaHardwareRepository extends JpaRepository<LinkCategoriaHardware, Long> {
     List<LinkCategoriaHardware> findByDetalleHardwareId(Long hardwareId);
+    List<LinkCategoriaHardware> findByDetalleHardwareIdIn(List<Long> hardwareIds);
 }

@@ -4,12 +4,13 @@ import type { Item } from '../../types/Item';
 interface ItemTableProps {
     items: Item[];
     onDeleteItem?: (id: number) => void;
+    onEditItem?: (id: number) => void;
 }
 
 /**
  * Componente de Negocio: Mega Tabla de Inventario
  */
-export const ItemTable: React.FC<ItemTableProps> = ({ items, onDeleteItem }) => {
+export const ItemTable: React.FC<ItemTableProps> = ({ items, onDeleteItem, onEditItem }) => {
     return (
         <div style={{ overflowX: 'auto', fontFamily: 'sans-serif' }}>
             <table style={tableStyle}>
@@ -21,6 +22,7 @@ export const ItemTable: React.FC<ItemTableProps> = ({ items, onDeleteItem }) => 
                         <th>Marca</th>
                         <th>Estado</th>
                         <th>Color</th>
+                        <th>Proteccion</th>
                         <th>Especificaciones</th>
                         <th>Acciones</th>
                     </tr>
@@ -61,19 +63,36 @@ export const ItemTable: React.FC<ItemTableProps> = ({ items, onDeleteItem }) => 
                                 </div>
                             </td>
                             <td style={cellStyle}>
+                                <div style={{ fontSize: '0.85rem' }}>
+                                    {item.proteccion?.blindajeExterno && <div>Ext: {item.proteccion.blindajeExterno}</div>}
+                                    {item.proteccion?.blindajeInterno && <div>Int: {item.proteccion.blindajeInterno}</div>}
+                                    {!item.proteccion?.blindajeExterno && !item.proteccion?.blindajeInterno && '-'}
+                                </div>
+                            </td>
+                            <td style={cellStyle}>
                                 <div style={{ fontSize: '0.9em' }}>
                                     {item.especificaciones?.largo && <div>Largo: {item.especificaciones.largo}cm</div>}
                                     {item.especificaciones?.voltaje && <div>Voltaje: {item.especificaciones.voltaje}V</div>}
+                                    {item.especificaciones?.amperaje && <div>Amperaje: {item.especificaciones.amperaje}A</div>}
+                                    {item.especificaciones?.amperajeMax && <div>Amp. Max: {item.especificaciones.amperajeMax}A</div>}
                                     {item.especificaciones?.modelo && <div>Mod: {item.especificaciones.modelo}</div>}
                                 </div>
                             </td>
                             <td style={cellStyle}>
-                                <button 
-                                    onClick={() => onDeleteItem && onDeleteItem(item.id)}
-                                    style={deleteButtonStyle}
-                                >
-                                    Eliminar
-                                </button>
+                                <div style={{ display: 'flex', gap: '5px' }}>
+                                    <button 
+                                        onClick={() => onEditItem?.(item.id)}
+                                        style={editButtonStyle}
+                                    >
+                                        Editar
+                                    </button>
+                                    <button 
+                                        onClick={() => onDeleteItem?.(item.id)}
+                                        style={deleteButtonStyle}
+                                    >
+                                        Eliminar
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     ))}
@@ -83,28 +102,37 @@ export const ItemTable: React.FC<ItemTableProps> = ({ items, onDeleteItem }) => 
     );
 };
 
-// --- Estilos temporales (luego irán a CSS) ---
 const tableStyle: React.CSSProperties = {
     width: '100%',
     borderCollapse: 'collapse',
-    fontFamily: 'sans-serif',
-    backgroundColor: '#fff',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+    backgroundColor: 'white',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    borderRadius: '8px'
 };
 
 const headerRowStyle: React.CSSProperties = {
     backgroundColor: '#f8f9fa',
-    borderBottom: '2px solid #dee2e6'
-};
-
-const cellStyle: React.CSSProperties = {
-    padding: '12px',
-    borderBottom: '1px solid #dee2e6',
+    borderBottom: '2px solid #dee2e6',
     textAlign: 'left'
 };
 
 const rowStyle: React.CSSProperties = {
+    borderBottom: '1px solid #eee',
     transition: 'background-color 0.2s'
+};
+
+const cellStyle: React.CSSProperties = {
+    padding: '12px 15px',
+    verticalAlign: 'top'
+};
+
+const editButtonStyle: React.CSSProperties = {
+    backgroundColor: '#4a90e2',
+    color: 'white',
+    border: 'none',
+    padding: '5px 10px',
+    borderRadius: '4px',
+    cursor: 'pointer'
 };
 
 const deleteButtonStyle: React.CSSProperties = {

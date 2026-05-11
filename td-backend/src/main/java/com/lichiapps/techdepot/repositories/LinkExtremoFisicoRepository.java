@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface LinkExtremoFisicoRepository extends JpaRepository<LinkExtremoFisico, Long> {
     List<LinkExtremoFisico> findByItemId(Long itemId);
+    List<LinkExtremoFisico> findByItemIdIn(List<Long> itemIds);
 }

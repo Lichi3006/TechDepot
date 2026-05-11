@@ -36,11 +36,11 @@ public class LinkCategoriaFuncionPuertoService {
         return linkCategoriaFuncionPuertoRepository.findAll();
     }
 
-    public LinkCategoriaFuncionPuerto getLinkCategoriaFuncionPuertoById(Long id){
+    public LinkCategoriaFuncionPuerto getLinkCategoriaFuncionPuertoById(LinkCategoriaFuncionPuerto.LinkCategoriaFuncionPuertoId id){
         return linkCategoriaFuncionPuertoRepository.findById(id).orElse(null);
     }
 
-    public void deleteLinkCategoriaFuncionPuertoById(Long id){
+    public void deleteLinkCategoriaFuncionPuertoById(LinkCategoriaFuncionPuerto.LinkCategoriaFuncionPuertoId id){
         linkCategoriaFuncionPuertoRepository.deleteById(id);
     }
 }

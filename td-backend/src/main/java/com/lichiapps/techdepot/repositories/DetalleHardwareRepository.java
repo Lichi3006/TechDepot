@@ -13,4 +13,5 @@ public interface DetalleHardwareRepository extends  JpaRepository<DetalleHardwar
     Optional<DetalleHardware> findByModeloAlfanumerico(String modeloAlfanumerico);
 
     List<DetalleHardware> findByItemId(Long itemId);
+    List<DetalleHardware> findByItemIdIn(List<Long> itemIds);
 }

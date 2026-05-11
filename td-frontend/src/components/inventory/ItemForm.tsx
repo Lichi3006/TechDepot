@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { 
-    ItemCreateDTO, RefMarca, RefEstado, RefColor, Contenedor, RefPuerto, RefProtocolo, LinkPuertoCapacidad 
+    ItemCreateDTO, RefMarca, RefEstado, RefColor, Contenedor, RefPuerto, RefProtocolo, LinkPuertoCapacidad, RefBase 
 } from '../../types/Item.ts';
 import { refService } from '../../services/refService.ts';
 import { Button } from '../ui/Button.tsx';
@@ -9,9 +9,13 @@ import { ColorPickerPalette } from '../shared/ColorPickerPalette.tsx';
 interface ItemFormProps {
     onSave: (item: ItemCreateDTO) => Promise<void>;
     onCancel: () => void;
+    initialData?: ItemCreateDTO;
+    initialType?: ComponentType;
 }
 
-export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
+type ComponentType = 'CABLE' | 'FUENTE' | 'HARDWARE' | 'OTRO';
+
+export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialData, initialType }) => {
     const [marcas, setMarcas] = useState<RefMarca[]>([]);
     const [estados, setEstados] = useState<RefEstado[]>([]);
     const [coloresPresets, setColoresPresets] = useState<RefColor[]>([]);
@@ -19,18 +23,88 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
     const [puertos, setPuertos] = useState<RefPuerto[]>([]);
     const [protocolos, setProtocolos] = useState<RefProtocolo[]>([]);
     const [capacidades, setCapacidades] = useState<LinkPuertoCapacidad[]>([]);
+    const [blindajesExt, setBlindajesExt] = useState<RefBase[]>([]);
+    const [blindajesInt, setBlindajesInt] = useState<RefBase[]>([]);
 
-    const [idEstado, setIdEstado] = useState<number | undefined>(undefined);
-    const [idMarca, setIdMarca] = useState<number | undefined>(undefined);
-    const [idContenedor, setIdContenedor] = useState<number | undefined>(undefined);
-    const [selectedColoresHex, setSelectedColoresHex] = useState<string[]>([]);
+    const [itemType, setItemType] = useState<ComponentType>(initialType || 'CABLE');
+    const [idEstado, setIdEstado] = useState<number | undefined>(initialData?.idEstado);
+    const [idMarca, setIdMarca] = useState<number | undefined>(initialData?.idMarca);
+    const [idContenedor, setIdContenedor] = useState<number | undefined>(initialData?.idContenedor);
+    const [selectedColoresHex, setSelectedColoresHex] = useState<string[]>(initialData?.coloresHex || []);
     
-    const [conexiones, setConexiones] = useState<{
-        idPuerto: number, 
-        idCategoriaFuncion: number, 
-        genero: boolean, 
-        idsProtocolos: number[]
-    }[]>([]);
+    // Filtro de funciones para el selector de puertos
+    const [selectedFilterFunction, setSelectedFilterFunction] = useState<number | null>(null);
+
+    const getInitialConexiones = () => {
+        if (!initialData?.conexiones) return [];
+        
+        const map = new Map<number, { idPuerto: number, idsCategoriasFuncion: number[], genero: boolean, idsProtocolos: number[] }>();
+        
+        initialData.conexiones.forEach(con => {
+            const extId = (con as any).idExtremo ?? 0;
+            if (!map.has(extId)) {
+                map.set(extId, { 
+                    idPuerto: con.idPuerto, 
+                    idsCategoriasFuncion: [con.idCategoriaFuncion], 
+                    genero: con.genero, 
+                    idsProtocolos: con.idsProtocolos 
+                });
+            } else {
+                const existing = map.get(extId)!;
+                existing.idsCategoriasFuncion.push(con.idCategoriaFuncion);
+                existing.idsProtocolos.push(...con.idsProtocolos);
+                // Limpiar duplicados de protocolos si los hubiera
+                existing.idsProtocolos = Array.from(new Set(existing.idsProtocolos));
+            }
+        });
+        
+        return Array.from(map.values());
+    };
+
+    const [conexiones, setConexiones] = useState(getInitialConexiones());
+
+    const [largo, setLargo] = useState<number>(initialData?.detalleCable?.largo || 100);
+    const [idBlindajeExt, setIdBlindajeExt] = useState<number>(initialData?.detalleCable?.idBlindajeExterno || 1);
+    const [idBlindajeInt, setIdBlindajeInt] = useState<number | undefined>(initialData?.detalleCable?.idBlindajeInterno);
+    const [voltaje, setVoltaje] = useState<number>(initialData?.detalleFuente?.voltaje || 0);
+    const [amperaje, setAmperaje] = useState<number>(initialData?.detalleFuente?.amperaje || 0);
+    const [amperajeMax, setAmperajeMax] = useState<number>(initialData?.detalleCable?.amperajeMax || 0);
+    const [modeloAlfanumerico, setModeloAlfanumerico] = useState<string>(initialData?.detalleHardware?.modeloAlfanumerico || '');
+
+    // ID del estado "Roto / Para reparar" (ID 4 en BD según seed data)
+    const ID_ESTADO_ROTO = 4;
+
+    // IDs de Categorías de Función
+    const FUNCION_ENERGIA = 1;
+    const FUNCION_DATOS = 2;
+    const FUNCION_VIDEO = 3;
+    const FUNCION_AUDIO = 4;
+    const FUNCION_REDES = 5;
+
+    // Efecto para inicializar y AJUSTAR conexiones según el tipo y estado
+    useEffect(() => {
+        const isRoto = idEstado === ID_ESTADO_ROTO;
+        const targetMin = ((itemType === 'CABLE' || itemType === 'FUENTE') && !isRoto) ? 2 : 1;
+        
+        if (conexiones.length === 0) {
+            const newConexiones = Array.from({ length: targetMin }, () => ({
+                idPuerto: 0, 
+                idsCategoriasFuncion: [], 
+                genero: itemType === 'HARDWARE' ? false : true, // Default hembra para Hardware
+                idsProtocolos: []
+            }));
+            setConexiones(newConexiones);
+        } else if (conexiones.length < targetMin && !initialData) { // Solo auto-completamos si es creación
+             const needed = targetMin - conexiones.length;
+             const newConexiones = Array.from({ length: needed }, () => ({
+                 idPuerto: 0, 
+                 idsCategoriasFuncion: [], 
+                 genero: itemType === 'HARDWARE' ? false : true, 
+                 idsProtocolos: []
+             }));
+             setConexiones([...conexiones, ...newConexiones]);
+        }
+    }, [itemType, idEstado]);
 
     useEffect(() => {
         const loadData = async () => {
@@ -50,220 +124,397 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel }) => {
                 safeLoad(refService.getContenedores, setContenedores, "Contenedores"),
                 safeLoad(refService.getPuertos, setPuertos, "Puertos"),
                 safeLoad(refService.getProtocolos, setProtocolos, "Protocolos"),
-                safeLoad(refService.getPuertosCapacidades, setCapacidades, "Capacidades")
+                safeLoad(refService.getPuertosCapacidades, setCapacidades, "Capacidades"),
+                safeLoad(refService.getBlindajesExternos, setBlindajesExt, "Blindajes Ext"),
+                safeLoad(refService.getBlindajesInternos, setBlindajesInt, "Blindajes Int")
             ]);
         };
         loadData();
     }, []);
 
+    const getPuertosFiltrados = () => {
+        let basePuertos = puertos;
+        
+        // Filtro por tipo de componente
+        if (itemType === 'FUENTE') {
+            const idsPuertosEnergia = capacidades
+                .filter(cap => cap.categoriaFuncion.id === FUNCION_ENERGIA)
+                .map(cap => cap.puerto.id);
+            basePuertos = basePuertos.filter(p => idsPuertosEnergia.includes(p.id));
+        }
+
+        // Filtro manual por función (UI Selector)
+        if (selectedFilterFunction) {
+            const idsCompatibles = capacidades
+                .filter(cap => cap.categoriaFuncion.id === selectedFilterFunction)
+                .map(cap => cap.puerto.id);
+            basePuertos = basePuertos.filter(p => idsCompatibles.includes(p.id));
+        }
+        
+        return basePuertos;
+    };
+
     const handleAddConexion = () => {
-        setConexiones([...conexiones, { idPuerto: 0, idCategoriaFuncion: 0, genero: true, idsProtocolos: [] }]);
+        setConexiones([...conexiones, { 
+            idPuerto: 0, 
+            idsCategoriasFuncion: [], 
+            genero: itemType === 'HARDWARE' ? false : true, 
+            idsProtocolos: [] 
+        }]);
     };
 
     const updateConexion = (index: number, field: string, value: any) => {
-        const newCons = [...conexiones];
-        const con = { ...newCons[index], [field]: value };
+        setConexiones(prev => {
+            const newCons = [...prev];
+            const con = { ...newCons[index], [field]: value };
 
-        if (field === 'idPuerto') {
-            const portCaps = capacidades.filter(cap => cap.puerto.id === value);
-            if (portCaps.length === 1) {
-                con.idCategoriaFuncion = portCaps[0].categoriaFuncion.id!;
-            } else {
-                con.idCategoriaFuncion = 0;
+            if (field === 'idPuerto') {
+                const portCaps = capacidades.filter(cap => cap.puerto.id === value);
+                
+                if (itemType === 'FUENTE') {
+                    con.idsCategoriasFuncion = [FUNCION_ENERGIA]; // Fuerza Energía
+                } else if (portCaps.length === 1) {
+                    con.idsCategoriasFuncion = [portCaps[0].categoriaFuncion.id!];
+                } else {
+                    con.idsCategoriasFuncion = []; 
+                }
+                con.idsProtocolos = [];
             }
-            con.idsProtocolos = [];
-        }
 
-        if (field === 'idsProtocolos') {
-            if (value.length > 0) {
-                const prot = protocolos.find(p => p.id === value[0]);
-                if (prot) con.idCategoriaFuncion = prot.categoriaFuncion.id!;
+            if (field === 'idCategoriaFuncion') {
+                // Si ya está, lo quitamos. Si no, lo agregamos (soporte multifunción)
+                const current = con.idsCategoriasFuncion;
+                if (current.includes(value)) {
+                    con.idsCategoriasFuncion = current.filter(id => id !== value);
+                    // Si quitamos una función, también quitamos sus protocolos asociados
+                    const protocolsOfThisFunction = protocolos.filter(p => p.categoriaFuncion.id === value).map(p => p.id);
+                    con.idsProtocolos = con.idsProtocolos.filter(id => !protocolsOfThisFunction.includes(id));
+                } else {
+                    con.idsCategoriasFuncion = [...current, value];
+                }
             }
-        }
 
-        newCons[index] = con;
-        setConexiones(newCons);
+            if (field === 'idsProtocolos') {
+                // value ya viene como el nuevo array completo de IDs
+                con.idsProtocolos = value;
+                
+                // Aseguramos que las categorías de todos los protocolos seleccionados estén en idsCategoriasFuncion
+                const categoriesFromProtocols = value.map((idProt: number) => {
+                    return protocolos.find(p => p.id === idProt)?.categoriaFuncion.id;
+                }).filter(Boolean);
+
+                // Unión de las categorías manuales previas y las derivadas de los protocolos
+                con.idsCategoriasFuncion = Array.from(new Set([...con.idsCategoriasFuncion, ...categoriesFromProtocols]));
+            }
+
+            newCons[index] = con;
+            return newCons;
+        });
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
         if (!idEstado) return alert("El estado es obligatorio");
         if (!idContenedor) return alert("El contenedor es obligatorio");
+        if (conexiones.length === 0) return alert("Debe agregar al menos una conexión");
 
-        if (conexiones.some(c => c.idCategoriaFuncion === 0)) {
-            alert("Hay conexiones con funcion ambigua. Seleccione un protocolo para definir que hace el puerto.");
+        if (conexiones.some(c => c.idsCategoriasFuncion.length === 0)) {
+            alert("Hay conexiones sin función definida. Seleccione un protocolo o función manual.");
             return;
         }
 
+        // El backend espera una conexión por CategoriaFuncion
+        // Si un puerto tiene 3 funciones, enviamos 3 objetos de conexión al backend
+        const conexionesExpandidas = conexiones.flatMap((con, index) => 
+            con.idsCategoriasFuncion.map(idFun => ({
+                idExtremo: index, // Agregamos índice para agrupar por extremo físico
+                idPuerto: con.idPuerto,
+                idCategoriaFuncion: idFun,
+                genero: con.genero,
+                idsProtocolos: protocolos
+                    .filter(p => p.puerto.id === con.idPuerto && p.categoriaFuncion.id === idFun && con.idsProtocolos.includes(p.id!))
+                    .map(p => p.id!)
+            }))
+        );
+
         const dto: ItemCreateDTO = {
             idEstado: idEstado!,
-            idMarca: idMarca || undefined,
+            idMarca: idMarca,
             idContenedor: idContenedor!,
             coloresHex: selectedColoresHex,
-            conexiones: conexiones.map(c => ({
-                ...c,
-                idsProtocolos: c.idsProtocolos
-            }))
+            conexiones: conexionesExpandidas,
+            detalleCable: (itemType === 'CABLE' || itemType === 'FUENTE') ? { 
+                largo, 
+                idBlindajeExterno: idBlindajeExt, 
+                idBlindajeInterno: idBlindajeInt,
+                amperajeMax: itemType === 'FUENTE' ? amperajeMax : undefined 
+            } : undefined,
+            detalleFuente: itemType === 'FUENTE' ? { amperaje, voltaje } : undefined,
+            detalleHardware: itemType === 'HARDWARE' ? { modeloAlfanumerico, idsCategoriasHardware: [] } : undefined
         };
-        
         onSave(dto);
     };
 
     return (
         <form onSubmit={handleSubmit} style={formStyle}>
+            {/* 1. TIPO DE COMPONENTE (AHORA PRIMERO) */}
             <div style={sectionStyle}>
-                <h3>Informacion Basica</h3>
-                
-                <label style={labelStyle}>Estado:</label>
-                <select 
-                    value={idEstado || ""} 
-                    onChange={(e) => setIdEstado(e.target.value ? Number(e.target.value) : undefined)} 
-                    required 
-                    style={inputStyle}
-                >
-                    <option value="">Seleccione...</option>
-                    {estados.map(e => <option key={e.id} value={e.id}>{e.nombre}</option>)}
-                </select>
-
-                <label style={labelStyle}>Marca:</label>
-                <select 
-                    value={idMarca || ""} 
-                    onChange={(e) => setIdMarca(e.target.value ? Number(e.target.value) : undefined)} 
-                    style={inputStyle}
-                >
-                    <option value="">Ninguna / Generica</option>
-                    {marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
-                </select>
-
-                <label style={labelStyle}>Contenedor:</label>
-                <select 
-                    value={idContenedor || ""} 
-                    onChange={(e) => setIdContenedor(e.target.value ? Number(e.target.value) : undefined)} 
-                    required 
-                    style={inputStyle}
-                >
-                    <option value="">Seleccione...</option>
-                    {contenedores.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-                </select>
-
-                <label style={labelStyle}>Colores:</label>
-                <ColorPickerPalette 
-                    selectedColors={selectedColoresHex} 
-                    presets={coloresPresets} 
-                    onChange={setSelectedColoresHex} 
-                />
+                <label style={labelStyle}>Tipo de Componente:</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    {(['CABLE', 'FUENTE', 'HARDWARE', 'OTRO'] as const).map(t => (
+                        <Button 
+                            key={t} 
+                            type="button" 
+                            variant={itemType === t ? 'success' : 'secondary'} 
+                            onClick={() => {
+                                setItemType(t);
+                                // Inicializamos con 2 conexiones para CABLE/FUENTE, 1 para el resto
+                                const initialCount = (t === 'CABLE' || t === 'FUENTE') ? 2 : 1;
+                                const initialConexiones = Array.from({ length: initialCount }, () => ({
+                                    idPuerto: 0, 
+                                    idsCategoriasFuncion: [], 
+                                    genero: t === 'HARDWARE' ? false : true, 
+                                    idsProtocolos: []
+                                }));
+                                setConexiones(initialConexiones);
+                            }} 
+                            style={{ flex: 1 }}
+                        >
+                            {t}
+                        </Button>
+                    ))}
+                </div>
             </div>
 
+            {/* 2. INFORMACION BASICA */}
             <div style={sectionStyle}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3>Informacion Basica</h3>
+                <div style={gridStyle}>
+                    <div>
+                        <label style={labelStyle}>Estado:</label>
+                        <select value={idEstado || ""} onChange={(e) => setIdEstado(Number(e.target.value))} required style={inputStyle}>
+                            <option value="">Seleccione...</option>
+                            {estados.map(e => <option key={e.id} value={e.id}>{e.nombre}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label style={labelStyle}>Marca:</label>
+                        <select value={idMarca || ""} onChange={(e) => setIdMarca(Number(e.target.value))} style={inputStyle}>
+                            <option value="">Generica / Ninguna</option>
+                            {marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label style={labelStyle}>Contenedor:</label>
+                        <select value={idContenedor || ""} onChange={(e) => setIdContenedor(Number(e.target.value))} required style={inputStyle}>
+                            <option value="">Seleccione...</option>
+                            {contenedores.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                        </select>
+                    </div>
+                </div>
+
+                <label style={labelStyle}>Colores:</label>
+                <ColorPickerPalette selectedColors={selectedColoresHex} presets={coloresPresets} onChange={setSelectedColoresHex} />
+            </div>
+
+            {/* 3. CONEXIONES (FILTRADAS) */}
+            <div style={sectionStyle}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                     <h3>Conexiones y Extremos</h3>
-                    <Button type="button" onClick={handleAddConexion} variant="success">+ Agregar Extremo</Button>
+                    <div style={{ display: 'flex', gap: '5px' }}>
+                        <Button type="button" onClick={handleAddConexion} variant="success">+ Agregar Extremo</Button>
+                    </div>
+                </div>
+
+                <div style={{ marginBottom: '15px', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: 'bold' }}>Filtrar Puertos por:</span>
+                    <button type="button" onClick={() => setSelectedFilterFunction(null)} style={selectedFilterFunction === null ? activeFilterStyle : filterStyle}>Todos</button>
+                    <button type="button" onClick={() => setSelectedFilterFunction(FUNCION_ENERGIA)} style={selectedFilterFunction === FUNCION_ENERGIA ? activeFilterStyle : filterStyle}>Energía</button>
+                    <button type="button" onClick={() => setSelectedFilterFunction(FUNCION_DATOS)} style={selectedFilterFunction === FUNCION_DATOS ? activeFilterStyle : filterStyle}>Datos</button>
+                    <button type="button" onClick={() => setSelectedFilterFunction(FUNCION_VIDEO)} style={selectedFilterFunction === FUNCION_VIDEO ? activeFilterStyle : filterStyle}>Video</button>
+                    <button type="button" onClick={() => setSelectedFilterFunction(FUNCION_AUDIO)} style={selectedFilterFunction === FUNCION_AUDIO ? activeFilterStyle : filterStyle}>Audio</button>
+                    <button type="button" onClick={() => setSelectedFilterFunction(FUNCION_REDES)} style={selectedFilterFunction === FUNCION_REDES ? activeFilterStyle : filterStyle}>Redes</button>
                 </div>
                 
                 {conexiones.map((con, index) => {
-                    const availableProtocols = protocolos.filter(p => p.puerto.id === con.idPuerto);
-                    const currentFunction = capacidades.find(c => c.categoriaFuncion.id === con.idCategoriaFuncion)?.categoriaFuncion;
-
+                    const filteredPorts = getPuertosFiltrados();
+                    let portCaps = capacidades.filter(cap => cap.puerto.id === con.idPuerto);
+                    
+                    if (itemType === 'FUENTE') {
+                        // Para fuentes solo mostramos la capacidad de Energía (ID 1)
+                        portCaps = portCaps.filter(cap => cap.categoriaFuncion.id === FUNCION_ENERGIA);
+                    }
+                    
                     return (
                         <div key={index} style={conexionCardStyle}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px', gap: '10px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr 100px 40px', gap: '15px', alignItems: 'end' }}>
                                 <div>
                                     <label style={smallLabelStyle}>Puerto:</label>
-                                    <select 
-                                        value={con.idPuerto} 
-                                        onChange={(e) => updateConexion(index, 'idPuerto', Number(e.target.value))}
-                                        style={inputStyle}
-                                    >
+                                    <select value={con.idPuerto} onChange={(e) => updateConexion(index, 'idPuerto', Number(e.target.value))} style={inputStyle}>
                                         <option value="0">Seleccione...</option>
-                                        {puertos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                                        {filteredPorts.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label style={smallLabelStyle}>Protocolo (Opcional):</label>
-                                    <select 
-                                        multiple
-                                        value={con.idsProtocolos.map(String)} 
-                                        onChange={(e) => {
-                                            const values = Array.from(e.target.selectedOptions, option => Number(option.value));
-                                            updateConexion(index, 'idsProtocolos', values);
-                                        }}
-                                        style={{ ...inputStyle, height: '60px' }}
-                                        disabled={con.idPuerto === 0 || availableProtocols.length === 0}
-                                    >
-                                        {availableProtocols.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-                                    </select>
+                                    <label style={smallLabelStyle}>Protocolos / Función:</label>
+                                    {con.idPuerto === 0 ? (
+                                        <div style={{ padding: '8px', color: '#999', fontSize: '0.85rem' }}>Seleccione un puerto</div>
+                                    ) : (
+                                        <div style={protocolGridStyle}>
+                                            {portCaps.map(cap => {
+                                                const capsProts = protocolos.filter(p => p.puerto.id === con.idPuerto && p.categoriaFuncion.id === cap.categoriaFuncion.id);
+                                                const isFunctionActive = con.idsCategoriasFuncion.includes(cap.categoriaFuncion.id!);
+                                                
+                                                if (capsProts.length > 0) {
+                                                    // Categoría con protocolos
+                                                    return (
+                                                        <div key={cap.categoriaFuncion.id} style={{ gridColumn: '1 / span 2', borderBottom: '1px solid #f0f0f0', paddingBottom: '4px', marginBottom: '4px' }}>
+                                                            <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#aaa', textTransform: 'uppercase', marginBottom: '2px' }}>{cap.categoriaFuncion.nombre}</div>
+                                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' }}>
+                                                                {capsProts.map(p => (
+                                                                    <label key={p.id} style={checkboxLabelStyle}>
+                                                                        <input 
+                                                                            type="checkbox" 
+                                                                            checked={con.idsProtocolos.includes(p.id!)}
+                                                                            onChange={(e) => {
+                                                                                const newIds = e.target.checked 
+                                                                                    ? [...con.idsProtocolos, p.id!]
+                                                                                    : con.idsProtocolos.filter(id => id !== p.id);
+                                                                                updateConexion(index, 'idsProtocolos', newIds);
+                                                                            }}
+                                                                        /> {p.nombre}
+                                                                    </label>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                } else {
+                                                    // Función sin protocolos (bare function)
+                                                    return (
+                                                        <label key={cap.categoriaFuncion.id} style={{ ...checkboxLabelStyle, gridColumn: '1 / span 2' }}>
+                                                            <input 
+                                                                type="checkbox" 
+                                                                checked={isFunctionActive}
+                                                                onChange={() => updateConexion(index, 'idCategoriaFuncion', cap.categoriaFuncion.id!)}
+                                                            /> {cap.categoriaFuncion.nombre}
+                                                        </label>
+                                                    );
+                                                }
+                                            })}
+                                            {portCaps.length === 0 && <div style={{ padding: '8px', color: '#d9534f', fontSize: '0.85rem', gridColumn: '1 / span 2' }}>Sin capacidades en BD</div>}
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
-                                    <label style={smallLabelStyle}>Genero:</label>
-                                    <select 
-                                        value={con.genero ? 'M' : 'H'} 
-                                        onChange={(e) => updateConexion(index, 'genero', e.target.value === 'M')}
-                                        style={inputStyle}
-                                    >
+                                    <label style={smallLabelStyle}>Género:</label>
+                                    <select value={con.genero ? 'M' : 'H'} onChange={(e) => updateConexion(index, 'genero', e.target.value === 'M')} style={inputStyle}>
                                         <option value="M">Macho</option>
                                         <option value="H">Hembra</option>
                                     </select>
                                 </div>
+                                <Button 
+                                    variant="secondary" 
+                                    onClick={() => setConexiones(conexiones.filter((_, i) => i !== index))} 
+                                    style={{ padding: '8px', opacity: (conexiones.length <= (((itemType === 'CABLE' || itemType === 'FUENTE') && idEstado !== ID_ESTADO_ROTO) ? 2 : 1)) ? 0.5 : 1 }}
+                                    disabled={conexiones.length <= (((itemType === 'CABLE' || itemType === 'FUENTE') && idEstado !== ID_ESTADO_ROTO) ? 2 : 1)}
+                                >
+                                    X
+                                </Button>
                             </div>
                         </div>
                     );
                 })}
-                {conexiones.length === 0 && <p style={{ color: '#666' }}>No hay conexiones agregadas.</p>}
+                {conexiones.length === 0 && <p style={{ color: '#999' }}>Primero debe elegir el tipo de componente arriba y agregar sus conexiones.</p>}
+            </div>
+
+            {/* 4. ESPECIFICACIONES TÉCNICAS */}
+            <div style={sectionStyle}>
+                <h3>Especificaciones Técnicas</h3>
+                <div style={gridStyle}>
+                    {(itemType === 'CABLE' || itemType === 'FUENTE') && (
+                        <>
+                            <div>
+                                <label style={labelStyle}>Largo (cm):</label>
+                                <input type="number" value={largo} onChange={(e) => setLargo(Number(e.target.value))} style={inputStyle} />
+                            </div>
+                            <div>
+                                <label style={labelStyle}>Blindaje Ext:</label>
+                                <select value={idBlindajeExt} onChange={(e) => setIdBlindajeExt(Number(e.target.value))} style={inputStyle}>
+                                    {blindajesExt
+                                        .filter(b => {
+                                            const isNetworkShield = b.nombre.includes('UTP') || b.nombre.includes('STP') || b.nombre.includes('FTP');
+                                            const isNetworkItem = conexiones.some(c => c.idsCategoriasFuncion.includes(FUNCION_REDES));
+                                            return isNetworkItem ? isNetworkShield || ['PVC', 'Goma'].includes(b.nombre) : !isNetworkShield;
+                                        })
+                                        .map(b => <option key={b.id} value={b.id}>{b.nombre}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label style={labelStyle}>Blindaje Int:</label>
+                                <select value={idBlindajeInt || ""} onChange={(e) => setIdBlindajeInt(e.target.value ? Number(e.target.value) : undefined)} style={inputStyle}>
+                                    <option value="">Ninguno</option>
+                                    {blindajesInt.map(b => <option key={b.id} value={b.id}>{b.nombre}</option>)}
+                                </select>
+                            </div>
+                        </>
+                    )}
+                    {itemType === 'FUENTE' && (
+                        <>
+                            <div>
+                                <label style={labelStyle}>Voltaje (V):</label>
+                                <input type="number" value={voltaje} onChange={(e) => setVoltaje(Number(e.target.value))} style={inputStyle} />
+                            </div>
+                            <div>
+                                <label style={labelStyle}>Amperaje (A):</label>
+                                <input type="number" value={amperaje} onChange={(e) => setAmperaje(Number(e.target.value))} style={inputStyle} />
+                            </div>
+                            <div>
+                                <label style={labelStyle}>Amp. Max (Pico):</label>
+                                <input type="number" value={amperajeMax} onChange={(e) => setAmperajeMax(Number(e.target.value))} style={inputStyle} />
+                            </div>
+                        </>
+                    )}
+                    {itemType === 'HARDWARE' && (
+                        <div>
+                            <label style={labelStyle}>Modelo / SN:</label>
+                            <input type="text" value={modeloAlfanumerico} onChange={(e) => setModeloAlfanumerico(e.target.value)} style={inputStyle} />
+                        </div>
+                    )}
+                </div>
             </div>
 
             <div style={footerStyle}>
                 <Button type="button" variant="secondary" onClick={onCancel}>Cancelar</Button>
-                <Button type="submit" variant="success">Guardar Item</Button>
+                <Button type="submit" variant="success">Guardar Item Completo</Button>
             </div>
         </form>
     );
 };
 
-const formStyle: React.CSSProperties = {
+const formStyle: React.CSSProperties = { backgroundColor: '#fff', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', marginBottom: '30px' };
+const sectionStyle: React.CSSProperties = { marginBottom: '25px', borderBottom: '1px solid #f0f0f0', paddingBottom: '20px' };
+const gridStyle: React.CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '15px' };
+const conexionCardStyle: React.CSSProperties = { padding: '15px', backgroundColor: '#fdfdfd', borderRadius: '8px', marginBottom: '12px', border: '1px solid #eee' };
+const labelStyle: React.CSSProperties = { display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.95rem' };
+const smallLabelStyle: React.CSSProperties = { fontSize: '0.8rem', color: '#666', fontWeight: 'bold', marginBottom: '5px', display: 'block' };
+const inputStyle: React.CSSProperties = { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '0.95rem' };
+const protocolGridStyle: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px', maxHeight: '100px', overflowY: 'auto', padding: '8px', border: '1px solid #eee', borderRadius: '6px', backgroundColor: '#fff' };
+const checkboxLabelStyle: React.CSSProperties = { fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' };
+const footerStyle: React.CSSProperties = { display: 'flex', justifyContent: 'flex-end', gap: '15px', marginTop: '10px' };
+
+const filterStyle: React.CSSProperties = {
+    padding: '4px 12px',
+    borderRadius: '20px',
+    border: '1px solid #ddd',
     backgroundColor: '#fff',
-    padding: '20px',
-    borderRadius: '8px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-    marginBottom: '20px'
+    fontSize: '0.8rem',
+    cursor: 'pointer',
+    transition: 'all 0.2s'
 };
 
-const sectionStyle: React.CSSProperties = {
-    marginBottom: '30px',
-    borderBottom: '1px solid #eee',
-    paddingBottom: '20px'
-};
-
-const conexionCardStyle: React.CSSProperties = {
-    padding: '15px',
-    backgroundColor: '#f9f9f9',
-    borderRadius: '6px',
-    marginBottom: '10px',
-    border: '1px solid #eee'
-};
-
-const labelStyle: React.CSSProperties = {
-    display: 'block',
-    marginBottom: '5px',
-    fontWeight: 'bold'
-};
-
-const smallLabelStyle: React.CSSProperties = {
-    fontSize: '0.85em',
-    display: 'block',
-    marginBottom: '3px'
-};
-
-const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '8px',
-    marginBottom: '10px',
-    borderRadius: '4px',
-    border: '1px solid #ccc'
-};
-
-const footerStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '10px'
+const activeFilterStyle: React.CSSProperties = {
+    ...filterStyle,
+    backgroundColor: '#4a90e2',
+    color: 'white',
+    border: '1px solid #4a90e2'
 };

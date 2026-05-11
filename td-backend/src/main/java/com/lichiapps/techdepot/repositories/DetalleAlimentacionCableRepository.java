@@ -13,5 +13,7 @@ public interface DetalleAlimentacionCableRepository extends  JpaRepository<Detal
 
     Optional<DetalleAlimentacionCable> findByDetalleCableId(Long detalleCableId);
 
+    java.util.List<DetalleAlimentacionCable> findByDetalleCableIdIn(java.util.List<Long> detalleCableIds);
+
     void deleteByDetalleCableId(Long detalleCableId);
 }

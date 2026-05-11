@@ -8,7 +8,8 @@ import type {
     RefCategoriaFuncion, 
     RefPuerto, 
     RefProtocolo,
-    LinkPuertoCapacidad
+    LinkPuertoCapacidad,
+    RefBase
 } from '../types/Item.ts';
 
 export const refService = {
@@ -40,6 +41,13 @@ export const refService = {
     getPuertos: () => api.get<RefPuerto[]>('/puertos').then(r => r.data),
     savePuerto: (data: RefPuerto) => api.post<RefPuerto>('/puertos', data).then(r => r.data),
     getPuertosCapacidades: () => api.get<LinkPuertoCapacidad[]>('/puertos-capacidades').then(r => r.data),
+
+    // Categorías de Hardware
+    getCategoriasHardware: () => api.get<RefBase[]>('/categorias-hardware').then(r => r.data),
+
+    // Blindajes
+    getBlindajesExternos: () => api.get<RefBase[]>('/blindajes-externos').then(r => r.data),
+    getBlindajesInternos: () => api.get<RefBase[]>('/blindajes-internos').then(r => r.data),
 
     // Protocolos
     getProtocolos: () => api.get<RefProtocolo[]>('/protocolos').then(r => r.data),

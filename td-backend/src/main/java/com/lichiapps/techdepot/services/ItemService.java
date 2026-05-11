@@ -3,9 +3,12 @@ package com.lichiapps.techdepot.services;
 import com.lichiapps.techdepot.dtos.ItemCreateDTO;
 import com.lichiapps.techdepot.dtos.ItemDTO;
 import com.lichiapps.techdepot.entities.Item;
+import com.lichiapps.techdepot.services.handlers.ItemDetalleHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.lichiapps.techdepot.dtos.ItemFilterDTO;
 
 import java.util.List;
 
@@ -13,27 +16,27 @@ import java.util.List;
  * Servicio principal (fachada) para operaciones con Items.
  * Este servicio ORQUESTA las llamadas a los otros servicios especializados.
  * NO contiene lógica de negocio directa, solo coordina y delega.
- *
- * Patrón: Facade Pattern - Proporciona una interfaz simple para un subsistema complejo.
  */
 @Service
 public class ItemService {
 
-    // === SERVICIOS ESPECIALIZADOS ===
     @Autowired private ItemValidationService validationService;
     @Autowired private ItemCrudService crudService;
     @Autowired private ItemDetalleService detalleService;
     @Autowired private ItemConexionService conexionService;
     @Autowired private ItemDTOMapperService mapperService;
 
+    // Inyección dinámica de todos los manejadores de detalles (Patrón Strategy)
+    @Autowired private List<ItemDetalleHandler> detailHandlers;
+
     /**
-     * Crea un Item completo con todos sus detalles.
-     * Este método es transaccional: si algo falla, se revierte TODO.
-     *
-     * @param createDTO DTO con todos los datos del item a crear
-     * @return ItemDTO con el item creado y todos sus detalles
-     * @throws IllegalArgumentException si faltan datos obligatorios o referencias no existen
+     * Búsqueda avanzada de items con filtros dinámicos.
      */
+    public List<ItemDTO> searchItems(ItemFilterDTO filters) {
+        List<Item> items = crudService.obtenerItemsFiltrados(filters);
+        return mapperService.convertirListaAItemDTO(items);
+    }
+
     @Transactional
     public ItemDTO createItemConDetalles(ItemCreateDTO createDTO) {
         // 1. Validamos los datos obligatorios
@@ -48,58 +51,69 @@ public class ItemService {
         // 4. Guardamos las conexiones físicas (puertos y protocolos)
         conexionService.guardarConexiones(itemGuardado, createDTO.getConexiones());
 
-        // 5. Guardamos el detalle de cable (si aplica)
-        detalleService.guardarDetalleCable(itemGuardado, createDTO.getDetalleCable());
+        // 5. Guardamos detalles específicos mediante handlers polimórficos
+        detailHandlers.stream()
+                .filter(handler -> handler.supports(createDTO))
+                .forEach(handler -> handler.guardar(itemGuardado, createDTO));
 
-        // 6. Guardamos el detalle de fuente (si aplica)
-        detalleService.guardarDetalleFuente(itemGuardado, createDTO.getDetalleFuente());
-
-        // 7. Guardamos el detalle de hardware (si aplica)
-        detalleService.guardarDetalleHardware(itemGuardado, createDTO.getDetalleHardware());
-
-        // 8. Retornamos el ItemDTO completo
+        // 6. Retornamos el ItemDTO completo
         return mapperService.obtenerItemDTOPorId(itemGuardado.getId());
     }
 
-    /**
-     * Obtiene todos los items con sus detalles completos.
-     * @return Lista de ItemDTO con todos los detalles
-     */
+    @Transactional
+    public ItemDTO updateItemConDetalles(Long id, ItemCreateDTO updateDTO) {
+        // 1. Buscamos el item existente
+        Item itemExistente = crudService.obtenerItemPorId(id);
+        if (itemExistente == null) {
+            throw new IllegalArgumentException("No se encontró el Item con ID: " + id);
+        }
+
+        // 2. Validamos los nuevos datos
+        validationService.validarDatosObligatoriosCreate(updateDTO);
+
+        // 3. Actualizamos campos básicos
+        crudService.actualizarEstado(itemExistente, updateDTO.getIdEstado());
+        crudService.actualizarMarca(itemExistente, updateDTO.getIdMarca());
+        crudService.actualizarContenedor(itemExistente, updateDTO.getIdContenedor());
+
+        // 4. Actualizamos colores
+        detalleService.actualizarColores(itemExistente, updateDTO.getColoresHex());
+
+        // 5. Actualizamos conexiones
+        conexionService.actualizarConexiones(itemExistente, updateDTO.getConexiones());
+
+        // 6. Actualizamos detalles específicos mediante handlers (Strategy)
+        detailHandlers.stream()
+                .filter(handler -> handler.supports(updateDTO))
+                .forEach(handler -> handler.actualizar(itemExistente, updateDTO));
+
+        // 7. Retornamos el DTO actualizado
+        return mapperService.obtenerItemDTOPorId(id);
+    }
+
     public List<ItemDTO> getAllItemsConDetalles() {
         List<Item> items = crudService.obtenerTodosLosItems();
         return mapperService.convertirListaAItemDTO(items);
     }
 
-    /**
-     * Obtiene todos los items (entidades, no DTOs).
-     * @return Lista de Items
-     */
     public List<Item> getAllItems() {
         return crudService.obtenerTodosLosItems();
     }
 
-    /**
-     * Obtiene un item por su ID.
-     * @param id ID del item a buscar
-     * @return Item encontrado o null
-     */
     public Item getItemById(Long id) {
         return crudService.obtenerItemPorId(id);
     }
 
-    /**
-     * Elimina un item y TODOS sus detalles relacionados.
-     * Este método es transaccional: si algo falla, se revierte TODO.
-     *
-     * @param id ID del item a eliminar
-     */
     @Transactional
     public void deleteItemById(Long id) {
-        // Primero eliminamos todos los detalles
-        detalleService.eliminarTodosLosDetalles(id);
+        // Eliminamos todos los detalles usando los handlers
+        detailHandlers.forEach(handler -> handler.eliminar(id));
+        
+        // Limpiamos colores y conexiones
+        detalleService.eliminarColores(id);
         conexionService.eliminarConexiones(id);
 
-        // Finalmente eliminamos el item
+        // Finalmente eliminamos el item base
         crudService.eliminarItem(id);
     }
 }

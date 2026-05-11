@@ -279,7 +279,8 @@ INSERT INTO REF_CategoriaFuncion (Nombre) VALUES
 ('Energía'), 
 ('Datos'), 
 ('Video'), 
-('Audio');
+('Audio'),
+('Redes');
 GO
 
 -- 9.3 Tipos de Contenedor
@@ -316,8 +317,8 @@ INSERT INTO LINK_CategoriaFuncionPuerto (IdREF_Puerto, IdREF_CategoriaFuncion) V
 INSERT INTO LINK_CategoriaFuncionPuerto (IdREF_Puerto, IdREF_CategoriaFuncion) VALUES (3, 3), (3, 4), (4, 3), (4, 4);
 -- Schuko (5) e IEC C13 (6) -> Energía (1)
 INSERT INTO LINK_CategoriaFuncionPuerto (IdREF_Puerto, IdREF_CategoriaFuncion) VALUES (5, 1), (6, 1);
--- RJ45 (7) -> Datos (2)
-INSERT INTO LINK_CategoriaFuncionPuerto (IdREF_Puerto, IdREF_CategoriaFuncion) VALUES (7, 2);
+-- RJ45 (7) -> Redes (5)
+INSERT INTO LINK_CategoriaFuncionPuerto (IdREF_Puerto, IdREF_CategoriaFuncion) VALUES (7, 5);
 -- Jacks y XLR (8, 9, 10) -> Audio (4)
 INSERT INTO LINK_CategoriaFuncionPuerto (IdREF_Puerto, IdREF_CategoriaFuncion) VALUES (8, 4), (9, 4), (10, 4);
 GO
@@ -333,8 +334,16 @@ INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES 
 INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (3, 3, 'HDMI 1.4'), (3, 3, 'HDMI 2.0'), (3, 3, 'HDMI 2.1');
 -- DisplayPort
 INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (4, 3, 'DisplayPort 1.2'), (4, 3, 'DisplayPort 1.4'), (4, 3, 'DisplayPort 2.0'), (4, 3, 'DisplayPort 2.1');
--- RJ45 (Ethernet)
-INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (7, 2, 'Ethernet Cat5 (100Mbps)'), (7, 2, 'Ethernet Cat5e (1Gbps)'), (7, 2, 'Ethernet Cat6 (1Gbps)'), (7, 2, 'Ethernet Cat6a (10Gbps)'), (7, 2, 'Ethernet Cat7 (10Gbps)');
+-- RJ45 (Ethernet) - Ahora bajo categoría Redes (5)
+INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (7, 5, 'Ethernet Cat5 (100Mbps)'), (7, 5, 'Ethernet Cat5e (1Gbps)'), (7, 5, 'Ethernet Cat6 (1Gbps)'), (7, 5, 'Ethernet Cat6a (10Gbps)'), (7, 5, 'Ethernet Cat7 (10Gbps)');
 -- Audio (Jacks / XLR)
 INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES (8, 4, 'Audio Analogo (Stereo)'), (9, 4, 'Audio Analogo (Mono/Instrumento)'), (10, 4, 'Audio Balanceado (Mono)');
+GO
+
+-- 9.7 Colores Comunes (Presets)
+-- ... (Colores remains the same)
+
+-- 9.8 Blindajes
+INSERT INTO REF_BlindajeExternoCable (Nombre) VALUES ('PVC'), ('Trenzado Nylon'), ('Goma'), ('UTP (Sin blindaje)'), ('STP (Blindaje trenzado)'), ('FTP (Lámina aluminio)');
+INSERT INTO REF_BlindajeInternoCable (Nombre) VALUES ('Ninguno'), ('Papel Aluminio (Foil)'), ('Trenzado Cobre');
 GO

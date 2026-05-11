@@ -8,8 +8,9 @@ Este documento detalla las decisiones arquitectónicas y patrones de diseño imp
 El servicio ItemService actúa como el punto de entrada principal (Fachada) para todas las operaciones relacionadas con el inventario. Su responsabilidad es orquestar la lógica delegando en servicios especializados para mantener el principio de responsabilidad única (SRP):
 - ItemValidationService: Validaciones de integridad y existencia.
 - ItemCrudService: Operaciones básicas de persistencia del item base.
-- `ItemDetalleService`: Gestión de atributos específicos (Cables, Fuentes, Hardware).
-- `ItemConexionService`: Lógica compleja de puertos y protocolos. Ahora incluye autodetección de funciones basada en la matriz de capacidades expuesta por `LinkCategoriaFuncionPuertoController`.
+- `ItemDetalleService`: Gestión de atributos comunes (Colores).
+- `ItemConexionService`: Lógica compleja de puertos y protocolos.
+- `ItemDetalleHandler` (Strategy Pattern): Manejo polimórfico de validación, persistencia, actualización y eliminación de detalles específicos (Cables, Fuentes, Hardware).
 
 ## 2. Estrategia de Persistencia y Modelado de Datos (Evolución V2)
 
@@ -37,8 +38,10 @@ Para facilitar la búsqueda física de hardware, el sistema implementa una conve
 
 ## 4. Optimización y Rendimiento
 
-### Prevención de N+1 Queries
-El mapeo de entidades a DTOs en ItemDTOMapperService está optimizado para cargar todas las colecciones necesarias en una sola ráfaga de consultas controladas. La inferencia de categorías se realiza mediante lógica de Streams de Java para replicar la eficiencia de la vista SQL.
+### Prevención de N+1 Queries y Escalabilidad
+El mapeo de entidades a DTOs en ItemDTOMapperService está optimizado para evitar el problema de N+1 queries mediante ráfagas de consultas controladas:
+- Consultas con Cláusula IN: Para listados generales, el mapeador extrae los IDs de los items y realiza consultas quirúrgicas utilizando `findByItemIdIn(List<Long> ids)`. Esto evita tanto las consultas individuales (N+1) como los escaneos completos de tablas (`findAll()`), garantizando un uso eficiente de la memoria y la CPU.
+- Inferencia en Memoria: El cálculo de la categoría se realiza mediante lógica de Java Streams sobre los datos precargados, replicando la eficiencia de una vista SQL sin la sobrecarga de múltiples joins en el servidor de DB.
 
 ## 5. Flujo de Datos
 1. Entrada: ItemCreateDTO recibe IDs planos y definiciones de funciones por conexión.

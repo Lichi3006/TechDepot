@@ -22,6 +22,7 @@ public class ItemCreateDTO {
 
     @Data
     public static class ConexionCreateDTO {
+        private Integer idExtremo;       // ID para agrupar funciones por puerto físico
         private Long idPuerto;           // ID de RefPuerto
         private Long idCategoriaFuncion; // ID de RefCategoriaFuncion (Energía, Datos, etc.)
         private Boolean genero;          // true=macho, false=hembra
