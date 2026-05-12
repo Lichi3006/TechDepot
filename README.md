@@ -83,14 +83,15 @@ To protect sensitive credentials, the main configuration file is not included in
 
 ---
 
-## 🚀 Cómo Ejecutar (Unified Runner)
+## 🚀 How to Run (Unified Runner)
 
-Para simplificar el desarrollo, he creado scripts que lanzan tanto el Backend como el Frontend simultáneamente en ventanas de terminal separadas:
+To simplify development, I’ve created scripts that launch both the Backend and the Frontend simultaneously in separate terminal windows:
 
-*   **Windows (Doble clic)**: Ejecutá el archivo `dev.bat` en la raíz del proyecto.
-*   **PowerShell**: Ejecutá `./dev.ps1` desde la raíz.
+*   **Windows (Double click):** Run the `dev.bat` file at the root of the project.  
+*   **PowerShell:** Run `./dev.ps1` from the root.  
 
-Esto iniciará:
+This will start:  
+
 *   **Backend**: `http://localhost:8080`
 *   **Frontend**: `http://localhost:5173` (Vite)
 
