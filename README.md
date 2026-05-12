@@ -2,6 +2,9 @@
   <img src="media/logo.svg" alt="TechDepot Logo" width="250">
 </p>
 
+![Status](https://img.shields.io/badge/Status-Work--In--Progress-orange)
+![Stage](https://img.shields.io/badge/Stage-Alpha-yellow)
+
 ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/spring_boot-%236DB33F.svg?style=for-the-badge&logo=spring-boot&logoColor=white)
 ![Microsoft SQL Server](https://img.shields.io/badge/SQL_Server-CC292B?style=for-the-badge&logo=microsoft-sql-server&logoColor=white)
