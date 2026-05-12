@@ -2,8 +2,10 @@
   <img src="media/logo.svg" alt="TechDepot Logo" width="250">
 </p>
 
-![Status](https://img.shields.io/badge/Status-Work--In--Progress-orange)
-![Stage](https://img.shields.io/badge/Stage-Alpha-yellow)
+<p align="center">
+  <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange" alt="Status">
+  <img src="https://img.shields.io/badge/Stage-Alpha-yellow" alt="Stage">
+</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java">
