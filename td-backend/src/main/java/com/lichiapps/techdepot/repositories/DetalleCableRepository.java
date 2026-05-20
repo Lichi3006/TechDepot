@@ -10,4 +10,6 @@ import java.util.List;
 public interface DetalleCableRepository extends JpaRepository<DetalleCable, Long> {
     List<DetalleCable> findByItemId(Long itemId);
     List<DetalleCable> findByItemIdIn(List<Long> itemIds);
+    boolean existsByBlindajeExternoId(Long id);
+    boolean existsByBlindajeInternoId(Long id);
 }

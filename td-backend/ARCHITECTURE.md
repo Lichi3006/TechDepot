@@ -41,10 +41,30 @@ Para facilitar la búsqueda física de hardware, el sistema implementa una conve
 ### Prevención de N+1 Queries y Escalabilidad
 El mapeo de entidades a DTOs en ItemDTOMapperService está optimizado para evitar el problema de N+1 queries mediante ráfagas de consultas controladas:
 - Consultas con Cláusula IN: Para listados generales, el mapeador extrae los IDs de los items y realiza consultas quirúrgicas utilizando `findByItemIdIn(List<Long> ids)`. Esto evita tanto las consultas individuales (N+1) como los escaneos completos de tablas (`findAll()`), garantizando un uso eficiente de la memoria y la CPU.
-- Inferencia en Memoria: El cálculo de la categoría se realiza mediante lógica de Java Streams sobre los datos precargados, replicando la eficiencia de una vista SQL sin la sobrecarga de múltiples joins en el servidor de DB.
+### Inferencia en Memoria: El cálculo de la categoría se realiza mediante lógica de Java Streams sobre los datos precargados, replicando la eficiencia de una vista SQL sin la sobrecarga de múltiples joins en el servidor de DB.
 
-## 5. Flujo de Datos
+## 5. Gestión de Infraestructura y Ciclo de Vida
+
+### Administración de la Matriz de Capacidades
+El sistema expone módulos administrativos para gestionar la infraestructura física del inventario de forma dinámica:
+- **Gestión de Puertos y Protocolos:** Permite definir nuevos estándares físicos y sus capacidades lógicas (Energía, Datos, etc.) sin modificar el código. El backend asegura la integridad creando automáticamente las relaciones en la matriz de capacidades (`LINK_CategoriaFuncionPuerto`) al registrar nuevos protocolos.
+- **Ciclo de Vida de Contenedores:** Los contenedores soportan cambios de tipo en caliente. Al cambiar el tipo (ej: de Datos a Redes), el sistema regenera el nombre técnico siguiendo la secuencia oficial pero conserva la identidad única (UUID), permitiendo la reutilización de etiquetas físicas.
+
+### Cascada Manual y Limpieza de Datos
+En cumplimiento con la regla de **No CascadeType.ALL**, el sistema implementa una política de "Borrado Destructivo Controlado" en la capa de servicio:
+- **Eliminación de Contenedores:** Al eliminar un contenedor, el `ContenedorService` orquesta la destrucción de todo su contenido. Itera sobre los items asociados y llama al `ItemService.deleteItemById`, asegurando que cada componente sea purgado de todas las tablas relacionadas (colores, conexiones, detalles técnicos) antes de eliminar el registro del contenedor. Esto previene la existencia de registros huérfanos y mantiene la base de datos limpia.
+
+### Validación de Eliminación y Consistencia de Catálogos (Safe Deletes)
+Para evitar violaciones de integridad referencial en SQL Server, la capa de servicio valida que las entidades maestras de catálogo no estén en uso en el inventario antes de permitir su eliminación física:
+- **Puertos:** El `RefPuertoService` elimina en cascada las capacidades y protocolos asociados si y solo si el puerto no está en uso en ninguna conexión física (`LINK_ExtremoFisico`). Si está en uso, aborta el flujo arrojando una excepción de negocio.
+- **Protocolos:** El `RefProtocoloService` valida mediante `LinkProtocoloDeExtremoRepository.existsByProtocoloId` que el protocolo no esté asociado a conexiones lógicas de hardware en stock.
+- **Marcas:** El `RefMarcaService` utiliza `ItemRepository.existsByMarcaId` para garantizar que ningún ítem dependa de la marca a eliminar.
+- **Categorías de Hardware:** El `RefCategoriaHardwareService` utiliza `LinkCategoriaHardwareRepository.existsByRefCategoriaHardwareId` para proteger la eliminación de clasificaciones asociadas a detalles de hardware.
+- **Blindajes de Cable:** Los servicios `RefBlindajeExternoCableService` y `RefBlindajeInternoCableService` validan a través del `DetalleCableRepository` (`existsByBlindajeExternoId` y `existsByBlindajeInternoId`) que el preset no esté asignado a ningún cable del inventario.
+
+## 6. Flujo de Datos
 1. Entrada: ItemCreateDTO recibe IDs planos y definiciones de funciones por conexión.
 2. Validación: ItemValidationService actúa como "policía", verificando que cada conexión tenga su función y que las referencias existan.
 3. Persistencia: Guardado secuencial y explícito (sin CascadeType.ALL).
 4. Salida: ItemDTO devuelve la categoriaCalculada (inferida) y detalles resueltos.
+

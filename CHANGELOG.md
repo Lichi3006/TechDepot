@@ -8,20 +8,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Gestores Individuales**: Implementación de pantallas de gestión dedicadas (BrandManagerPage, HardwareCategoryManagerPage y CableShieldingManagerPage) para administrar de forma limpia marcas, categorías de hardware y blindajes de cables (interno/externo).
+- **Borrado Seguro de Marcas, Categorías y Blindajes**: Incorporación de validaciones en el backend (existsBy...) para evitar la eliminación de referencias (marcas, categorías, blindajes) que estén en uso en el inventario, retornando errores descriptivos al usuario.
+- **Borrado de Protocolos**: Exposición del endpoint DELETE /api/protocolos/{id} con comprobación de no uso en ítems para poder eliminar protocolos obsoletos directamente desde la interfaz.
+- **Eliminación Segura de Puertos**: Implementación de eliminación transaccional de puertos en RefPuertoService que borra automáticamente protocolos y capacidades asociadas si el puerto no está en uso.
+- **Validación de Uso de Puerto**: Bloqueo de seguridad que impide la eliminación física de puertos asociados a ítems del inventario, informando al usuario del motivo.
+- **Gestión Rápida de Marcas y Colores**: Incorporación de botones "+" en el formulario de ítems para registrar marcas y colores comunes en caliente desde el formulario.
+- **Creación de Funciones Físicas**: Panel para agregar y listar categorías de función en PortManagerPage.
+- **Administración de Tipos de Contenedor**: Nueva interfaz de gestión de tipos de contenedor en ContainerManagerPage.
 - **Sistema de Filtrado Avanzado**: Implementacion de un motor de busqueda dinamico tipo e-commerce que permite filtrar el inventario por marcas, estados, puertos, funciones y categorias de hardware de forma simultanea.
 - **Búsqueda Global por Texto**: Integracion de busqueda por coincidencia parcial en marcas y modelos de hardware directamente desde la barra de herramientas.
 - **Infraestructura de Consultas Dinámicas**: Incorporacion de `JpaSpecificationExecutor` y el patron `Specification` en el backend para generar consultas SQL optimizadas basadas en criterios variables.
-- **Componente FilterBar**: Nuevo componente interactivo en el frontend con selectores multiples (checkboxes) y limpieza de filtros, mejorando significativamente la UX en la navegacion del inventario.
+- **Barra Lateral de Filtros (Sidebar)**: Rediseño completo de la UI de filtrado hacia un modelo lateral profesional, incluyendo mini-buscadores por seccion para una navegacion fluida en catalogos extensos.
 - **Controlador de Categorías de Hardware**: Nuevo endpoint `/api/categorias-hardware` para permitir la gestion y filtrado por tipos especificos de componentes.
+- **Gestión de Infraestructura Física**: Nueva interfaz administrativa para crear Puertos y Protocolos, permitiendo configurar la matriz de capacidades lógicas del sistema de forma dinámica.
+- **Gestor de Contenedores Completo**: Implementación de un panel de control para unidades de almacenamiento que permite:
+    - Creación de nuevos contenedores con nomenclatura automática.
+    - Cambio dinámico de tipo con regeneración de nombre técnico (manteniendo identidad única).
+    - Borrado destructivo en cascada (elimina contenedor e ítems contenidos simultáneamente).
 - **Funcionalidad de Actualización (Update)**: Implementacion completa del endpoint `PUT /api/items/{id}` para la modificacion integral de items y sus detalles, manteniendo la consistencia transaccional.
 - **Estrategia de Detalle Extendida**: Evolucion del patron Strategy (`ItemDetalleHandler`) para incluir metodos de validacion y actualizacion polimorfica, permitiendo que cada tipo de hardware gestione su propio ciclo de vida.
 
+### Removed
+- **Sección de Parámetros**: Eliminación de la página unificada ParametersPage y remoción de sus enlaces en rutas y navegación sidebar para distribuir responsabilidades de forma limpia.
+
 ### Fixed
+- **Integridad en Protocolos**: El backend ahora crea automáticamente las capacidades de puerto necesarias al registrar nuevos protocolos, eliminando errores de claves foráneas.
 - **Selección Multifunción y Protocolos**: Se corrigio la limitacion que impedia seleccionar multiples protocolos o funciones simultaneas en puertos con capacidades mixtas (ej: USB-A con Datos y Energia).
 - **Logica Agnostica de Puertos**: Eliminacion de cualquier restriccion implicita que favoreciera al USB-C; ahora todos los puertos permiten seleccion multiple de protocolos segun su matriz de capacidades.
 - **Estabilidad del Frontend**: Resolucion de conflictos de tipos en TypeScript y nombres de metodos inconsistentes en servicios.
 
 ### Changed
+- **Branding del Sistema**: Integración del logo oficial en el Sidebar (agrandado 20%) y el icono de marca como Favicon del navegador.
 - **Refactorización SOLID de Validaciones**: Las reglas de validacion especificas por tipo de hardware se movieron desde `ItemValidationService` hacia sus respectivos manejadores (`Strategy Pattern`), cumpliendo estrictamente con el principio de Abierto/Cerrado (OCP).
 - **Optimización de Mapeo (Performance)**: Refactorizacion critica de `ItemDTOMapperService` para utilizar consultas con clausulas `IN` (`findByItemIdIn`) en lugar de `findAll()`. Esta mejora elimina escaneos completos de tablas y asegura la escalabilidad del sistema ante grandes volumenes de datos.
 - **Manejo de Colores HEX**: Evolucion de la gestion de colores hacia un modelo hibrido que soporta codigos HEX directamente en la base de datos, permitiendo una personalizacion total por item.

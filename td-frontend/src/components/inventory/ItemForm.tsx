@@ -25,12 +25,14 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
     const [capacidades, setCapacidades] = useState<LinkPuertoCapacidad[]>([]);
     const [blindajesExt, setBlindajesExt] = useState<RefBase[]>([]);
     const [blindajesInt, setBlindajesInt] = useState<RefBase[]>([]);
+    const [categoriasHardware, setCategoriasHardware] = useState<RefBase[]>([]);
 
     const [itemType, setItemType] = useState<ComponentType>(initialType || 'CABLE');
     const [idEstado, setIdEstado] = useState<number | undefined>(initialData?.idEstado);
     const [idMarca, setIdMarca] = useState<number | undefined>(initialData?.idMarca);
     const [idContenedor, setIdContenedor] = useState<number | undefined>(initialData?.idContenedor);
     const [selectedColoresHex, setSelectedColoresHex] = useState<string[]>(initialData?.coloresHex || []);
+    const [selectedHardwareCats, setSelectedHardwareCats] = useState<number[]>(initialData?.detalleHardware?.idsCategoriasHardware || []);
     
     // Filtro de funciones para el selector de puertos
     const [selectedFilterFunction, setSelectedFilterFunction] = useState<number | null>(null);
@@ -112,12 +114,16 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
                 try {
                     const data = await fetcher();
                     setter(data);
+                    return data;
                 } catch (e) {
                     console.error(`Error cargando ${label}:`, e);
+                    return null;
                 }
             };
 
-            await Promise.all([
+            const [
+                _m, _e, _c, _cont, _p, _prot, _cap, blExt, _blInt, _h
+            ] = await Promise.all([
                 safeLoad(refService.getMarcas, setMarcas, "Marcas"),
                 safeLoad(refService.getEstados, setEstados, "Estados"),
                 safeLoad(refService.getColores, setColoresPresets, "Colores"),
@@ -126,11 +132,44 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
                 safeLoad(refService.getProtocolos, setProtocolos, "Protocolos"),
                 safeLoad(refService.getPuertosCapacidades, setCapacidades, "Capacidades"),
                 safeLoad(refService.getBlindajesExternos, setBlindajesExt, "Blindajes Ext"),
-                safeLoad(refService.getBlindajesInternos, setBlindajesInt, "Blindajes Int")
+                safeLoad(refService.getBlindajesInternos, setBlindajesInt, "Blindajes Int"),
+                safeLoad(refService.getCategoriasHardware, setCategoriasHardware, "Categorias Hardware")
             ]);
+
+            // Set default to Goma if not editing and Goma exists
+            if (!initialData?.detalleCable?.idBlindajeExterno && blExt) {
+                const goma = blExt.find((b: RefBase) => b.nombre === 'Goma');
+                if (goma) setIdBlindajeExt(goma.id!);
+            }
         };
         loadData();
     }, []);
+
+    const handleQuickAddMarca = async () => {
+        const nombre = prompt("Ingrese el nombre de la nueva marca:");
+        if (!nombre || !nombre.trim()) return;
+        try {
+            const nueva = await refService.saveMarca({ nombre: nombre.trim() });
+            setMarcas(prev => [...prev, nueva]);
+            setIdMarca(nueva.id);
+            alert("Marca agregada correctamente.");
+        } catch (e: any) {
+            console.error("Error agregando marca:", e);
+            alert(e.response?.data?.message || "Error al agregar marca.");
+        }
+    };
+
+    const handleSaveColorPreset = async (nombre: string, codigoHex: string) => {
+        try {
+            const nuevo = await refService.saveColor({ nombre, codigoHex });
+            setColoresPresets(prev => [...prev, nuevo]);
+            setSelectedColoresHex(prev => [...prev, nuevo.codigoHex]);
+            alert("Color agregado correctamente.");
+        } catch (e: any) {
+            console.error("Error agregando color:", e);
+            alert(e.response?.data?.message || "Error al agregar color.");
+        }
+    };
 
     const getPuertosFiltrados = () => {
         let basePuertos = puertos;
@@ -250,13 +289,13 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
                 amperajeMax: itemType === 'FUENTE' ? amperajeMax : undefined 
             } : undefined,
             detalleFuente: itemType === 'FUENTE' ? { amperaje, voltaje } : undefined,
-            detalleHardware: itemType === 'HARDWARE' ? { modeloAlfanumerico, idsCategoriasHardware: [] } : undefined
+            detalleHardware: itemType === 'HARDWARE' ? { modeloAlfanumerico, idsCategoriasHardware: selectedHardwareCats } : undefined
         };
         onSave(dto);
     };
 
     return (
-        <form onSubmit={handleSubmit} style={formStyle}>
+        <form onSubmit={handleSubmit} className="glass-panel" style={formStyle}>
             {/* 1. TIPO DE COMPONENTE (AHORA PRIMERO) */}
             <div style={sectionStyle}>
                 <label style={labelStyle}>Tipo de Componente:</label>
@@ -288,7 +327,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
 
             {/* 2. INFORMACION BASICA */}
             <div style={sectionStyle}>
-                <h3>Informacion Basica</h3>
+                <h3 style={{ color: 'var(--text-primary)' }}>Informacion Basica</h3>
                 <div style={gridStyle}>
                     <div>
                         <label style={labelStyle}>Estado:</label>
@@ -299,10 +338,20 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
                     </div>
                     <div>
                         <label style={labelStyle}>Marca:</label>
-                        <select value={idMarca || ""} onChange={(e) => setIdMarca(Number(e.target.value))} style={inputStyle}>
-                            <option value="">Generica / Ninguna</option>
-                            {marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
-                        </select>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <select value={idMarca || ""} onChange={(e) => setIdMarca(Number(e.target.value))} style={{ ...inputStyle, flex: 1 }}>
+                                <option value="">Generica / Ninguna</option>
+                                {marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
+                            </select>
+                            <Button 
+                                type="button" 
+                                variant="success" 
+                                onClick={handleQuickAddMarca}
+                                style={{ padding: '0 12px', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            >
+                                +
+                            </Button>
+                        </div>
                     </div>
                     <div>
                         <label style={labelStyle}>Contenedor:</label>
@@ -314,20 +363,25 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
                 </div>
 
                 <label style={labelStyle}>Colores:</label>
-                <ColorPickerPalette selectedColors={selectedColoresHex} presets={coloresPresets} onChange={setSelectedColoresHex} />
+                <ColorPickerPalette 
+                    selectedColors={selectedColoresHex} 
+                    presets={coloresPresets} 
+                    onChange={setSelectedColoresHex} 
+                    onSavePreset={handleSaveColorPreset}
+                />
             </div>
 
             {/* 3. CONEXIONES (FILTRADAS) */}
             <div style={sectionStyle}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                    <h3>Conexiones y Extremos</h3>
+                    <h3 style={{ color: 'var(--text-primary)' }}>Conexiones y Extremos</h3>
                     <div style={{ display: 'flex', gap: '5px' }}>
                         <Button type="button" onClick={handleAddConexion} variant="success">+ Agregar Extremo</Button>
                     </div>
                 </div>
 
                 <div style={{ marginBottom: '15px', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: 'bold' }}>Filtrar Puertos por:</span>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>Filtrar Puertos por:</span>
                     <button type="button" onClick={() => setSelectedFilterFunction(null)} style={selectedFilterFunction === null ? activeFilterStyle : filterStyle}>Todos</button>
                     <button type="button" onClick={() => setSelectedFilterFunction(FUNCION_ENERGIA)} style={selectedFilterFunction === FUNCION_ENERGIA ? activeFilterStyle : filterStyle}>Energía</button>
                     <button type="button" onClick={() => setSelectedFilterFunction(FUNCION_DATOS)} style={selectedFilterFunction === FUNCION_DATOS ? activeFilterStyle : filterStyle}>Datos</button>
@@ -358,7 +412,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
                                 <div>
                                     <label style={smallLabelStyle}>Protocolos / Función:</label>
                                     {con.idPuerto === 0 ? (
-                                        <div style={{ padding: '8px', color: '#999', fontSize: '0.85rem' }}>Seleccione un puerto</div>
+                                        <div style={{ padding: '8px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Seleccione un puerto</div>
                                     ) : (
                                         <div style={protocolGridStyle}>
                                             {portCaps.map(cap => {
@@ -368,8 +422,8 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
                                                 if (capsProts.length > 0) {
                                                     // Categoría con protocolos
                                                     return (
-                                                        <div key={cap.categoriaFuncion.id} style={{ gridColumn: '1 / span 2', borderBottom: '1px solid #f0f0f0', paddingBottom: '4px', marginBottom: '4px' }}>
-                                                            <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#aaa', textTransform: 'uppercase', marginBottom: '2px' }}>{cap.categoriaFuncion.nombre}</div>
+                                                        <div key={cap.categoriaFuncion.id} style={{ gridColumn: '1 / span 2', borderBottom: '1px solid var(--border-color)', paddingBottom: '4px', marginBottom: '4px' }}>
+                                                            <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '2px' }}>{cap.categoriaFuncion.nombre}</div>
                                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' }}>
                                                                 {capsProts.map(p => (
                                                                     <label key={p.id} style={checkboxLabelStyle}>
@@ -382,7 +436,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
                                                                                     : con.idsProtocolos.filter(id => id !== p.id);
                                                                                 updateConexion(index, 'idsProtocolos', newIds);
                                                                             }}
-                                                                        /> {p.nombre}
+                                                                        /> <span style={{color: 'var(--text-primary)'}}>{p.nombre}</span>
                                                                     </label>
                                                                 ))}
                                                             </div>
@@ -396,12 +450,12 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
                                                                 type="checkbox" 
                                                                 checked={isFunctionActive}
                                                                 onChange={() => updateConexion(index, 'idCategoriaFuncion', cap.categoriaFuncion.id!)}
-                                                            /> {cap.categoriaFuncion.nombre}
+                                                            /> <span style={{color: 'var(--text-primary)'}}>{cap.categoriaFuncion.nombre}</span>
                                                         </label>
                                                     );
                                                 }
                                             })}
-                                            {portCaps.length === 0 && <div style={{ padding: '8px', color: '#d9534f', fontSize: '0.85rem', gridColumn: '1 / span 2' }}>Sin capacidades en BD</div>}
+                                            {portCaps.length === 0 && <div style={{ padding: '8px', color: 'var(--danger-color)', fontSize: '0.85rem', gridColumn: '1 / span 2' }}>Sin capacidades configuradas</div>}
                                         </div>
                                     )}
                                 </div>
@@ -424,12 +478,12 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
                         </div>
                     );
                 })}
-                {conexiones.length === 0 && <p style={{ color: '#999' }}>Primero debe elegir el tipo de componente arriba y agregar sus conexiones.</p>}
+                {conexiones.length === 0 && <p style={{ color: 'var(--text-secondary)' }}>Primero debe elegir el tipo de componente arriba y agregar sus conexiones.</p>}
             </div>
 
             {/* 4. ESPECIFICACIONES TÉCNICAS */}
             <div style={sectionStyle}>
-                <h3>Especificaciones Técnicas</h3>
+                <h3 style={{ color: 'var(--text-primary)' }}>Especificaciones Técnicas</h3>
                 <div style={gridStyle}>
                     {(itemType === 'CABLE' || itemType === 'FUENTE') && (
                         <>
@@ -475,10 +529,24 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
                         </>
                     )}
                     {itemType === 'HARDWARE' && (
-                        <div>
-                            <label style={labelStyle}>Modelo / SN:</label>
-                            <input type="text" value={modeloAlfanumerico} onChange={(e) => setModeloAlfanumerico(e.target.value)} style={inputStyle} />
-                        </div>
+                        <>
+                            <div>
+                                <label style={labelStyle}>Categoría Hardware:</label>
+                                <select 
+                                    value={selectedHardwareCats.length > 0 ? selectedHardwareCats[0] : ""} 
+                                    onChange={(e) => setSelectedHardwareCats([Number(e.target.value)])} 
+                                    style={inputStyle}
+                                    required
+                                >
+                                    <option value="">Seleccione...</option>
+                                    {categoriasHardware.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label style={labelStyle}>Modelo / SN:</label>
+                                <input type="text" value={modeloAlfanumerico} onChange={(e) => setModeloAlfanumerico(e.target.value)} style={inputStyle} />
+                            </div>
+                        </>
                     )}
                 </div>
             </div>
@@ -491,22 +559,23 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
     );
 };
 
-const formStyle: React.CSSProperties = { backgroundColor: '#fff', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', marginBottom: '30px' };
-const sectionStyle: React.CSSProperties = { marginBottom: '25px', borderBottom: '1px solid #f0f0f0', paddingBottom: '20px' };
+const formStyle: React.CSSProperties = { padding: '25px', marginBottom: '30px' };
+const sectionStyle: React.CSSProperties = { marginBottom: '25px', borderBottom: '1px solid var(--border-color)', paddingBottom: '20px' };
 const gridStyle: React.CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '15px' };
-const conexionCardStyle: React.CSSProperties = { padding: '15px', backgroundColor: '#fdfdfd', borderRadius: '8px', marginBottom: '12px', border: '1px solid #eee' };
-const labelStyle: React.CSSProperties = { display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.95rem' };
-const smallLabelStyle: React.CSSProperties = { fontSize: '0.8rem', color: '#666', fontWeight: 'bold', marginBottom: '5px', display: 'block' };
-const inputStyle: React.CSSProperties = { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '0.95rem' };
-const protocolGridStyle: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px', maxHeight: '100px', overflowY: 'auto', padding: '8px', border: '1px solid #eee', borderRadius: '6px', backgroundColor: '#fff' };
-const checkboxLabelStyle: React.CSSProperties = { fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' };
+const conexionCardStyle: React.CSSProperties = { padding: '15px', backgroundColor: 'var(--surface-color)', borderRadius: '8px', marginBottom: '12px', border: '1px solid var(--border-color)' };
+const labelStyle: React.CSSProperties = { display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.95rem', color: 'var(--text-primary)' };
+const smallLabelStyle: React.CSSProperties = { fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 'bold', marginBottom: '5px', display: 'block' };
+const inputStyle: React.CSSProperties = { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', backgroundColor: 'var(--input-bg)', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none' };
+const protocolGridStyle: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px', maxHeight: '100px', overflowY: 'auto', padding: '8px', border: '1px solid var(--border-color)', borderRadius: '6px', backgroundColor: 'var(--input-bg)' };
+const checkboxLabelStyle: React.CSSProperties = { fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', color: 'var(--text-primary)' };
 const footerStyle: React.CSSProperties = { display: 'flex', justifyContent: 'flex-end', gap: '15px', marginTop: '10px' };
 
 const filterStyle: React.CSSProperties = {
     padding: '4px 12px',
     borderRadius: '20px',
-    border: '1px solid #ddd',
-    backgroundColor: '#fff',
+    border: '1px solid var(--border-color)',
+    backgroundColor: 'var(--input-bg)',
+    color: 'var(--text-primary)',
     fontSize: '0.8rem',
     cursor: 'pointer',
     transition: 'all 0.2s'
@@ -514,7 +583,7 @@ const filterStyle: React.CSSProperties = {
 
 const activeFilterStyle: React.CSSProperties = {
     ...filterStyle,
-    backgroundColor: '#4a90e2',
-    color: 'white',
-    border: '1px solid #4a90e2'
+    backgroundColor: 'var(--brand-color)',
+    color: '#000',
+    border: '1px solid var(--brand-color)'
 };

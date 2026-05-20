@@ -7,90 +7,178 @@ interface ItemTableProps {
     onEditItem?: (id: number) => void;
 }
 
+const getCategoryDetails = (categoryStr?: string) => {
+    if (!categoryStr) return [{ name: 'Sin Categoría', icon: '🏷️' }];
+    
+    // Split combined categories like "Video + Energía" or "Video, Energía"
+    const cats = categoryStr.split(/[\+,]/).map(c => c.trim()).filter(Boolean);
+    if (cats.length === 0) return [{ name: 'Sin Categoría', icon: '🏷️' }];
+    
+    return cats.map(cat => {
+        const lower = cat.toLowerCase();
+        let icon = '🏷️';
+        if (lower.includes('video')) icon = '📺';
+        else if (lower.includes('energ') || lower.includes('alimentación') || lower.includes('fuente')) icon = '⚡';
+        else if (lower.includes('audio')) icon = '🎵';
+        else if (lower.includes('red') || lower.includes('internet')) icon = '🌐';
+        else if (lower.includes('datos') || lower.includes('usb')) icon = '🔌';
+        else if (lower.includes('hardware') || lower.includes('componente')) icon = '💻';
+        return { name: cat, icon };
+    });
+};
+
+const getProtocolIcon = (protocol?: string) => {
+    if (!protocol) return '🔗';
+    const lower = protocol.toLowerCase();
+    if (lower.includes('hdmi')) return '📺';
+    if (lower.includes('usb')) return '🔌';
+    if (lower.includes('displayport') || lower.includes('dp')) return '🖥️';
+    if (lower.includes('vga')) return '📼';
+    if (lower.includes('audio') || lower.includes('jack') || lower.includes('plug')) return '🎧';
+    if (lower.includes('ethernet') || lower.includes('rj45')) return '🌐';
+    if (lower.includes('power') || lower.includes('ac') || lower.includes('dc')) return '⚡';
+    return '🔗';
+};
+
 /**
- * Componente de Negocio: Mega Tabla de Inventario
+ * Componente de Negocio: Mega Tabla de Inventario (Dark Glass Theme)
  */
 export const ItemTable: React.FC<ItemTableProps> = ({ items, onDeleteItem, onEditItem }) => {
     return (
-        <div style={{ overflowX: 'auto', fontFamily: 'sans-serif' }}>
+        <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
             <table style={tableStyle}>
                 <thead>
                     <tr style={headerRowStyle}>
-                        <th>Conexiones</th>
-                        <th>Tipo</th>
-                        <th>Contenedor</th>
-                        <th>Marca</th>
-                        <th>Estado</th>
-                        <th>Color</th>
-                        <th>Proteccion</th>
-                        <th>Especificaciones</th>
-                        <th>Acciones</th>
+                        <th style={headerCellStyle}>Conexiones</th>
+                        <th style={headerCellStyle}>Tipo</th>
+                        <th style={headerCellStyle}>Ubicación</th>
+                        <th style={headerCellStyle}>Marca</th>
+                        <th style={headerCellStyle}>Estado</th>
+                        <th style={headerCellStyle}>Color</th>
+                        <th style={headerCellStyle}>Protección</th>
+                        <th style={headerCellStyle}>Especificaciones</th>
+                        <th style={headerCellStyle}>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {items.map((item) => (
-                        <tr key={item.id} style={rowStyle}>
+                    {items.map((item, index) => (
+                        <tr key={item.id} style={getRowStyle(index)}>
+                            {/* Conexiones (Puerto como texto, Protocolos como iconos) */}
                             <td style={cellStyle}>
-                                {item.conexiones?.map((con, i) => (
-                                    <div key={i} style={{ marginBottom: '4px' }}>
-                                        <span title={con.protocolo?.join(', ')}>
-                                            {con.puerto} ({con.genero ? 'M' : 'H'})
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                                    {item.conexiones?.map((con, i) => (
+                                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                                                {con.puerto} <span style={{color: 'var(--text-secondary)'}}>({con.genero ? 'M' : 'H'})</span>
+                                            </span>
+                                            {con.protocolo && con.protocolo.length > 0 && (
+                                                <div style={{ display: 'flex', gap: '4px' }}>
+                                                    {con.protocolo.map((prot, pIdx) => (
+                                                        <span 
+                                                            key={pIdx}
+                                                            className="has-tooltip"
+                                                            data-tooltip={`Protocolo: ${prot}`}
+                                                            style={miniIconWrapperStyle}
+                                                        >
+                                                            {getProtocolIcon(prot)}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )) || '-'}
+                                </div>
+                            </td>
+                            
+                            {/* Tipo (Múltiples Iconos separados por Función en Grid de max 2 columnas) */}
+                            <td style={{...cellStyle, textAlign: 'center'}}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, max-content)', gap: '4px', justifyContent: 'center' }}>
+                                    {getCategoryDetails(item.categoriaCalculada).map((cat, idx) => (
+                                        <span 
+                                            key={idx}
+                                            className="has-tooltip" 
+                                            data-tooltip={cat.name}
+                                            style={{...iconWrapperStyle, color: 'var(--brand-color)'}}
+                                        >
+                                            {cat.icon}
                                         </span>
-                                    </div>
-                                )) || '-'}
+                                    ))}
+                                </div>
                             </td>
+
+                            {/* Contenedor (Texto plano) */}
                             <td style={cellStyle}>
-                                <strong style={{ color: '#2e7d32' }}>{item.categoriaCalculada || 'Sin Categoría'}</strong>
+                                <span style={{ color: 'var(--text-primary)' }}>{item.contenedor || '-'}</span>
                             </td>
-                            <td style={cellStyle}>{item.contenedor}</td>
-                            <td style={cellStyle}>{item.marca || '-'}</td>
-                            <td style={cellStyle}>{item.estado}</td>
+
+                            {/* Marca (Sigue siendo texto) */}
                             <td style={cellStyle}>
-                                <div style={{ display: 'flex', gap: '4px' }}>
+                                <span style={{ fontWeight: '500', color: 'var(--text-primary)' }}>{item.marca || '-'}</span>
+                            </td>
+
+                            {/* Estado (Texto plano) */}
+                            <td style={cellStyle}>
+                                <span style={{ color: 'var(--text-primary)' }}>{item.estado || '-'}</span>
+                            </td>
+
+                            {/* Color (Squares) */}
+                            <td style={{...cellStyle, textAlign: 'center'}}>
+                                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
                                     {item.color?.map(hex => (
                                         <div 
                                             key={hex} 
-                                            title={hex}
+                                            className="has-tooltip"
+                                            data-tooltip={`Color: ${hex}`}
                                             style={{ 
                                                 width: '20px', 
                                                 height: '20px', 
-                                                borderRadius: '50%', 
+                                                borderRadius: '4px', 
                                                 backgroundColor: hex,
-                                                border: '1px solid #ddd'
+                                                border: '1px solid var(--border-color)'
                                             }}
                                         ></div>
                                     )) || '-'}
                                 </div>
                             </td>
+
+                            {/* Proteccion (Texto compacto) */}
                             <td style={cellStyle}>
-                                <div style={{ fontSize: '0.85rem' }}>
-                                    {item.proteccion?.blindajeExterno && <div>Ext: {item.proteccion.blindajeExterno}</div>}
-                                    {item.proteccion?.blindajeInterno && <div>Int: {item.proteccion.blindajeInterno}</div>}
-                                    {!item.proteccion?.blindajeExterno && !item.proteccion?.blindajeInterno && '-'}
+                                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                    {item.proteccion?.blindajeExterno && <div>Ext: <span style={{color: 'var(--text-primary)', fontWeight: '500'}}>{item.proteccion.blindajeExterno}</span></div>}
+                                    {item.proteccion?.blindajeInterno && <div>Int: <span style={{color: 'var(--text-primary)', fontWeight: '500'}}>{item.proteccion.blindajeInterno}</span></div>}
+                                    {!item.proteccion?.blindajeExterno && !item.proteccion?.blindajeInterno && <span style={{color: 'var(--text-secondary)'}}>-</span>}
                                 </div>
                             </td>
+
+                            {/* Especificaciones (Texto compacto) */}
                             <td style={cellStyle}>
-                                <div style={{ fontSize: '0.9em' }}>
-                                    {item.especificaciones?.largo && <div>Largo: {item.especificaciones.largo}cm</div>}
-                                    {item.especificaciones?.voltaje && <div>Voltaje: {item.especificaciones.voltaje}V</div>}
-                                    {item.especificaciones?.amperaje && <div>Amperaje: {item.especificaciones.amperaje}A</div>}
-                                    {item.especificaciones?.amperajeMax && <div>Amp. Max: {item.especificaciones.amperajeMax}A</div>}
-                                    {item.especificaciones?.modelo && <div>Mod: {item.especificaciones.modelo}</div>}
+                                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                    {item.especificaciones?.largo && <div>Largo: <span style={{color: 'var(--text-primary)', fontWeight: '500'}}>{item.especificaciones.largo}cm</span></div>}
+                                    {item.especificaciones?.voltaje && <div>Voltaje: <span style={{color: 'var(--text-primary)', fontWeight: '500'}}>{item.especificaciones.voltaje}V</span></div>}
+                                    {item.especificaciones?.amperaje && <div>Amperaje: <span style={{color: 'var(--text-primary)', fontWeight: '500'}}>{item.especificaciones.amperaje}A</span></div>}
+                                    {item.especificaciones?.amperajeMax && <div>Amp. Max: <span style={{color: 'var(--text-primary)', fontWeight: '500'}}>{item.especificaciones.amperajeMax}A</span></div>}
+                                    {item.especificaciones?.modelo && <div>Mod: <span style={{color: 'var(--text-primary)', fontWeight: '500'}}>{item.especificaciones.modelo}</span></div>}
                                 </div>
                             </td>
-                            <td style={cellStyle}>
-                                <div style={{ display: 'flex', gap: '5px' }}>
+
+                            {/* Acciones */}
+                            <td style={{...cellStyle, textAlign: 'center'}}>
+                                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                                     <button 
                                         onClick={() => onEditItem?.(item.id)}
-                                        style={editButtonStyle}
+                                        className="btn-glass"
+                                        style={{ color: 'var(--brand-color)', borderColor: 'rgba(117, 229, 97, 0.4)', padding: '6px 10px' }}
+                                        title="Editar"
                                     >
-                                        Editar
+                                        ✏️
                                     </button>
                                     <button 
                                         onClick={() => onDeleteItem?.(item.id)}
-                                        style={deleteButtonStyle}
+                                        className="btn-danger"
+                                        style={{ padding: '6px 10px' }}
+                                        title="Eliminar"
                                     >
-                                        Eliminar
+                                        🗑️
                                     </button>
                                 </div>
                             </td>
@@ -105,41 +193,59 @@ export const ItemTable: React.FC<ItemTableProps> = ({ items, onDeleteItem, onEdi
 const tableStyle: React.CSSProperties = {
     width: '100%',
     borderCollapse: 'collapse',
-    backgroundColor: 'white',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-    borderRadius: '8px'
+    textAlign: 'center',
+    backgroundColor: 'var(--input-bg)'
 };
 
 const headerRowStyle: React.CSSProperties = {
-    backgroundColor: '#f8f9fa',
-    borderBottom: '2px solid #dee2e6',
-    textAlign: 'left'
+    backgroundColor: 'var(--surface-hover)',
+    borderBottom: '1px solid var(--border-color)',
 };
 
-const rowStyle: React.CSSProperties = {
-    borderBottom: '1px solid #eee',
-    transition: 'background-color 0.2s'
+const headerCellStyle: React.CSSProperties = {
+    padding: '12px 10px',
+    color: 'var(--brand-color)',
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    fontSize: '0.75rem',
+    letterSpacing: '0.5px',
+    textAlign: 'center',
+    border: '1px solid var(--border-color)'
 };
+
+const getRowStyle = (index: number): React.CSSProperties => ({
+    backgroundColor: index % 2 === 0 ? 'transparent' : 'var(--surface-color)',
+    transition: 'background-color 0.2s',
+});
 
 const cellStyle: React.CSSProperties = {
-    padding: '12px 15px',
-    verticalAlign: 'top'
+    padding: '12px 10px',
+    verticalAlign: 'middle',
+    fontSize: '0.85rem',
+    textAlign: 'left',
+    border: '1px solid var(--border-color)'
 };
 
-const editButtonStyle: React.CSSProperties = {
-    backgroundColor: '#4a90e2',
-    color: 'white',
-    border: 'none',
-    padding: '5px 10px',
+const iconWrapperStyle: React.CSSProperties = {
+    fontSize: '1.2rem',
+    padding: '2px 4px',
+    background: 'var(--surface-color)',
     borderRadius: '4px',
-    cursor: 'pointer'
+    border: '1px solid var(--border-color)',
+    cursor: 'help',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center'
 };
 
-const deleteButtonStyle: React.CSSProperties = {
-    backgroundColor: '#ff4d4d',
-    color: 'white',
-    border: 'none',
-    padding: '5px 10px',
+const miniIconWrapperStyle: React.CSSProperties = {
+    fontSize: '0.9rem',
+    padding: '2px',
+    background: 'var(--surface-color)',
     borderRadius: '4px',
-    cursor: 'pointer'
+    border: '1px solid var(--border-color)',
+    cursor: 'help',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center'
 };

@@ -13,4 +13,15 @@ public class RefProtocoloController {
     @Autowired private RefProtocoloService service;
     @GetMapping public List<RefProtocolo> getAll() { return service.getAllRefProtocolos(); }
     @PostMapping public RefProtocolo save(@RequestBody RefProtocolo entity) { return service.saveRefProtocolo(entity); }
+    @DeleteMapping("/{id}")
+    public org.springframework.http.ResponseEntity<?> delete(@PathVariable Long id) {
+        try {
+            service.deleteRefProtocoloById(id);
+            return org.springframework.http.ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return org.springframework.http.ResponseEntity.badRequest().body(new java.util.HashMap<String, String>() {{
+                put("message", e.getMessage());
+            }});
+        }
+    }
 }

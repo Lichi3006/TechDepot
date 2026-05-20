@@ -14,7 +14,7 @@ Every day I waste hours digging through boxes of tangled cables and random hardw
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 This project uses a decoupled architecture, separating the robust backend API from a dynamic, reactive user interface:
 
@@ -32,7 +32,7 @@ This project uses a decoupled architecture, separating the robust backend API fr
 
 ---
 
-## ☑ Prerequisites
+## Prerequisites
 
 Before you start, make sure you have the following installed:
 
@@ -42,7 +42,7 @@ Before you start, make sure you have the following installed:
 * **SQL Server Management Studio (SSMS):** To run the database scripts easily.
 * **An IDE:** I recommend **IntelliJ IDEA** for the backend and **Web Storm** for the frontend.
 
-## 🗝 Key Dependencies
+## Key Dependencies
 
 ### Backend (Maven)
 * **Spring Data JPA:** To handle all the database magic without writing raw SQL for everything.
@@ -57,13 +57,13 @@ Before you start, make sure you have the following installed:
 
 ---
 
-## 🏗 How it works
+## How it works
 
 1. The **React Frontend** provides an interactive dashboard to view, add, and categorize hardware.
 2. It sends HTTP requests (GET, POST, etc.) to the **Spring Boot Backend**.
 3. The Backend validates the business rules in the **Services** layer and persists the data using **Repositories** into the **SQL Server** database.
 
-## ⚙ Local Setup & Configuration
+## Local Setup & Configuration
 
 To protect sensitive credentials, the main configuration file is not included in this repository. Follow these steps to set up the project locally:
 
@@ -83,7 +83,7 @@ To protect sensitive credentials, the main configuration file is not included in
 
 ---
 
-## 🚀 Cómo Ejecutar (Unified Runner)
+## Cómo Ejecutar (Unified Runner)
 
 Para simplificar el desarrollo, he creado scripts que lanzan tanto el Backend como el Frontend simultáneamente en ventanas de terminal separadas:
 

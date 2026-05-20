@@ -5,9 +5,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository // Le avisa a Spring: "Este es el archivero de la tabla Item"
 public interface ItemRepository extends JpaRepository<Item, Long>, JpaSpecificationExecutor<Item> {
-    //...
+    List<Item> findByContenedorId(Long idContenedor);
+    boolean existsByMarcaId(Long idMarca);
 }
 
 // 1. INTERFAZ: Esto es solo un "Menú" o contrato. No hay código real escrito acá.

@@ -57,27 +57,29 @@ export default function InventoryPage() {
             <FilterSidebar onFilterChange={handleFilterChange} />
             
             <div style={contentAreaStyle}>
-                <header style={{ marginBottom: '30px' }}>
-                    <h1 style={{ margin: 0, color: '#1a1a1a' }}>Inventario de Hardware</h1>
-                    <p style={{ color: '#666' }}>Gestioná tus cables, fuentes y componentes.</p>
+                <header className="glass-panel" style={headerCardStyle}>
+                    <h1 style={{ margin: 0, color: 'var(--brand-color)', textShadow: '0 0 10px rgba(117, 229, 97, 0.3)' }}>Inventario de Hardware</h1>
+                    <p style={{ color: 'var(--text-secondary)', margin: '8px 0 0 0' }}>Gestioná tus cables, fuentes y componentes.</p>
                 </header>
 
-                {loading ? (
-                    <div style={{ textAlign: 'center', padding: '50px' }}>
-                        <h2>Cargando inventario...</h2>
-                    </div>
-                ) : (
-                    <>
-                        <div style={{ marginBottom: '10px', color: '#666', fontSize: '0.9rem' }}>
-                            Mostrando {items.length} items
+                <div className="glass-panel" style={{ padding: '24px' }}>
+                    {loading ? (
+                        <div style={{ textAlign: 'center', padding: '50px', color: 'var(--brand-color)' }}>
+                            <h2 className="text-neon">Cargando inventario...</h2>
                         </div>
-                        <ItemTable 
-                            items={items} 
-                            onDeleteItem={handleEliminar} 
-                            onEditItem={(id) => navigate(`/admin/items/edit/${id}`)}
-                        />
-                    </>
-                )}
+                    ) : (
+                        <>
+                            <div style={{ marginBottom: '16px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                                Mostrando <strong style={{color: 'var(--text-primary)'}}>{items.length}</strong> items
+                            </div>
+                            <ItemTable 
+                                items={items} 
+                                onDeleteItem={handleEliminar} 
+                                onEditItem={(id) => navigate(`/admin/items/edit/${id}`)}
+                            />
+                        </>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -85,14 +87,21 @@ export default function InventoryPage() {
 
 const pageContainerStyle: React.CSSProperties = {
     display: 'flex',
-    margin: '-30px', // Compensar el padding del MainLayout para pegar el sidebar
-    height: 'calc(100vh - 0px)',
+    gap: '24px',
+    height: '100%',
     overflow: 'hidden'
 };
 
 const contentAreaStyle: React.CSSProperties = {
     flex: 1,
-    padding: '30px',
     overflowY: 'auto',
-    backgroundColor: '#f0f2f5'
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px',
+    paddingRight: '8px'
+};
+
+const headerCardStyle: React.CSSProperties = {
+    padding: '24px',
+    margin: 0
 };

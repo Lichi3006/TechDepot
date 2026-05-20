@@ -23,4 +23,15 @@ public class RefMarcaController {
     public RefMarca saveMarca(@RequestBody RefMarca refMarca){
         return refMarcaService.saveRefMarca(refMarca);
     }
+    @DeleteMapping("/{id}")
+    public org.springframework.http.ResponseEntity<?> delete(@PathVariable Long id) {
+        try {
+            refMarcaService.deleteRefMarcaById(id);
+            return org.springframework.http.ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return org.springframework.http.ResponseEntity.badRequest().body(new java.util.HashMap<String, String>() {{
+                put("message", e.getMessage());
+            }});
+        }
+    }
 }

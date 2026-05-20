@@ -13,4 +13,14 @@ public class ContenedorController {
     @Autowired private ContenedorService service;
     @GetMapping public List<Contenedor> getAll() { return service.getAllContenedores(); }
     @PostMapping public Contenedor save(@RequestBody Contenedor entity) { return service.saveContenedor(entity); }
+
+    @PutMapping("/{id}")
+    public Contenedor update(@PathVariable Long id, @RequestBody Contenedor entity) {
+        return service.updateContenedor(id, entity);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        service.deleteContenedorById(id);
+    }
 }

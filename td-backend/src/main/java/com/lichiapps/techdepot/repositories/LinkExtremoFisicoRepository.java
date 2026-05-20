@@ -10,4 +10,5 @@ import java.util.List;
 public interface LinkExtremoFisicoRepository extends JpaRepository<LinkExtremoFisico, Long> {
     List<LinkExtremoFisico> findByItemId(Long itemId);
     List<LinkExtremoFisico> findByItemIdIn(List<Long> itemIds);
+    boolean existsByPuertoId(Long puertoId);
 }

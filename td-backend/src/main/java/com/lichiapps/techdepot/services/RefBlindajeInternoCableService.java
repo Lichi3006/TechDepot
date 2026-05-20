@@ -22,11 +22,21 @@ public class RefBlindajeInternoCableService {
         return refBlindajeInternoCableRepository.save(newRefBlindajeInternoCable);
     }
 
+    @Autowired private com.lichiapps.techdepot.repositories.DetalleCableRepository detalleCableRepository;
+
     public RefBlindajeInternoCable getRefBlindajeInternoCableById(Long id){
         return refBlindajeInternoCableRepository.findById(id).orElse(null);
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public void deleteRefBlindajeInternoCableById(Long id){
+        RefBlindajeInternoCable blindaje = getRefBlindajeInternoCableById(id);
+        if (blindaje == null) {
+            throw new IllegalArgumentException("El blindaje interno con el ID especificado no existe.");
+        }
+        if (detalleCableRepository.existsByBlindajeInternoId(id)) {
+            throw new IllegalArgumentException("No se puede eliminar el blindaje interno '" + blindaje.getNombre() + "' porque está asociado a cables en el inventario.");
+        }
         refBlindajeInternoCableRepository.deleteById(id);
     }
 

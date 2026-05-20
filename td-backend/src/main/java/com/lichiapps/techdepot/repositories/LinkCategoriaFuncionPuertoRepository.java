@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface LinkCategoriaFuncionPuertoRepository extends JpaRepository<LinkCategoriaFuncionPuerto, LinkCategoriaFuncionPuerto.LinkCategoriaFuncionPuertoId> {
+    java.util.List<LinkCategoriaFuncionPuerto> findByIdIdPuerto(Long idPuerto);
 }

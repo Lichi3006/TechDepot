@@ -1,73 +1,36 @@
-# React + TypeScript + Vite
+# TechDepot - Frontend Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este directorio contiene el cliente web de TechDepot, construido utilizando React, TypeScript y Vite. La interfaz del usuario se centra en proporcionar una experiencia fluida, reactiva y visualmente atractiva (glassmorphism y modo oscuro predeterminado).
 
-Currently, two official plugins are available:
+## Estructura del Proyecto
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+*   `/src/components/ui/`: Contiene componentes de interfaz reutilizables como botones, inputs y paneles con efectos visuales uniformes.
+*   `/src/layouts/`: Contiene `MainLayout` que define el marco visual fijo de la aplicación (incluyendo la barra lateral de navegación principal).
+*   `/src/pages/`: Páginas y módulos de la aplicación:
+    *   `Inventory/`: Visualización del inventario general con el motor lateral de filtrado avanzado.
+    *   `Admin/`: Páginas administrativas dedicadas para gestionar los catálogos de infraestructura física:
+        *   `ContainerManagerPage`: Registro y ciclo de vida de contenedores físicos.
+        *   `PortManagerPage`: Gestión de puertos físicos y definición de funciones asociadas.
+        *   `ProtocolManagerPage`: Matriz de compatibilidad y asignación/eliminación de protocolos de red.
+        *   `BrandManagerPage`: Gestión de marcas de fabricantes.
+        *   `HardwareCategoryManagerPage`: Administración de clasificaciones de componentes.
+        *   `CableShieldingManagerPage`: Control de blindajes internos y externos para cables.
+*   `/src/services/`: Capa de servicios para la comunicación HTTP estructurada mediante Axios:
+    *   `api.ts`: Instancia base configurada de Axios.
+    *   `itemService.ts`: Servicios dedicados a las operaciones del inventario.
+    *   `refService.ts`: Servicios para catálogos y referencias del sistema (marcas, puertos, blindajes, etc.).
+*   `/src/types/`: Definiciones y tipos estrictos de TypeScript para las entidades de la aplicación.
 
-## React Compiler
+## Scripts Disponibles
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+En el directorio del frontend, podés ejecutar:
 
-## Expanding the ESLint configuration
+*   `npm run dev`: Inicia el servidor de desarrollo de Vite en local (generalmente en `http://localhost:5173`).
+*   `npm run build`: Compila la aplicación web optimizada para producción en la carpeta `dist`. Realiza comprobaciones estrictas de TypeScript (`tsc`).
+*   `npm run preview`: Previsualiza localmente el build de producción generado.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Integración con la API y Control de Errores
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Toda comunicación asíncrona se realiza a través de Axios. El frontend implementa control de errores defensivo:
+1.  **Respuestas de Negocio**: Al intentar eliminar elementos que están actualmente en uso en el inventario (por ejemplo, una marca con ítems asignados o un puerto con conexiones físicas), el backend devuelve un código de estado HTTP 400 (Bad Request).
+2.  **Mapeo de Errores**: El cliente captura el mensaje del backend y lo presenta en pantalla de manera amigable mediante diálogos nativos, evitando excepciones silenciosas o fallos que congelen la interfaz de usuario.

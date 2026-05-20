@@ -24,4 +24,16 @@ public class RefCategoriaHardwareController {
     public RefCategoriaHardware save(@RequestBody RefCategoriaHardware data) {
         return refCategoriaHardwareService.saveRefCategoriaHardware(data);
     }
+
+    @DeleteMapping("/{id}")
+    public org.springframework.http.ResponseEntity<?> delete(@PathVariable Long id) {
+        try {
+            refCategoriaHardwareService.deleteRefCategoriaHardwareById(id);
+            return org.springframework.http.ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return org.springframework.http.ResponseEntity.badRequest().body(new java.util.HashMap<String, String>() {{
+                put("message", e.getMessage());
+            }});
+        }
+    }
 }

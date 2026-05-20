@@ -293,6 +293,16 @@ INSERT INTO REF_TipoContenedor (Nombre, Prefijo) VALUES
 ('Mixto / Varios', 'MIX');
 GO
 
+-- 9.3.1 Categorías de Hardware
+INSERT INTO REF_CategoriaHardware (Nombre) VALUES
+('Disco Duro (HDD/SSD)'),
+('Memoria RAM'),
+('Placa Madre (Motherboard)'),
+('Placa de Video (GPU)'),
+('Procesador (CPU)'),
+('Gabinete / Chasis');
+GO
+
 -- 9.4 Puertos Físicos Comunes
 INSERT INTO REF_Puerto (Nombre) VALUES 
 ('USB-C'), 
@@ -341,7 +351,17 @@ INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES 
 GO
 
 -- 9.7 Colores Comunes (Presets)
--- ... (Colores remains the same)
+INSERT INTO REF_Color (Nombre, CodigoHex) VALUES 
+('Negro', '#000000'),
+('Blanco', '#FFFFFF'),
+('Gris', '#808080'),
+('Rojo', '#FF0000'),
+('Azul', '#0000FF'),
+('Verde', '#00FF00'),
+('Amarillo', '#FFFF00'),
+('Naranja', '#FFA500'),
+('Violeta', '#8A2BE2'),
+('Rosa', '#FFC0CB');
 
 -- 9.8 Blindajes
 INSERT INTO REF_BlindajeExternoCable (Nombre) VALUES ('PVC'), ('Trenzado Nylon'), ('Goma'), ('UTP (Sin blindaje)'), ('STP (Blindaje trenzado)'), ('FTP (Lámina aluminio)');

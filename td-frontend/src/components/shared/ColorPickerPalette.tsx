@@ -1,14 +1,14 @@
 import React from 'react';
-import { HexColorPicker } from 'react-colorful';
 import type { RefColor } from '../../types/Item.ts';
 
 interface ColorPickerPaletteProps {
     selectedColors: string[];
     presets: RefColor[];
     onChange: (colors: string[]) => void;
+    onSavePreset?: (nombre: string, hex: string) => Promise<void>;
 }
 
-export const ColorPickerPalette: React.FC<ColorPickerPaletteProps> = ({ selectedColors, presets, onChange }) => {
+export const ColorPickerPalette: React.FC<ColorPickerPaletteProps> = ({ selectedColors, presets, onChange, onSavePreset }) => {
     const [currentColor, setCurrentColor] = React.useState("#000000");
 
     const handleAddColor = (hex: string) => {
@@ -23,43 +23,75 @@ export const ColorPickerPalette: React.FC<ColorPickerPaletteProps> = ({ selected
 
     return (
         <div style={containerStyle}>
-            <div style={pickerSectionStyle}>
-                <HexColorPicker color={currentColor} onChange={setCurrentColor} />
-                <div style={{ marginTop: '10px', textAlign: 'center' }}>
-                    <div style={{ ...previewStyle, backgroundColor: currentColor }}></div>
-                    <button 
-                        type="button" 
-                        onClick={() => handleAddColor(currentColor)}
-                        style={addButtonStyle}
-                    >
-                        Agregar Color
-                    </button>
+            <div style={mainRowStyle}>
+                <div style={presetsSectionStyle}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                        <label style={{ ...labelStyle, marginBottom: 0 }}>Colores Comunes:</label>
+                        {onSavePreset && (
+                            <button 
+                                type="button" 
+                                onClick={async () => {
+                                    const nombre = prompt("Nombre para el color común (ej: Gris Espacial):");
+                                    const hex = prompt("Código HEX (ej: #808080):", currentColor);
+                                    if (nombre && hex) {
+                                        if (!/^#[0-9A-F]{6}$/i.test(hex)) {
+                                            alert("Formato HEX inválido (debe ser #RRGGBB)");
+                                            return;
+                                        }
+                                        await onSavePreset(nombre.trim(), hex.trim());
+                                    }
+                                }}
+                                className="btn-glass"
+                                style={{ padding: '2px 8px', fontSize: '0.75rem' }}
+                            >
+                                + Nuevo Preset
+                            </button>
+                        )}
+                    </div>
+                    <div style={gridStyle}>
+                        {presets.map(p => (
+                            <div 
+                                key={p.id} 
+                                title={p.nombre}
+                                onClick={() => handleAddColor(p.codigoHex)}
+                                style={{ ...presetSquareStyle, backgroundColor: p.codigoHex }}
+                            ></div>
+                        ))}
+                    </div>
+                </div>
+
+                <div style={customSectionStyle}>
+                    <label style={labelStyle}>Libre:</label>
+                    <div style={customControlsStyle}>
+                        <input 
+                            type="color" 
+                            value={currentColor} 
+                            onChange={(e) => setCurrentColor(e.target.value)} 
+                            style={colorInputStyle} 
+                        />
+                        <button 
+                            type="button" 
+                            onClick={() => handleAddColor(currentColor)}
+                            className="btn-glass"
+                            style={{ padding: '0 12px', fontSize: '0.85rem' }}
+                        >
+                            + Agregar
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div style={presetsSectionStyle}>
-                <label style={labelStyle}>Colores Comunes:</label>
-                <div style={gridStyle}>
-                    {presets.map(p => (
-                        <div 
-                            key={p.id} 
-                            title={p.nombre}
-                            onClick={() => handleAddColor(p.codigoHex)}
-                            style={{ ...presetSquareStyle, backgroundColor: p.codigoHex }}
-                        ></div>
-                    ))}
-                </div>
-
-                <label style={labelStyle}>Seleccionados:</label>
+            <div style={selectedSectionStyle}>
+                <label style={labelStyle}>Seleccionados para este ítem:</label>
                 <div style={selectedListStyle}>
                     {selectedColors.map(hex => (
                         <div key={hex} style={chipStyle}>
                             <div style={{ ...miniSquareStyle, backgroundColor: hex }}></div>
-                            <span>{hex}</span>
-                            <button type="button" onClick={() => handleRemoveColor(hex)} style={removeButtonStyle}>x</button>
+                            <span style={{ color: 'var(--text-primary)' }}>{hex}</span>
+                            <button type="button" onClick={() => handleRemoveColor(hex)} style={removeButtonStyle}>×</button>
                         </div>
                     ))}
-                    {selectedColors.length === 0 && <span style={{ color: '#999', fontSize: '0.9rem' }}>Ninguno</span>}
+                    {selectedColors.length === 0 && <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Ninguno</span>}
                 </div>
             </div>
         </div>
@@ -68,93 +100,114 @@ export const ColorPickerPalette: React.FC<ColorPickerPaletteProps> = ({ selected
 
 const containerStyle: React.CSSProperties = {
     display: 'flex',
-    gap: '30px',
-    padding: '15px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '8px',
-    border: '1px solid #eee',
-    flexWrap: 'wrap'
-};
-
-const pickerSectionStyle: React.CSSProperties = {
-    display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center'
+    gap: '15px',
+    padding: '16px',
+    backgroundColor: 'var(--input-bg)',
+    borderRadius: '8px',
+    border: '1px solid var(--border-color)',
 };
 
-const previewStyle: React.CSSProperties = {
-    width: '100%',
-    height: '30px',
-    borderRadius: '4px',
-    border: '1px solid #ddd',
-    marginBottom: '10px'
-};
-
-const addButtonStyle: React.CSSProperties = {
-    padding: '5px 15px',
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer'
+const mainRowStyle: React.CSSProperties = {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '20px',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start'
 };
 
 const presetsSectionStyle: React.CSSProperties = {
-    flex: 1,
+    flex: 2,
     minWidth: '200px'
+};
+
+const customSectionStyle: React.CSSProperties = {
+    flex: 1,
+    minWidth: '150px'
+};
+
+const customControlsStyle: React.CSSProperties = {
+    display: 'flex',
+    gap: '10px',
+    height: '32px'
+};
+
+const colorInputStyle: React.CSSProperties = {
+    width: '40px',
+    height: '100%',
+    padding: 0,
+    border: '1px solid var(--border-color)',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    backgroundColor: 'transparent'
+};
+
+const selectedSectionStyle: React.CSSProperties = {
+    borderTop: '1px solid var(--border-color)',
+    paddingTop: '12px'
 };
 
 const labelStyle: React.CSSProperties = {
     display: 'block',
     marginBottom: '10px',
     fontWeight: 'bold',
-    fontSize: '0.9rem'
+    fontSize: '0.85rem',
+    color: 'var(--text-primary)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px'
 };
 
 const gridStyle: React.CSSProperties = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(30px, 1fr))',
+    display: 'flex',
+    flexWrap: 'wrap',
     gap: '8px',
-    marginBottom: '20px'
 };
 
 const presetSquareStyle: React.CSSProperties = {
-    width: '30px',
-    height: '30px',
-    borderRadius: '4px',
-    border: '1px solid #ddd',
+    width: '32px',
+    height: '32px',
+    borderRadius: '6px',
+    border: '1px solid var(--border-color)',
     cursor: 'pointer',
-    transition: 'transform 0.1s'
+    transition: 'transform 0.1s',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
 };
 
 const selectedListStyle: React.CSSProperties = {
     display: 'flex',
     flexWrap: 'wrap',
-    gap: '8px'
+    gap: '8px',
+    alignItems: 'center'
 };
 
 const chipStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
-    gap: '5px',
-    padding: '4px 8px',
-    backgroundColor: 'white',
-    border: '1px solid #ddd',
+    gap: '6px',
+    padding: '4px 10px',
+    backgroundColor: 'var(--surface-color)',
+    border: '1px solid var(--border-color)',
     borderRadius: '20px',
     fontSize: '0.85rem'
 };
 
 const miniSquareStyle: React.CSSProperties = {
-    width: '12px',
-    height: '12px',
-    borderRadius: '2px'
+    width: '14px',
+    height: '14px',
+    borderRadius: '3px',
+    border: '1px solid var(--border-color)'
 };
 
 const removeButtonStyle: React.CSSProperties = {
     border: 'none',
     background: 'none',
-    color: '#ff4d4d',
+    color: 'var(--danger-color)',
     cursor: 'pointer',
     fontWeight: 'bold',
-    marginLeft: '5px'
+    marginLeft: '5px',
+    fontSize: '1.1rem',
+    lineHeight: 1,
+    padding: '0 2px'
 };
+
+

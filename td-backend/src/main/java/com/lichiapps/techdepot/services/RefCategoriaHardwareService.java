@@ -22,11 +22,21 @@ public class RefCategoriaHardwareService {
         return refCategoriaHardwareRepository.save(newRefCategoriaHardware);
     }
 
+    @Autowired private com.lichiapps.techdepot.repositories.LinkCategoriaHardwareRepository linkCategoriaHardwareRepository;
+
     public RefCategoriaHardware getRefCategoriaHardwareById(Long id){
         return refCategoriaHardwareRepository.findById(id).orElse(null);
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public void deleteRefCategoriaHardwareById(Long id){
+        RefCategoriaHardware categoria = getRefCategoriaHardwareById(id);
+        if (categoria == null) {
+            throw new IllegalArgumentException("La categoría de hardware con el ID especificado no existe.");
+        }
+        if (linkCategoriaHardwareRepository.existsByRefCategoriaHardwareId(id)) {
+            throw new IllegalArgumentException("No se puede eliminar la categoría '" + categoria.getNombre() + "' porque está asociada a ítems de hardware en el inventario.");
+        }
         refCategoriaHardwareRepository.deleteById(id);
     }
 

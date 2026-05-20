@@ -32,11 +32,21 @@ public class RefMarcaService {
         return marcas;
     }
 
+    @Autowired private com.lichiapps.techdepot.repositories.ItemRepository itemRepository;
+
     public RefMarca getRefMarcaById(Long id){
         return refMarcaRepository.findById(id).orElse(null);
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public void deleteRefMarcaById(Long id){
+        RefMarca marca = getRefMarcaById(id);
+        if (marca == null) {
+            throw new IllegalArgumentException("La marca con el ID especificado no existe.");
+        }
+        if (itemRepository.existsByMarcaId(id)) {
+            throw new IllegalArgumentException("No se puede eliminar la marca '" + marca.getNombre() + "' porque está asociada a ítems en el inventario.");
+        }
         refMarcaRepository.deleteById(id);
     }
 

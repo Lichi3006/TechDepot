@@ -13,4 +13,15 @@ public class RefPuertoController {
     @Autowired private RefPuertoService service;
     @GetMapping public List<RefPuerto> getAll() { return service.getAllRefPuertos(); }
     @PostMapping public RefPuerto save(@RequestBody RefPuerto entity) { return service.saveRefPuerto(entity); }
+    @DeleteMapping("/{id}")
+    public org.springframework.http.ResponseEntity<?> delete(@PathVariable Long id) {
+        try {
+            service.deleteRefPuertoById(id);
+            return org.springframework.http.ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return org.springframework.http.ResponseEntity.badRequest().body(new java.util.HashMap<String, String>() {{
+                put("message", e.getMessage());
+            }});
+        }
+    }
 }

@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface RefProtocoloRepository extends  JpaRepository<RefProtocolo, Long>{
 
     Optional<RefProtocolo> findByNombre(String nombre);
+    java.util.List<RefProtocolo> findByPuertoId(Long puertoId);
 }

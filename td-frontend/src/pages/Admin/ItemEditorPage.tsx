@@ -113,13 +113,13 @@ export default function ItemEditorPage() {
         }
     };
 
-    if (loading) return <div>Cargando datos del item...</div>;
+    if (loading) return <div style={{ color: 'var(--brand-color)' }} className="text-neon">Cargando datos del item...</div>;
 
     return (
-        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-            <header style={{ marginBottom: '30px' }}>
-                <h1 style={{ margin: 0, color: '#1a1a1a' }}>{isEditing ? 'Editar Item' : 'Nuevo Item'}</h1>
-                <p style={{ color: '#666' }}>{isEditing ? 'Modificá los datos del componente seleccionado.' : 'Completá los datos para registrar un nuevo componente.'}</p>
+        <div style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+            <header className="glass-panel" style={{ padding: '24px' }}>
+                <h1 style={{ margin: 0, color: 'var(--brand-color)', textShadow: '0 0 10px rgba(117, 229, 97, 0.3)' }}>{isEditing ? 'Editar Item' : 'Nuevo Item'}</h1>
+                <p style={{ color: 'var(--text-secondary)', margin: '8px 0 0 0' }}>{isEditing ? 'Modificá los datos del componente seleccionado.' : 'Completá los datos para registrar un nuevo componente.'}</p>
             </header>
             
             <ItemForm 
