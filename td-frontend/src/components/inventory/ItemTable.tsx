@@ -7,6 +7,21 @@ interface ItemTableProps {
     onEditItem?: (id: number) => void;
 }
 
+const BoltIcon: React.FC = () => (
+    <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        viewBox="0 0 24 24" 
+        fill="currentColor" 
+        style={{ width: '1em', height: '1em', display: 'inline-block' }}
+    >
+        <path 
+            fillRule="evenodd" 
+            d="M14.615 1.595a.75.75 0 0 1 .359.852L12.972 9.75h7.278a.75.75 0 0 1 .548 1.262l-10.5 11.25a.75.75 0 0 1-1.272-.71l1.992-7.302H3.75a.75.75 0 0 1-.548-1.262L13.702 1.77a.75.75 0 0 1 .913-.175Z" 
+            clipRule="evenodd" 
+        />
+    </svg>
+);
+
 const getCategoryDetails = (categoryStr?: string) => {
     if (!categoryStr) return [{ name: 'Sin Categoría', icon: '🏷️' }];
     
@@ -16,9 +31,9 @@ const getCategoryDetails = (categoryStr?: string) => {
     
     return cats.map(cat => {
         const lower = cat.toLowerCase();
-        let icon = '🏷️';
+        let icon: React.ReactNode = '🏷️';
         if (lower.includes('video')) icon = '📺';
-        else if (lower.includes('energ') || lower.includes('alimentación') || lower.includes('fuente')) icon = '⚡';
+        else if (lower.includes('energ') || lower.includes('alimentación') || lower.includes('fuente')) icon = <BoltIcon />;
         else if (lower.includes('audio')) icon = '🎵';
         else if (lower.includes('red') || lower.includes('internet')) icon = '🌐';
         else if (lower.includes('datos') || lower.includes('usb')) icon = '🔌';
@@ -27,7 +42,7 @@ const getCategoryDetails = (categoryStr?: string) => {
     });
 };
 
-const getProtocolIcon = (protocol?: string) => {
+const getProtocolIcon = (protocol?: string): React.ReactNode => {
     if (!protocol) return '🔗';
     const lower = protocol.toLowerCase();
     if (lower.includes('hdmi')) return '📺';
@@ -36,7 +51,7 @@ const getProtocolIcon = (protocol?: string) => {
     if (lower.includes('vga')) return '📼';
     if (lower.includes('audio') || lower.includes('jack') || lower.includes('plug')) return '🎧';
     if (lower.includes('ethernet') || lower.includes('rj45')) return '🌐';
-    if (lower.includes('power') || lower.includes('ac') || lower.includes('dc')) return '⚡';
+    if (lower.includes('power') || lower.includes('ac') || lower.includes('dc')) return <BoltIcon />;
     return '🔗';
 };
 

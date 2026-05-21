@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Estabilidad del Frontend**: Resolucion de conflictos de tipos en TypeScript y nombres de metodos inconsistentes en servicios.
 
 ### Changed
+- **Visuales en Tabla sin Emojis**: Reemplazo del emoji de rayo (`⚡`) por un componente vectorial SVG `BoltIcon` en la tabla de inventario para las categorías de energía y protocolos de alimentación, mejorando la estética premium.
 - **Documentación del Stack**: Actualización del archivo [README.md](file:///C:/Users/User/Desktop/Proyectos/TechDepot/TechDepot/README.md) para clarificar el rol de Hibernate como el motor ORM (Object-Relational Mapping) en el backend, diferenciándolo del rol de Spring Boot como framework web y de orquestación.
 - **Branding del Sistema**: Integración del logo oficial en el Sidebar (agrandado 20%) y el icono de marca como Favicon del navegador.
 - **Refactorización SOLID de Validaciones**: Las reglas de validacion especificas por tipo de hardware se movieron desde `ItemValidationService` hacia sus respectivos manejadores (`Strategy Pattern`), cumpliendo estrictamente con el principio de Abierto/Cerrado (OCP).
