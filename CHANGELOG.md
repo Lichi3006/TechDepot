@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Datos Semilla**: Nuevos datos semilla (seed data) en [TechDepotTablesQuery.sql](file:///C:/Users/User/Desktop/Proyectos/TechDepot/TechDepot/database/TechDepotTablesQuery.sql) para categorías de hardware (`REF_CategoriaHardware`) y marcas (`REF_Marca`), con inserciones ejecutadas en la base de datos local.
 - **Gestores Individuales**: Implementación de pantallas de gestión dedicadas (BrandManagerPage, HardwareCategoryManagerPage y CableShieldingManagerPage) para administrar de forma limpia marcas, categorías de hardware y blindajes de cables (interno/externo).
 - **Borrado Seguro de Marcas, Categorías y Blindajes**: Incorporación de validaciones en el backend (existsBy...) para evitar la eliminación de referencias (marcas, categorías, blindajes) que estén en uso en el inventario, retornando errores descriptivos al usuario.
 - **Borrado de Protocolos**: Exposición del endpoint DELETE /api/protocolos/{id} con comprobación de no uso en ítems para poder eliminar protocolos obsoletos directamente desde la interfaz.
@@ -33,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Sección de Parámetros**: Eliminación de la página unificada ParametersPage y remoción de sus enlaces en rutas y navegación sidebar para distribuir responsabilidades de forma limpia.
 
 ### Fixed
+- **Modo Claro en Filtro de Puertos**: Corrección del estilo del buscador "Buscar puerto..." en [FilterSidebar.tsx](file:///C:/Users/User/Desktop/Proyectos/TechDepot/TechDepot/td-frontend/src/components/inventory/FilterSidebar.tsx), reemplazando el fondo oscuro fijo por la variable CSS `--input-bg-nested` para garantizar visibilidad óptima en modo claro.
 - **Integridad en Protocolos**: El backend ahora crea automáticamente las capacidades de puerto necesarias al registrar nuevos protocolos, eliminando errores de claves foráneas.
 - **Selección Multifunción y Protocolos**: Se corrigio la limitacion que impedia seleccionar multiples protocolos o funciones simultaneas en puertos con capacidades mixtas (ej: USB-A con Datos y Energia).
 - **Logica Agnostica de Puertos**: Eliminacion de cualquier restriccion implicita que favoreciera al USB-C; ahora todos los puertos permiten seleccion multiple de protocolos segun su matriz de capacidades.

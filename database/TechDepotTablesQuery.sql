@@ -300,8 +300,33 @@ INSERT INTO REF_CategoriaHardware (Nombre) VALUES
 ('Placa Madre (Motherboard)'),
 ('Placa de Video (GPU)'),
 ('Procesador (CPU)'),
-('Gabinete / Chasis');
+('Gabinete / Chasis'),
+('Fuente de Alimentación (PSU)'),
+('Disipador / Cooler'),
+('Tarjeta de Red (NIC)'),
+('Placa de Sonido');
 GO
+
+-- 9.3.2 Marcas Comunes
+INSERT INTO REF_Marca (Nombre) VALUES
+('Intel'),
+('AMD'),
+('NVIDIA'),
+('ASUS'),
+('Gigabyte'),
+('MSI'),
+('Corsair'),
+('Kingston'),
+('Western Digital'),
+('Seagate'),
+('TP-Link'),
+('Samsung'),
+('Logitech'),
+('Dell'),
+('HP'),
+('Lenovo');
+GO
+
 
 -- 9.4 Puertos Físicos Comunes
 INSERT INTO REF_Puerto (Nombre) VALUES 

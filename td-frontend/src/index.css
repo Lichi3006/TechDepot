@@ -34,6 +34,7 @@
   --glass-blur: blur(8px);
   --input-bg: rgba(0, 0, 0, 0.5);
   --input-bg-focus: rgba(0, 0, 0, 0.8);
+  --input-bg-nested: rgba(0, 0, 0, 0.3);
 }
 
 :root[data-theme="light"] {
@@ -51,6 +52,7 @@
   --glass-blur: blur(8px);
   --input-bg: rgba(255, 255, 255, 0.6);
   --input-bg-focus: rgba(255, 255, 255, 1);
+  --input-bg-nested: rgba(0, 0, 0, 0.05);
 }
 
 body {

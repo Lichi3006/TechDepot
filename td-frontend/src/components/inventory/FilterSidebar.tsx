@@ -412,7 +412,7 @@ const miniInputStyle: React.CSSProperties = {
     padding: '6px 10px',
     borderRadius: '4px',
     border: '1px solid var(--border-color)',
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'var(--input-bg-nested)',
     color: 'var(--text-primary)',
     fontSize: '0.85rem',
     outline: 'none',
