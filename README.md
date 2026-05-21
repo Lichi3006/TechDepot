@@ -46,6 +46,7 @@ Before you start, make sure you have the following installed:
 
 ### Backend (Maven)
 * **Spring Data JPA:** To handle all the database magic without writing raw SQL for everything.
+* **Hibernate:** The underlying Object-Relational Mapping (ORM) framework that maps Java entities to SQL Server tables, handles query generation, and manages object state transitions.
 * **MSSQL Driver:** The bridge between Java and SQL Server.
 * **Lombok:** To keep our entities clean (no more manual Getters and Setters!).
 * **Spring Web:** To build the REST API endpoints.
