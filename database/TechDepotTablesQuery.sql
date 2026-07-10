@@ -91,8 +91,9 @@ CREATE TABLE REF_Protocolo
     IdREF_Protocolo BIGINT IDENTITY(1,1),
     IdREF_Puerto BIGINT NOT NULL,
     IdREF_CategoriaFuncion BIGINT NOT NULL,
-    Nombre VARCHAR(50) UNIQUE NOT NULL,
+    Nombre VARCHAR(50) NOT NULL,
     CONSTRAINT PK_RefProtocolo PRIMARY KEY (IdREF_Protocolo),
+    CONSTRAINT UQ_RefProtocolo_NombrePuerto UNIQUE (Nombre, IdREF_Puerto),
     CONSTRAINT UQ_RefProtocolo_PuertoFuncion UNIQUE (IdREF_Protocolo, IdREF_Puerto, IdREF_CategoriaFuncion),
     CONSTRAINT FK_RefProtocolo_LCFP FOREIGN KEY (IdREF_Puerto, IdREF_CategoriaFuncion) 
         REFERENCES LINK_CategoriaFuncionPuerto (IdREF_Puerto, IdREF_CategoriaFuncion)

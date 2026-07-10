@@ -17,7 +17,7 @@
   <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3">
 </p>
 
-Every day I waste hours digging through boxes of tangled cables and random hardware. To fix that and as an excuse to learn and build my first modern full-stack project, I’m creating **TechDepot**: a stock management system to finally bring order to the chaos.
+Every day I waste hours digging through boxes of tangled cables and random hardware. To fix that and as an excuse to learn and build my first modern full-stack project, I'm creating **TechDepot**: a stock management system to finally bring order to the chaos.
 
 ---
 
@@ -73,17 +73,84 @@ Before you start, make sure you have the following installed:
 
 ## <img src="https://api.iconify.design/heroicons/arrow-down-tray.svg?color=white" width="24" height="24" align="center"/> Local Setup & Configuration
 
-To protect sensitive credentials, the main configuration file is not included in this repository. Follow these steps to set up the project locally:
+TechDepot has been engineered for a **plug-and-play** development experience. You don't need to manually create databases, copy property files, or run npm installs. Our automated scripts handle everything for you.
 
-### 1. Database Setup
-1. Open **Microsoft SQL Server Management Studio (SSMS)**.
-2. Run the script located at `/database/TechDepotTablesQuery.sql` to generate the schema and constraints and creating the database `TechDepot` in the process.
+### 1. Database Configuration (Run once)
 
-### 2. Environment Configuration
-1. Navigate to `td-backend/src/main/resources/`.
-2. Locate the file `application.properties.example`.
-3. Create a copy of that file in the same folder and rename it to **`application.properties`**.
-4. Open the new `application.properties` and replace the placeholders with your local SQL Server credentials:
-   ```properties
-   spring.datasource.username= YOUR_USER
-   spring.datasource.password= YOUR_PASSWORD
+If you have **SQL Server Express** installed, simply run the setup script **as Administrator**:
+
+```powershell
+# Open PowerShell as Administrator and run:
+./setup-sqlserver.ps1
+```
+
+**What this does automatically:**
+- Enables TCP/IP connections on port 1433 (required by Java/Spring Boot).
+- Starts the SQL Server and SQL Browser services.
+- Connects to SQL Server and executes `/database/TechDepotTablesQuery.sql` to generate the `TechDepot` database, schemas, and default data.
+
+*(If you are using SQL Server Developer/Standard edition, TCP/IP is usually enabled by default on port 1433. You can still run this script to automatically create the database).*
+
+### 2. Frontend Permissions (Windows Users)
+
+If you encounter a **"scripts is disabled on this system"** error when running the frontend, it's due to PowerShell's default security policy. Fix it by running this in an Administrator PowerShell:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+*(Press `Y` or `S` to accept).*
+
+---
+
+## <img src="https://api.iconify.design/heroicons/play.svg?color=white" width="24" height="24" align="center"/> Running the Project
+
+To start both the Backend and Frontend simultaneously with zero hassle:
+
+```powershell
+# From the project root directory:
+./dev.ps1
+```
+
+**The `dev.ps1` script will automatically:**
+1. ⚙️ **Configure Environment:** Create `application.properties` from the `.example` template if it doesn't exist.
+2. 📦 **Install Dependencies:** Detect if the frontend is missing `node_modules` and run `npm install` automatically.
+3. 🚀 **Launch Backend:** Start the Spring Boot API on `http://localhost:8080`.
+4. 🚀 **Launch Frontend:** Start the Vite React app on `http://localhost:5173`.
+
+Everything will open in separate background terminal windows. You can close the main script window once they launch.
+
+### Manual Configuration (Optional)
+If you prefer not to use Windows Integrated Authentication or have a specific SQL Server user, you can manually edit `td-backend/src/main/resources/application.properties` after the first run:
+```properties
+spring.datasource.username= YOUR_USER
+spring.datasource.password= YOUR_PASSWORD
+```
+
+---
+
+## <img src="https://api.iconify.design/heroicons/exclamation-triangle.svg?color=white" width="24" height="24" align="center"/> Troubleshooting
+
+<details>
+<summary><strong>Connection refused on port 1433</strong></summary>
+
+This means SQL Server is not listening on TCP/IP port 1433. Solutions:
+1. **If you have SQL Server Express:** Use `instanceName=SQLEXPRESS` in the URL instead of port `1433`. See *Option A* above.
+2. **If you need port 1433:** Enable TCP/IP in SQL Server Configuration Manager and restart the service.
+3. Make sure the SQL Server service is running: `Get-Service MSSQL*`
+</details>
+
+<details>
+<summary><strong>"Unable to determine Dialect" error</strong></summary>
+
+This cascading error happens when Hibernate can't connect to the database. Fix the connection first (see above). The `application.properties.example` already includes the explicit dialect to prevent this error.
+</details>
+
+<details>
+<summary><strong>SQL Server Browser won't start</strong></summary>
+
+The Browser service might be set to "Disabled". Change it with:
+```powershell
+Set-Service SQLBrowser -StartupType Manual
+Start-Service SQLBrowser
+```
+</details>
