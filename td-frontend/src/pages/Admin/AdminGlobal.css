@@ -1,0 +1,137 @@
+/* AdminGlobal.css */
+.admin-page-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+}
+
+.admin-header {
+    padding: 24px;
+}
+
+.admin-title {
+    margin: 0;
+    color: var(--brand-color);
+    text-shadow: 0 0 10px rgba(117, 229, 97, 0.3);
+}
+
+.admin-description {
+    color: var(--text-secondary);
+    margin: 8px 0 0 0;
+}
+
+.admin-card {
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.admin-card-title, .admin-subtitle {
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    margin-top: 0;
+}
+
+.admin-subtitle {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.admin-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+/* El grid container no necesita padding, sus hijos (admin-card) lo tienen */
+.admin-grid .admin-card {
+    margin-bottom: 0;
+}
+
+.admin-form-row {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.admin-form-fields {
+    display: flex;
+    gap: 15px;
+    flex: 1;
+}
+
+.admin-input-wrapper {
+    flex: 1;
+}
+
+.admin-form-label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+    .admin-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .admin-form-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .admin-form-row button {
+        width: 100%;
+    }
+    
+    /* Responsive tables */
+    .admin-table {
+        display: block;
+        width: 100%;
+    }
+
+    .admin-table thead {
+        display: none;
+    }
+
+    .admin-table tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .admin-table tr {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 16px;
+        background: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .admin-table td {
+        display: flex;
+        align-items: center;
+        padding: 0 !important;
+        border: none !important;
+        font-size: 0.95rem;
+    }
+
+    /* Simulate table headers via nth-child before pseudo element if needed */
+    /* Since each table has different columns, we will let them define their own ::before labels or just stack them cleanly */
+    
+    .admin-table td:last-child {
+        margin-top: 8px;
+        justify-content: flex-end;
+        border-top: 1px solid var(--border-color) !important;
+        padding-top: 12px !important;
+    }
+}

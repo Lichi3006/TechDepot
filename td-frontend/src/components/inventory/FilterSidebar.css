@@ -1,0 +1,104 @@
+/* FilterSidebar.css */
+.filter-sidebar {
+    background: var(--surface-color);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+    transition: width 0.3s ease, padding 0.3s ease;
+    flex-shrink: 0;
+}
+
+.mobile-filter-btn {
+    display: none;
+}
+
+.mobile-close-filter-btn {
+    display: none;
+}
+
+.mobile-only {
+    display: none;
+}
+
+/* Aplicar glass panel solo en desktop */
+.desktop-glass-only {
+    background: rgba(10, 10, 10, 0.4);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+:root[data-theme="light"] .desktop-glass-only {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none !important;
+    }
+    
+    .mobile-only {
+        display: flex !important;
+    }
+    /* En mobile, ocultamos la sidebar por defecto si no está "abierta" via clase */
+    .filter-sidebar {
+        display: none;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: 100dvh !important; /* using dvh for dynamic viewport height on mobile */
+        z-index: 2000 !important;
+        border-radius: 0 !important;
+        padding: 20px !important;
+        padding-bottom: 80px !important; /* Extra padding to ensure the button is reachable and not blocked by phone UI */
+        background: var(--bg-color) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+    }
+    
+    .filter-sidebar.mobile-open {
+        display: flex !important;
+    }
+    
+    /* Mostrar botón "Filtrar" estilo ML */
+    .mobile-filter-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        background-color: var(--surface-hover);
+        color: var(--brand-color);
+        border: 1px solid var(--brand-color);
+        padding: 12px;
+        border-radius: 8px;
+        font-weight: bold;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 10px rgba(117, 229, 97, 0.1);
+    }
+    
+    .mobile-close-filter-btn {
+        display: block;
+        background: var(--brand-color);
+        color: #000;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        font-weight: bold;
+        margin-top: 20px;
+        width: 100%;
+        text-align: center;
+    }
+}

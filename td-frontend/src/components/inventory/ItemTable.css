@@ -1,0 +1,118 @@
+/* ItemTable.css */
+.table-container {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.inventory-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    background-color: var(--input-bg);
+}
+
+.inventory-table thead tr {
+    background-color: var(--surface-hover);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.inventory-table th {
+    padding: 12px 10px;
+    color: var(--brand-color);
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.inventory-table tbody tr {
+    transition: background-color 0.2s;
+}
+
+.inventory-table tbody tr:nth-child(even) {
+    background-color: var(--surface-color);
+}
+
+.inventory-table tbody tr:hover {
+    background-color: rgba(117, 229, 97, 0.05);
+}
+
+.inventory-table td {
+    padding: 12px 10px;
+    vertical-align: middle;
+    font-size: 0.85rem;
+    text-align: left;
+    border: 1px solid var(--border-color);
+}
+
+/* Acciones */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+/* =========================================
+   📱 MOBILE RESPONSIVE (CARD LAYOUT)
+   ========================================= */
+.mobile-row {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .desktop-row {
+        display: none !important;
+    }
+
+    .mobile-row {
+        display: table-row;
+    }
+
+    .table-container {
+        border: none;
+        background: transparent;
+        overflow-x: visible;
+    }
+
+    .inventory-table, 
+    .inventory-table tbody {
+        display: block;
+        width: 100%;
+    }
+
+    .inventory-table thead {
+        display: none;
+    }
+
+    .mobile-card {
+        margin-bottom: 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background-color: var(--surface-color);
+        padding: 16px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .mc-divider {
+        height: 1px;
+        background-color: var(--border-color);
+        width: 100%;
+        margin: 4px 0;
+    }
+
+    .mc-section {
+        width: 100%;
+    }
+
+    .inventory-table td.mobile-only-td {
+        display: block;
+        padding: 0 !important;
+        border: none !important;
+    }
+}

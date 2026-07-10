@@ -3,6 +3,7 @@ import { refService } from '../../services/refService';
 import type { RefPuerto, RefCategoriaFuncion, LinkPuertoCapacidad } from '../../types/Item';
 import { Button } from '../../components/ui/Button';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
+import './AdminGlobal.css';
 
 export default function PortManagerPage() {
     const [puertos, setPuertos] = useState<RefPuerto[]>([]);
@@ -99,7 +100,7 @@ export default function PortManagerPage() {
     const selectedPort = puertos.find(p => p.id === selectedPortId);
 
     return (
-        <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+        <div className="admin-page-container">
             <ConfirmModal 
                 isOpen={deleteInfo !== null} 
                 title="Eliminar Puerto" 
@@ -107,17 +108,17 @@ export default function PortManagerPage() {
                 onConfirm={confirmDelete} 
                 onCancel={() => setDeleteInfo(null)} 
             />
-            <header className="glass-panel" style={{ padding: '24px' }}>
+            <header className="glass-panel admin-header">
                 <h1 style={{ margin: 0, color: 'var(--brand-color)', textShadow: '0 0 10px rgba(117, 229, 97, 0.3)' }}>Gestión de Infraestructura Física</h1>
                 <p style={{ color: 'var(--text-secondary)', margin: '8px 0 0 0' }}>Administrá puertos y definí sus capacidades lógicas.</p>
             </header>
 
-            <div style={layoutGridStyle}>
+            <div className="admin-grid">
                 {/* LADO IZQUIERDO: CREACIÓN Y LISTA */}
                 <div>
-                    <div className="glass-panel" style={cardStyle}>
+                    <div className="glass-panel admin-card">
                         <h3 style={{ color: 'var(--text-primary)' }}>Nuevo Puerto</h3>
-                        <form onSubmit={handleSavePort} style={formStyle}>
+                        <form onSubmit={handleSavePort} className="admin-form-row">
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Nombre del Puerto:</label>
                                 <input 
@@ -134,7 +135,7 @@ export default function PortManagerPage() {
 
                         <h3 style={{ color: 'var(--text-primary)', marginTop: '24px' }}>Puertos Registrados</h3>
                         {loading ? <p style={{ color: 'var(--brand-color)' }}>Cargando...</p> : (
-                            <table style={tableStyle}>
+                            <table className="admin-table" style={tableStyle}>
                                 <thead>
                                     <tr style={headerRowStyle}>
                                         <th style={thStyle}>Nombre del Puerto</th>
@@ -188,9 +189,9 @@ export default function PortManagerPage() {
                         )}
                     </div>
 
-                    <div className="glass-panel" style={cardStyle}>
+                    <div className="glass-panel admin-card">
                         <h3 style={{ color: 'var(--text-primary)' }}>Nueva Función Física</h3>
-                        <form onSubmit={handleSaveFunction} style={{ ...formStyle, marginBottom: '24px' }}>
+                        <form onSubmit={handleSaveFunction} className="admin-form-row" style={{ marginBottom: '24px' }}>
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Nombre de la Función:</label>
                                 <input 

@@ -14,7 +14,7 @@ export interface RefTipoContenedor extends RefBase {
     prefijo: string;
 }
 export interface Contenedor extends RefBase {
-    qrUUID?: string;
+    QrUUID?: string;
     tipoContenedor?: RefTipoContenedor;
 }
 export interface RefCategoriaFuncion extends RefBase {}

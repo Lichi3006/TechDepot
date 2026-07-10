@@ -4,6 +4,8 @@ import type { Contenedor, RefTipoContenedor } from '../../types/Item';
 import { Button } from '../../components/ui/Button';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
 
+import './ContainerManagerPage.css';
+
 export default function ContainerManagerPage() {
     const [contenedores, setContenedores] = useState<Contenedor[]>([]);
     const [tipos, setTipos] = useState<RefTipoContenedor[]>([]);
@@ -93,7 +95,7 @@ export default function ContainerManagerPage() {
     };
 
     return (
-        <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+        <div className="container-manager-page">
             <ConfirmModal 
                 isOpen={deleteInfo !== null} 
                 title={deleteInfo?.type === 'contenedor' ? "Eliminar Contenedor" : "Eliminar Tipo de Contenedor"} 
@@ -104,168 +106,201 @@ export default function ContainerManagerPage() {
                 onConfirm={confirmDelete} 
                 onCancel={() => setDeleteInfo(null)} 
             />
-            <header className="glass-panel" style={{ padding: '24px' }}>
+            <header className="glass-panel admin-header">
                 <h1 style={{ margin: 0, color: 'var(--brand-color)', textShadow: '0 0 10px rgba(117, 229, 97, 0.3)' }}>Gestión de Contenedores</h1>
                 <p style={{ color: 'var(--text-secondary)', margin: '8px 0 0 0' }}>Administrá las unidades de almacenamiento y sus tipos.</p>
             </header>
 
-            <div style={gridStyle}>
+            <div className="admin-grid">
                 {/* LADO IZQUIERDO: CONTENEDORES */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div className="glass-panel" style={cardStyle}>
-                <h3 style={{ color: 'var(--text-primary)' }}>Nuevo Contenedor</h3>
-                <form onSubmit={handleCreate} style={{ display: 'flex', gap: '15px', alignItems: 'flex-end' }}>
-                    <div style={{ flex: 1 }}>
-                        <label style={labelStyle}>Tipo de Contenedor:</label>
-                        <select 
-                            value={selectedTipoId} 
-                            onChange={(e) => setSelectedTipoId(Number(e.target.value))}
-                            style={inputStyle}
-                            required
-                        >
-                            <option value="0">Seleccione tipo...</option>
-                            {tipos.map(t => <option key={t.id} value={t.id}>{t.nombre} ({t.prefijo})</option>)}
-                        </select>
+                    <div className="glass-panel admin-card">
+                        <h3 style={{ color: 'var(--text-primary)' }}>Nuevo Contenedor</h3>
+                        <form onSubmit={handleCreate} className="admin-form-row">
+                            <div style={{ flex: 1 }}>
+                                <label style={labelStyle}>Tipo de Contenedor:</label>
+                                <select 
+                                    value={selectedTipoId} 
+                                    onChange={(e) => setSelectedTipoId(Number(e.target.value))}
+                                    style={inputStyle}
+                                    required
+                                >
+                                    <option value="0">Seleccione tipo...</option>
+                                    {tipos.map(t => <option key={t.id} value={t.id}>{t.nombre} ({t.prefijo})</option>)}
+                                </select>
+                            </div>
+                            <Button type="submit" variant="success" disabled={!selectedTipoId} style={{ minWidth: '150px' }}>Crear Nuevo</Button>
+                        </form>
                     </div>
-                    <Button type="submit" variant="success" disabled={!selectedTipoId} style={{ minWidth: '150px' }}>Crear Nuevo</Button>
-                </form>
-            </div>
 
-            <div className="glass-panel" style={cardStyle}>
-                <h3 style={{ color: 'var(--text-primary)' }}>Inventario de Contenedores</h3>
-                {loading ? <p style={{ color: 'var(--brand-color)' }}>Cargando...</p> : (
-                    <table style={tableStyle}>
-                        <thead>
-                            <tr style={headerRowStyle}>
-                                <th style={thStyle}>Nombre Técnico</th>
-                                <th style={thStyle}>Tipo</th>
-                                <th style={thStyle}>UUID (QR)</th>
-                                <th style={thStyle}>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {contenedores.map(c => (
-                                <tr key={c.id} style={rowStyle}>
-                                    <td style={{ ...tdStyle, fontWeight: 'bold', color: 'var(--brand-color)' }}>{c.nombre}</td>
-                                    <td style={tdStyle}>
-                                        {editingId === c.id ? (
-                                            <select 
-                                                defaultValue={c.tipoContenedor?.id} 
-                                                onChange={(e) => handleUpdateType(c.id!, Number(e.target.value))}
-                                                style={miniInputStyle}
-                                            >
-                                                {tipos.map(t => <option key={t.id} value={t.id}>{t.nombre}</option>)}
-                                            </select>
-                                        ) : (
-                                            <span onClick={() => setEditingId(c.id!)} style={{ cursor: 'pointer', borderBottom: '1px dashed var(--text-secondary)' }}>
-                                                {c.tipoContenedor?.nombre || 'Sin tipo'}
-                                            </span>
-                                        )}
-                                    </td>
-                                    <td style={{ ...tdStyle, fontSize: '0.75rem', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
-                                        {c.qrUUID}
-                                    </td>
-                                    <td style={tdStyle}>
-                                        <div style={{ display: 'flex', gap: '10px' }}>
-                                            <Button 
-                                                variant="secondary" 
-                                                onClick={() => setEditingId(editingId === c.id ? null : c.id!)}
-                                                style={{ padding: '4px 8px', fontSize: '0.8rem' }}
-                                            >
-                                                {editingId === c.id ? 'Cancelar' : 'Cambiar Tipo'}
-                                            </Button>
-                                            <button 
-                                                type="button"
-                                                onClick={() => setDeleteInfo({ type: 'contenedor', id: c.id!, nombre: c.nombre })}
-                                                style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', padding: '4px 8px' }}
-                                                title="Eliminar Contenedor"
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-            </div>
-
+                    <div className="glass-panel admin-card">
+                        <h3 style={{ color: 'var(--text-primary)' }}>Inventario de Contenedores</h3>
+                        {loading ? <p style={{ color: 'var(--brand-color)' }}>Cargando...</p> : (
+                            <table className="admin-table" style={tableStyle}>
+                                <thead>
+                                    <tr style={headerRowStyle}>
+                                        <th style={thStyle}>Nombre Técnico</th>
+                                        <th style={thStyle}>Tipo</th>
+                                        <th style={thStyle}>UUID (QR)</th>
+                                        <th style={thStyle}>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {contenedores.map(c => (
+                                        <tr key={c.id} style={rowStyle}>
+                                            <td style={{ ...tdStyle, fontWeight: 'bold', color: 'var(--brand-color)' }}>{c.nombre}</td>
+                                            <td style={tdStyle}>
+                                                {editingId === c.id ? (
+                                                    <select 
+                                                        defaultValue={c.tipoContenedor?.id} 
+                                                        onChange={(e) => handleUpdateType(c.id!, Number(e.target.value))}
+                                                        style={miniInputStyle}
+                                                    >
+                                                        {tipos.map(t => <option key={t.id} value={t.id}>{t.nombre}</option>)}
+                                                    </select>
+                                                ) : (
+                                                    <span onClick={() => setEditingId(c.id!)} style={{ cursor: 'pointer', borderBottom: '1px dashed var(--text-secondary)' }}>
+                                                        {c.tipoContenedor?.nombre || 'Sin tipo'}
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td style={tdStyle}>
+                                                {c.QrUUID ? (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <span style={{ fontFamily: 'monospace', fontSize: '0.8rem', backgroundColor: 'var(--surface-hover)', padding: '2px 6px', borderRadius: '4px', color: 'var(--text-secondary)' }}>
+                                                            {c.QrUUID.substring(0, 8)}...
+                                                        </span>
+                                                        <button 
+                                                            type="button"
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(c.QrUUID!);
+                                                                // Simple visual feedback
+                                                                const btn = document.getElementById(`copy-btn-${c.id}`);
+                                                                if(btn) {
+                                                                    const originalIcon = btn.innerHTML;
+                                                                    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                                                                    btn.style.color = 'var(--brand-color)';
+                                                                    btn.style.borderColor = 'var(--brand-color)';
+                                                                    setTimeout(() => {
+                                                                        btn.innerHTML = originalIcon;
+                                                                        btn.style.color = 'var(--text-primary)';
+                                                                        btn.style.borderColor = 'var(--border-color)';
+                                                                    }, 2000);
+                                                                }
+                                                            }}
+                                                            id={`copy-btn-${c.id}`}
+                                                            style={{ 
+                                                                background: 'var(--surface-color)', border: '1px solid var(--border-color)', 
+                                                                borderRadius: '4px', cursor: 'pointer', padding: '4px', 
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                color: 'var(--text-primary)', transition: 'all 0.2s', width: '30px', height: '26px'
+                                                            }}
+                                                            title="Copiar UUID"
+                                                        >
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <span style={{ color: 'var(--text-secondary)', fontStyle: 'italic', fontSize: '0.8rem' }}>Sin QR (Antiguo)</span>
+                                                )}
+                                            </td>
+                                            <td style={tdStyle}>
+                                                <div style={{ display: 'flex', gap: '10px' }}>
+                                                    <Button 
+                                                        variant="secondary" 
+                                                        onClick={() => setEditingId(editingId === c.id ? null : c.id!)}
+                                                        style={{ padding: '4px 8px', fontSize: '0.8rem' }}
+                                                    >
+                                                        {editingId === c.id ? 'Cancelar' : 'Cambiar Tipo'}
+                                                    </Button>
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => setDeleteInfo({ type: 'contenedor', id: c.id!, nombre: c.nombre })}
+                                                        style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', padding: '4px 8px' }}
+                                                        title="Eliminar Contenedor"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
                 </div>
                 
                 {/* LADO DERECHO: TIPOS DE CONTENEDOR */}
-                <div className="glass-panel" style={cardStyle}>
+                <div className="glass-panel admin-card">
                     <h3 style={{ color: 'var(--text-primary)' }}>Tipos de Contenedor</h3>
-                <form onSubmit={handleCreateType} style={{ display: 'flex', gap: '15px', alignItems: 'flex-end', marginBottom: '24px' }}>
-                    <div style={{ flex: 2 }}>
-                        <label style={labelStyle}>Nombre del Tipo:</label>
-                        <input 
-                            type="text" 
-                            placeholder="Ej: Hardware de Red, Discos Duros..." 
-                            value={newTypeName}
-                            onChange={(e) => setNewTypeName(e.target.value)}
-                            style={inputStyle}
-                            required
-                        />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                        <label style={labelStyle}>Prefijo (max 5 letras):</label>
-                        <input 
-                            type="text" 
-                            placeholder="Ej: NET, SSD" 
-                            value={newTypePrefix}
-                            onChange={(e) => setNewTypePrefix(e.target.value)}
-                            maxLength={5}
-                            style={inputStyle}
-                            required
-                        />
-                    </div>
-                    <Button type="submit" variant="success" style={{ minWidth: '150px' }}>Crear Tipo</Button>
-                </form>
-
-                <h4 style={{ color: 'var(--text-secondary)', marginBottom: '12px' }}>Tipos Existentes</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
-                    {tipos.map(t => (
-                        <div 
-                            key={t.id} 
-                            style={{ 
-                                padding: '12px', 
-                                backgroundColor: 'var(--surface-hover)', 
-                                border: '1px solid var(--border-color)', 
-                                borderRadius: '6px',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center'
-                            }}
-                        >
-                            <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{t.nombre}</span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span className="badge" style={{ backgroundColor: 'var(--brand-color)', color: '#000', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                                    {t.prefijo}
-                                </span>
-                                <button 
-                                    type="button"
-                                    onClick={() => setDeleteInfo({ type: 'tipo', id: t.id!, nombre: t.nombre })}
-                                    style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', padding: '0 4px' }}
-                                    title="Eliminar Tipo"
-                                >
-                                    ×
-                                </button>
-                            </div>
+                    <form onSubmit={handleCreateType} className="admin-form-row" style={{ marginBottom: '24px' }}>
+                        <div style={{ flex: 2 }}>
+                            <label style={labelStyle}>Nombre del Tipo:</label>
+                            <input 
+                                type="text" 
+                                placeholder="Ej: Hardware de Red, Discos Duros..." 
+                                value={newTypeName}
+                                onChange={(e) => setNewTypeName(e.target.value)}
+                                style={inputStyle}
+                                required
+                            />
                         </div>
-                    ))}
+                        <div style={{ flex: 1 }}>
+                            <label style={labelStyle}>Prefijo (max 5 letras):</label>
+                            <input 
+                                type="text" 
+                                placeholder="Ej: NET, SSD" 
+                                value={newTypePrefix}
+                                onChange={(e) => setNewTypePrefix(e.target.value)}
+                                maxLength={5}
+                                style={inputStyle}
+                                required
+                            />
+                        </div>
+                        <Button type="submit" variant="success" style={{ minWidth: '150px' }}>Crear Tipo</Button>
+                    </form>
+
+                    <h4 style={{ color: 'var(--text-secondary)', marginBottom: '12px' }}>Tipos Existentes</h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
+                        {tipos.map(t => (
+                            <div 
+                                key={t.id} 
+                                style={{ 
+                                    padding: '12px', 
+                                    backgroundColor: 'var(--surface-hover)', 
+                                    border: '1px solid var(--border-color)', 
+                                    borderRadius: '6px',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{t.nombre}</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span className="badge" style={{ backgroundColor: 'var(--brand-color)', color: '#000', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                        {t.prefijo}
+                                    </span>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setDeleteInfo({ type: 'tipo', id: t.id!, nombre: t.nombre })}
+                                        style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', padding: '0 4px' }}
+                                        title="Eliminar Tipo"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
-            </div>
             </div>
         </div>
     );
 }
-
-const gridStyle: React.CSSProperties = {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '24px'
-};
 
 const cardStyle: React.CSSProperties = {
     padding: '24px',
@@ -291,6 +326,7 @@ const inputStyle: React.CSSProperties = {
     fontSize: '0.9rem',
     outline: 'none',
     transition: 'border-color 0.2s',
+    boxSizing: 'border-box'
 };
 
 const miniInputStyle: React.CSSProperties = {

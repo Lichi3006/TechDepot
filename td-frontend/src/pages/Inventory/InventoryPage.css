@@ -1,0 +1,33 @@
+/* InventoryPage.css */
+.inventory-page-container {
+    display: flex;
+    gap: 24px;
+    height: 100%;
+    overflow: hidden;
+}
+
+.inventory-content-area {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding-right: 8px;
+}
+
+/* =========================================
+   📱 MOBILE RESPONSIVENESS
+   ========================================= */
+@media (max-width: 768px) {
+    .inventory-page-container {
+        flex-direction: column;
+        gap: 16px;
+        overflow-y: auto; /* Allow the whole page to scroll */
+    }
+
+    .inventory-content-area {
+        overflow-y: visible; /* Scroll is handled by page container */
+        padding-right: 0;
+        gap: 16px;
+    }
+}

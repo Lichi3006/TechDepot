@@ -3,6 +3,7 @@ import { refService } from '../../services/refService';
 import type { RefMarca } from '../../types/Item';
 import { Button } from '../../components/ui/Button';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
+import './AdminGlobal.css';
 
 export default function BrandManagerPage() {
     const [marcas, setMarcas] = useState<RefMarca[]>([]);
@@ -52,7 +53,7 @@ export default function BrandManagerPage() {
     };
 
     return (
-        <div style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+        <div className="admin-page-container">
             <ConfirmModal 
                 isOpen={deleteId !== null} 
                 title="Eliminar Marca" 
@@ -60,14 +61,14 @@ export default function BrandManagerPage() {
                 onConfirm={confirmDelete} 
                 onCancel={() => setDeleteId(null)} 
             />
-            <header className="glass-panel" style={{ padding: '24px' }}>
+            <header className="glass-panel admin-header">
                 <h1 style={{ margin: 0, color: 'var(--brand-color)', textShadow: '0 0 10px rgba(117, 229, 97, 0.3)' }}>Gestión de Marcas</h1>
                 <p style={{ color: 'var(--text-secondary)', margin: '8px 0 0 0' }}>Administrá las marcas de los fabricantes del equipamiento físico.</p>
             </header>
 
-            <div className="glass-panel" style={cardStyle}>
+            <div className="glass-panel admin-card">
                 <h3 style={{ color: 'var(--text-primary)' }}>Nueva Marca</h3>
-                <form onSubmit={handleSave} style={formStyle}>
+                <form onSubmit={handleSave} className="admin-form-row">
                     <div style={{ flex: 1 }}>
                         <label style={labelStyle}>Nombre de la Marca:</label>
                         <input 
@@ -83,10 +84,10 @@ export default function BrandManagerPage() {
                 </form>
             </div>
 
-            <div className="glass-panel" style={cardStyle}>
+            <div className="glass-panel admin-card">
                 <h3 style={{ color: 'var(--text-primary)' }}>Marcas Registradas</h3>
                 {loading ? <p style={{ color: 'var(--brand-color)' }}>Cargando...</p> : (
-                    <table style={tableStyle}>
+                    <table className="admin-table" style={tableStyle}>
                         <thead>
                             <tr style={headerRowStyle}>
 

@@ -116,7 +116,7 @@ export default function ItemEditorPage() {
 
     return (
         <div style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
-            <header className="glass-panel" style={{ padding: '24px' }}>
+            <header className="glass-panel admin-header">
                 <h1 style={{ margin: 0, color: 'var(--brand-color)', textShadow: '0 0 10px rgba(117, 229, 97, 0.3)' }}>{isEditing ? 'Editar Item' : 'Nuevo Item'}</h1>
                 <p style={{ color: 'var(--text-secondary)', margin: '8px 0 0 0' }}>{isEditing ? 'Modificá los datos del componente seleccionado.' : 'Completá los datos para registrar un nuevo componente.'}</p>
             </header>

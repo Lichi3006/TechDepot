@@ -68,7 +68,7 @@ if (-not (Test-Path "td-frontend/node_modules")) {
     Write-Host "  [INFO] Instalando dependencias de Node.js (esto puede tardar la primera vez)..." -ForegroundColor Cyan
     Start-Process powershell -ArgumentList "-Wait", "-NoExit", "-Command", "cd td-frontend; npm install; exit" -Wait
 }
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd td-frontend; npm run dev"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd td-frontend; npm run dev -- --host"
 
 # 3. Listo
 Write-Host ""

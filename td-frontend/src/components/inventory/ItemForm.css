@@ -1,0 +1,69 @@
+/* ItemForm.css */
+.item-form-container {
+    padding: 25px;
+    margin-bottom: 30px;
+}
+
+.item-form-section {
+    margin-bottom: 25px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 20px;
+}
+
+.type-selector {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.type-selector button {
+    flex: 1 1 calc(25% - 10px);
+    min-width: 120px;
+}
+
+.conexion-card {
+    padding: 15px;
+    background-color: var(--surface-color);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.conexion-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 100px 40px;
+    gap: 15px;
+    align-items: end;
+}
+
+.brand-add-row {
+    display: flex;
+    gap: 8px;
+}
+
+/* MOBILE RESPONSIVENESS */
+@media (max-width: 768px) {
+    .item-form-container {
+        padding: 15px;
+    }
+    
+    .type-selector button {
+        flex: 1 1 calc(50% - 10px); /* 2x2 grid on mobile */
+    }
+
+    .conexion-grid {
+        grid-template-columns: 1fr; /* Todo apilado verticalmente */
+        gap: 12px;
+        align-items: stretch;
+    }
+    
+    .conexion-grid > button {
+        width: 100%; /* Boton Eliminar ocupa todo el ancho */
+        margin-top: 10px;
+    }
+    
+    .brand-add-row {
+        /* En celular mantenemos flex row pero ajustamos tamaños si es necesario, o lo pasamos a column. Row suele estar bien si el + es chico */
+        flex-direction: row;
+    }
+}

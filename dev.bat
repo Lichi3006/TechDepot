@@ -47,6 +47,6 @@ echo.
 echo [1/2] Lanzando Backend...
 start powershell -NoExit -Command "cd td-backend; ./mvnw spring-boot:run"
 echo [2/2] Lanzando Frontend...
-start powershell -NoExit -Command "cd td-frontend; npm run dev"
+start powershell -NoExit -Command "cd td-frontend; npm run dev -- --host"
 echo.
 echo Backend y Frontend lanzados en ventanas separadas.

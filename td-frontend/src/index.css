@@ -65,7 +65,8 @@ body {
   letter-spacing: 0.03em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  min-height: 100vh;
+  min-height: 100vh; /* Fallback */
+  min-height: 100dvh;
   transition: background 0.3s ease, color 0.3s ease;
 }
 
@@ -139,7 +140,7 @@ a:hover {
 .btn-primary {
   background-color: var(--brand-color);
   color: #000;
-  border: none;
+  border: 1px solid transparent;
   padding: 8px 16px;
   border-radius: 6px;
   font-weight: bold;

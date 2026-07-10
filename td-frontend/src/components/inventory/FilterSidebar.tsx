@@ -7,6 +7,8 @@ interface FilterSidebarProps {
     onFilterChange: (filters: ItemFilterDTO) => void;
 }
 
+import './FilterSidebar.css';
+
 export const FilterSidebar: React.FC<FilterSidebarProps> = ({ onFilterChange }) => {
     const [marcas, setMarcas] = useState<RefMarca[]>([]);
     const [estados, setEstados] = useState<RefEstado[]>([]);
@@ -16,6 +18,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({ onFilterChange }) 
     const [capacidades, setCapacidades] = useState<LinkPuertoCapacidad[]>([]);
 
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
 
     const [selectedFilters, setSelectedFilters] = useState<ItemFilterDTO>({
         idsMarcas: [],
@@ -76,77 +79,91 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({ onFilterChange }) 
     };
 
     return (
-        <div className="glass-panel" style={{
-            ...sidebarContainerStyle, 
-            width: isExpanded ? '266px' : '60px',
-            padding: isExpanded ? '20px' : '20px 10px',
-            alignItems: isExpanded ? 'stretch' : 'center'
-        }}>
-            {!isExpanded ? (
-                <button onClick={() => setIsExpanded(true)} style={collapsedButtonStyle}>
-                    <div style={{ ...closeButtonStyle, marginBottom: '15px', padding: '6px 8px' }}>▶</div>
-                    <span style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontWeight: 'bold', color: 'var(--brand-color)', letterSpacing: '2px' }}>FILTROS</span>
-                </button>
-            ) : (
-                <>
-                    <div style={headerStyle}>
-                        <h3 style={titleStyle}>Filtros</h3>
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                            <button onClick={resetFilters} style={resetButtonStyle}>Limpiar</button>
-                            <button onClick={() => setIsExpanded(false)} style={closeButtonStyle}>◀</button>
+        <>
+            <button className="mobile-filter-btn" onClick={() => setIsMobileOpen(true)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                Filtrar Inventario
+            </button>
+            
+            <div className={`filter-sidebar ${isMobileOpen ? 'mobile-open' : ''} desktop-glass-only`} style={{
+                width: isExpanded ? '266px' : '60px',
+                padding: isExpanded ? '20px' : '20px 10px',
+                alignItems: (isExpanded || isMobileOpen) ? 'stretch' : 'center'
+            }}>
+                {/* En desktop, mostramos el botón colapsado. En mobile, ignoramos isExpanded y siempre mostramos el contenido si está abierto */}
+                {!isExpanded && !isMobileOpen ? (
+                    <button onClick={() => setIsExpanded(true)} style={collapsedButtonStyle}>
+                        <div style={{ ...closeButtonStyle, marginBottom: '15px', padding: '6px 8px' }}>▶</div>
+                        <span style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontWeight: 'bold', color: 'var(--brand-color)', letterSpacing: '2px' }}>FILTROS</span>
+                    </button>
+                ) : (
+                    <>
+                        <div style={headerStyle}>
+                            <h3 style={titleStyle}>Filtros</h3>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <button onClick={resetFilters} style={resetButtonStyle}>Limpiar</button>
+                                {/* El botón de cerrar (flechita) es solo para desktop */}
+                                <button className="desktop-only" onClick={() => setIsExpanded(false)} style={closeButtonStyle}>◀</button>
+                                {/* Botón cerrar modal para mobile (arriba) */}
+                                <button className="mobile-only" onClick={() => setIsMobileOpen(false)} style={closeButtonStyle}>X</button>
+                            </div>
                         </div>
-                    </div>
 
-                    <div style={searchContainerStyle}>
-                        <label style={labelHeaderStyle}>Búsqueda rápida</label>
-                        <input 
-                            type="text" 
-                            placeholder="Marca, modelo..." 
-                            value={selectedFilters.query}
-                            onChange={handleQueryChange}
-                            style={inputStyle}
+                        <div style={searchContainerStyle}>
+                            <label style={labelHeaderStyle}>Búsqueda rápida</label>
+                            <input 
+                                type="text" 
+                                placeholder="Marca, modelo..." 
+                                value={selectedFilters.query}
+                                onChange={handleQueryChange}
+                                style={inputStyle}
+                            />
+                        </div>
+
+                        <FilterSection 
+                            title="Marcas" 
+                            items={marcas} 
+                            selectedIds={selectedFilters.idsMarcas || []} 
+                            onChange={(id) => handleCheckboxChange('idsMarcas', id)} 
                         />
-                    </div>
 
-                    <FilterSection 
-                        title="Marcas" 
-                        items={marcas} 
-                        selectedIds={selectedFilters.idsMarcas || []} 
-                        onChange={(id) => handleCheckboxChange('idsMarcas', id)} 
-                    />
+                        <FilterSection 
+                            title="Estados" 
+                            items={estados} 
+                            selectedIds={selectedFilters.idsEstados || []} 
+                            onChange={(id) => handleCheckboxChange('idsEstados', id)} 
+                        />
 
-                    <FilterSection 
-                        title="Estados" 
-                        items={estados} 
-                        selectedIds={selectedFilters.idsEstados || []} 
-                        onChange={(id) => handleCheckboxChange('idsEstados', id)} 
-                    />
+                        <PortFilterSection 
+                            title="Puertos" 
+                            items={puertos} 
+                            funciones={funciones}
+                            capacidades={capacidades}
+                            selectedIds={selectedFilters.idsPuertos || []} 
+                            onChange={(id) => handleCheckboxChange('idsPuertos', id)} 
+                        />
 
-                    <PortFilterSection 
-                        title="Puertos" 
-                        items={puertos} 
-                        funciones={funciones}
-                        capacidades={capacidades}
-                        selectedIds={selectedFilters.idsPuertos || []} 
-                        onChange={(id) => handleCheckboxChange('idsPuertos', id)} 
-                    />
+                        <FilterSection 
+                            title="Funciones" 
+                            items={funciones} 
+                            selectedIds={selectedFilters.idsCategoriasFuncion || []} 
+                            onChange={(id) => handleCheckboxChange('idsCategoriasFuncion', id)} 
+                        />
 
-                    <FilterSection 
-                        title="Funciones" 
-                        items={funciones} 
-                        selectedIds={selectedFilters.idsCategoriasFuncion || []} 
-                        onChange={(id) => handleCheckboxChange('idsCategoriasFuncion', id)} 
-                    />
+                        <FilterSection 
+                            title="Hardware" 
+                            items={catHw} 
+                            selectedIds={selectedFilters.idsCategoriasHardware || []} 
+                            onChange={(id) => handleCheckboxChange('idsCategoriasHardware', id)} 
+                        />
 
-                    <FilterSection 
-                        title="Hardware" 
-                        items={catHw} 
-                        selectedIds={selectedFilters.idsCategoriasHardware || []} 
-                        onChange={(id) => handleCheckboxChange('idsCategoriasHardware', id)} 
-                    />
-                </>
-            )}
-        </div>
+                        <button className="mobile-close-filter-btn" onClick={() => setIsMobileOpen(false)}>
+                            Aplicar Filtros
+                        </button>
+                    </>
+                )}
+            </div>
+        </>
     );
 };
 
@@ -321,7 +338,9 @@ const headerStyle: React.CSSProperties = {
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottom: '1px solid var(--border-color)',
-    paddingBottom: '12px'
+    paddingBottom: '12px',
+    width: '100%',
+    boxSizing: 'border-box'
 };
 
 const titleStyle: React.CSSProperties = {
@@ -345,7 +364,9 @@ const resetButtonStyle: React.CSSProperties = {
 const searchContainerStyle: React.CSSProperties = {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px'
+    gap: '8px',
+    width: '100%',
+    boxSizing: 'border-box'
 };
 
 const labelHeaderStyle: React.CSSProperties = {

@@ -6,6 +6,7 @@ import { refService } from '../../services/refService.ts';
 import { Button } from '../ui/Button.tsx';
 import { PromptModal } from '../ui/PromptModal.tsx';
 import { ColorPickerPalette } from '../shared/ColorPickerPalette.tsx';
+import './ItemForm.css';
 
 interface ItemFormProps {
     onSave: (item: ItemCreateDTO) => Promise<void>;
@@ -310,11 +311,11 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
                 onConfirm={onConfirmBrandPrompt}
                 onCancel={() => setShowBrandPrompt(false)}
             />
-            <form onSubmit={handleSubmit} className="glass-panel" style={formStyle}>
+            <form onSubmit={handleSubmit} className="glass-panel item-form-container">
                 {/* 1. TIPO DE COMPONENTE (AHORA PRIMERO) */}
-            <div style={sectionStyle}>
+            <div className="item-form-section">
                 <label style={labelStyle}>Tipo de Componente:</label>
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div className="type-selector">
                     {(['CABLE', 'FUENTE', 'HARDWARE', 'OTRO'] as const).map(t => (
                         <Button 
                             key={t} 
@@ -341,7 +342,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
             </div>
 
             {/* 2. INFORMACION BASICA */}
-            <div style={sectionStyle}>
+            <div className="item-form-section">
                 <h3 style={{ color: 'var(--text-primary)' }}>Informacion Basica</h3>
                 <div style={gridStyle}>
                     <div>
@@ -353,7 +354,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
                     </div>
                     <div>
                         <label style={labelStyle}>Marca:</label>
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        <div className="brand-add-row">
                             <select value={idMarca || ""} onChange={(e) => setIdMarca(Number(e.target.value))} style={{ ...inputStyle, flex: 1 }}>
                                 <option value="">Generica / Ninguna</option>
                                 {marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
@@ -387,7 +388,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
             </div>
 
             {/* 3. CONEXIONES (FILTRADAS) */}
-            <div style={sectionStyle}>
+            <div className="item-form-section">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                     <h3 style={{ color: 'var(--text-primary)' }}>Conexiones y Extremos</h3>
                     <div style={{ display: 'flex', gap: '5px' }}>
@@ -415,8 +416,8 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
                     }
                     
                     return (
-                        <div key={index} style={conexionCardStyle}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr 100px 40px', gap: '15px', alignItems: 'end' }}>
+                        <div key={index} className="conexion-card">
+                            <div className="conexion-grid">
                                 <div>
                                     <label style={smallLabelStyle}>Puerto:</label>
                                     <select value={con.idPuerto} onChange={(e) => updateConexion(index, 'idPuerto', Number(e.target.value))} style={inputStyle}>
@@ -497,7 +498,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
             </div>
 
             {/* 4. ESPECIFICACIONES TÉCNICAS */}
-            <div style={sectionStyle}>
+            <div className="item-form-section">
                 <h3 style={{ color: 'var(--text-primary)' }}>Especificaciones Técnicas</h3>
                 <div style={gridStyle}>
                     {(itemType === 'CABLE' || itemType === 'FUENTE') && (
@@ -580,10 +581,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
     );
 };
 
-const formStyle: React.CSSProperties = { padding: '25px', marginBottom: '30px' };
-const sectionStyle: React.CSSProperties = { marginBottom: '25px', borderBottom: '1px solid var(--border-color)', paddingBottom: '20px' };
 const gridStyle: React.CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '15px' };
-const conexionCardStyle: React.CSSProperties = { padding: '15px', backgroundColor: 'var(--surface-color)', borderRadius: '8px', marginBottom: '12px', border: '1px solid var(--border-color)' };
 const labelStyle: React.CSSProperties = { display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '0.95rem', color: 'var(--text-primary)' };
 const smallLabelStyle: React.CSSProperties = { fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 'bold', marginBottom: '5px', display: 'block' };
 const inputStyle: React.CSSProperties = { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', backgroundColor: 'var(--input-bg)', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none' };

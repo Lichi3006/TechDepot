@@ -3,6 +3,7 @@ import { refService } from '../../services/refService';
 import type { RefColor } from '../../types/Item';
 import { Button } from '../../components/ui/Button';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
+import './AdminGlobal.css';
 
 export default function ColorManagerPage() {
     const [colores, setColores] = useState<RefColor[]>([]);
@@ -52,7 +53,7 @@ export default function ColorManagerPage() {
     };
 
     return (
-        <div style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+        <div className="admin-page-container">
             <ConfirmModal 
                 isOpen={deleteId !== null} 
                 title="Eliminar Color" 
@@ -60,17 +61,17 @@ export default function ColorManagerPage() {
                 onConfirm={confirmDelete} 
                 onCancel={() => setDeleteId(null)} 
             />
-            <header className="glass-panel" style={{ padding: '24px' }}>
-                <h1 style={{ margin: 0, color: 'var(--brand-color)', textShadow: '0 0 10px rgba(117, 229, 97, 0.3)' }}>Gestión de Colores</h1>
-                <p style={{ color: 'var(--text-secondary)', margin: '8px 0 0 0' }}>Administrá los colores preestablecidos que aparecen en la paleta rápida.</p>
+            <header className="glass-panel admin-header">
+                <h1 className="admin-title">Gestión de Colores</h1>
+                <p className="admin-description">Administrá los colores preestablecidos que aparecen en la paleta rápida.</p>
             </header>
 
-            <div className="glass-panel" style={cardStyle}>
-                <h3 style={{ color: 'var(--text-primary)' }}>Nuevo Color</h3>
-                <form onSubmit={handleSave} style={formStyle}>
-                    <div style={{ flex: 1, display: 'flex', gap: '15px', alignItems: 'flex-end' }}>
+            <div className="glass-panel admin-card">
+                <h3 className="admin-card-title">Nuevo Color</h3>
+                <form onSubmit={handleSave} className="admin-form-row">
+                    <div className="admin-form-fields">
                         <div>
-                            <label style={labelStyle}>Seleccionar Color:</label>
+                            <label className="admin-form-label">Seleccionar Color:</label>
                             <input 
                                 type="color" 
                                 value={hex}
@@ -80,12 +81,12 @@ export default function ColorManagerPage() {
                             />
                         </div>
                         <div style={{ flex: 1 }}>
-                            <label style={labelStyle}>Código Hexadecimal:</label>
+                            <label>Código Hexadecimal:</label>
                             <input 
                                 type="text" 
                                 value={hex}
                                 onChange={(e) => setHex(e.target.value.toUpperCase())}
-                                style={inputStyle}
+                               
                                 placeholder="#000000"
                                 pattern="^#[0-9A-F]{6}$"
                                 required
@@ -96,22 +97,21 @@ export default function ColorManagerPage() {
                 </form>
             </div>
 
-            <div className="glass-panel" style={cardStyle}>
-                <h3 style={{ color: 'var(--text-primary)' }}>Colores Registrados</h3>
+            <div className="glass-panel admin-card">
+                <h3 className="admin-card-title">Colores Registrados</h3>
                 {loading ? <p style={{ color: 'var(--brand-color)' }}>Cargando...</p> : (
-                    <table style={tableStyle}>
+                    <table className="admin-table">
                         <thead>
-                            <tr style={headerRowStyle}>
-
-                                <th style={thStyle}>Color</th>
-                                <th style={{ ...thStyle, textAlign: 'center' }}>Acciones</th>
+                            <tr>
+                                <th>Color</th>
+                                <th style={{ textAlign: 'center' }}>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             {colores.map(c => (
-                                <tr key={c.id} style={rowStyle}>
+                                <tr key={c.id}>
 
-                                    <td style={{ ...tdStyle, fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                                    <td>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                             <div style={{ 
                                                 width: '24px', 
@@ -123,7 +123,7 @@ export default function ColorManagerPage() {
                                             {c.codigoHex}
                                         </div>
                                     </td>
-                                    <td style={{ ...tdStyle, textAlign: 'center', width: '150px' }}>
+                                    <td>
                                         <button 
                                             type="button"
                                             onClick={() => c.id !== undefined && setDeleteId(c.id)} 
@@ -137,7 +137,7 @@ export default function ColorManagerPage() {
                             ))}
                             {colores.length === 0 && (
                                 <tr>
-                                    <td colSpan={2} style={{ ...tdStyle, textAlign: 'center', color: 'var(--text-secondary)' }}>
+                                    <td colSpan={2}>
                                         No hay colores preestablecidos.
                                     </td>
                                 </tr>
@@ -150,38 +150,6 @@ export default function ColorManagerPage() {
     );
 }
 
-const cardStyle: React.CSSProperties = {
-    padding: '24px',
-    marginBottom: '24px'
-};
-
-const formStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'flex-end',
-    gap: '15px'
-};
-
-const labelStyle: React.CSSProperties = {
-    display: 'block',
-    fontSize: '0.85rem',
-    color: 'var(--text-secondary)',
-    marginBottom: '8px',
-    fontWeight: 'bold',
-    textTransform: 'uppercase'
-};
-
-const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '10px',
-    borderRadius: '6px',
-    border: '1px solid var(--border-color)',
-    backgroundColor: 'var(--input-bg)',
-    color: 'var(--text-primary)',
-    fontSize: '0.95rem',
-    outline: 'none',
-    transition: 'border-color 0.2s',
-};
-
 const colorInputStyle: React.CSSProperties = {
     width: '60px',
     height: '42px',
@@ -190,32 +158,4 @@ const colorInputStyle: React.CSSProperties = {
     border: '1px solid var(--border-color)',
     backgroundColor: 'var(--input-bg)',
     cursor: 'pointer'
-};
-
-const tableStyle: React.CSSProperties = {
-    width: '100%',
-    borderCollapse: 'collapse',
-    marginTop: '10px'
-};
-
-const headerRowStyle: React.CSSProperties = {
-    borderBottom: '2px solid var(--border-color)',
-    textAlign: 'left'
-};
-
-const thStyle: React.CSSProperties = {
-    padding: '12px 10px',
-    fontSize: '0.9rem',
-    color: 'var(--text-secondary)',
-    textTransform: 'uppercase'
-};
-
-const rowStyle: React.CSSProperties = {
-    borderBottom: '1px solid var(--border-color)',
-    transition: 'background-color 0.2s'
-};
-
-const tdStyle: React.CSSProperties = {
-    padding: '12px 10px',
-    fontSize: '0.9rem'
 };
