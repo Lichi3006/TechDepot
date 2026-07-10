@@ -90,7 +90,6 @@ If you have **SQL Server Express** installed, simply run the setup script **as A
 - Connects to SQL Server and executes `/database/TechDepotTablesQuery.sql` to generate the `TechDepot` database, schemas, and default data.
 
 *(If you are using SQL Server Developer/Standard edition, TCP/IP is usually enabled by default on port 1433. You can still run this script to automatically create the database).*
-
 ### 2. Frontend Permissions (Windows Users)
 
 If you encounter a **"scripts is disabled on this system"** error when running the frontend, it's due to PowerShell's default security policy. Fix it by running this in an Administrator PowerShell:
