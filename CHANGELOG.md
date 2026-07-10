@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0-alpha] - 2026-07-10
+
+### Added
+- **Escáner QR Nativo**: Implementación de un escáner de códigos QR en pantalla completa para dispositivos móviles, integrado mediante la librería `html5-qrcode`. Permite leer etiquetas UUID para ubicar contenedores instantáneamente.
+- **Soporte Móvil (HTTPS)**: Integración del plugin `@vitejs/plugin-basic-ssl` para habilitar el entorno de desarrollo seguro (HTTPS), requisito indispensable para solicitar permisos de cámara en celulares.
+- **Color Picker Realtime**: Incorporación del componente `HexColorPicker` (`react-colorful`) en la gestión de colores, con previsualización en vivo y campo hexadecimal editable sincronizado.
+- **Gestor de Contenedores Renombrado**: Oficialización del término "Contenedores" en toda la interfaz de usuario y navegación (reemplazando "Cajas").
+
+### Changed
+- **Rediseño UI Móvil**: Renovación completa de la vista de inventario (tabla de ítems) para adaptarse a pantallas móviles, organizando la información en tarjetas con 3 secciones claras (Conexiones, Ubicación, Características).
+- **Estética de Paneles Administrativos**: Refactorización visual profunda en las secciones de Contenedores, Blindajes de Cables y Colores. Se implementó una grilla simétrica (`stretch`), paneles con estilo de superficie oscura y tablas modernas inspiradas en el gestor de protocolos.
+- **Flujo de Tipos de Contenedor**: Transición de tarjetas en grilla a una vista de lista (tabla) para los tipos de contenedor, mejorando la lectura y arreglando problemas de desbordamiento en dispositivos pequeños.
+
+### Fixed
+- **Formulario de Prefijos**: Solución al problema visual donde el prefijo del contenedor quedaba cortado; se aplicó un contenedor `flex-wrap` dinámico.
+- **Variables de Estilo Huérfanas**: Limpieza de declaraciones CSS no utilizadas en múltiples componentes de React para permitir el correcto empaquetado (build) del proyecto en producción.
+
+### Removed
+- **Dependencias No Utilizadas**: Eliminación de `lucide-react` del archivo README y dependencias ya que los íconos se reemplazaron por SVG puros.
+
+## [0.1.0-alpha]
+
 ### Added
 - **Datos Semilla**: Nuevos datos semilla (seed data) en [TechDepotTablesQuery.sql](file:///C:/Users/User/Desktop/Proyectos/TechDepot/TechDepot/database/TechDepotTablesQuery.sql) para categorías de hardware (`REF_CategoriaHardware`) y marcas (`REF_Marca`), con inserciones ejecutadas en la base de datos local.
 - **Gestores Individuales**: Implementación de pantallas de gestión dedicadas (BrandManagerPage, HardwareCategoryManagerPage y CableShieldingManagerPage) para administrar de forma limpia marcas, categorías de hardware y blindajes de cables (interno/externo).
