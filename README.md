@@ -66,8 +66,11 @@ Before you start, make sure you have the following installed:
 
 ### Frontend (npm)
 * **React & TypeScript:** For a type-safe and component-based UI.
+* **React Router DOM:** Manages the entire Single Page Application (SPA) navigation and routing.
 * **Axios:** To handle all HTTP communication with the backend.
-* **Lucide React:** (Optional but recommended) For those clean, modern icons.
+* **HTML5-QRCode:** Powers the native mobile camera integration for reading QR codes.
+* **React Colorful:** Provides the sleek hexadecimal color picker used in the admin panel.
+* **Vite Basic SSL Plugin:** Generates local HTTPS certificates instantly so the mobile browser can request Camera permissions during local development.
 
 ---
 
