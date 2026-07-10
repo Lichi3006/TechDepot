@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { refService } from '../../services/refService';
 import type { RefProtocolo, RefPuerto, RefCategoriaFuncion } from '../../types/Item';
 import { Button } from '../../components/ui/Button';
+import { ConfirmModal } from '../../components/ui/ConfirmModal';
 
 export default function ProtocolManagerPage() {
     const [protocolos, setProtocolos] = useState<RefProtocolo[]>([]);
@@ -13,6 +14,8 @@ export default function ProtocolManagerPage() {
     const [selectedFuncion, setSelectedFuncion] = useState<number>(0);
     
     const [loading, setLoading] = useState(true);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [formError, setFormError] = useState<string | null>(null);
 
     const loadData = async () => {
         try {
@@ -38,8 +41,9 @@ export default function ProtocolManagerPage() {
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
+        setFormError(null);
         if (!name.trim() || !selectedPuerto || !selectedFuncion) {
-            alert("Todos los campos son obligatorios");
+            setFormError("Todos los campos son obligatorios");
             return;
         }
 
@@ -51,24 +55,32 @@ export default function ProtocolManagerPage() {
             });
             setName('');
             await loadData();
-            alert("Protocolo guardado correctamente");
         } catch (error: any) {
-            alert(error.response?.data?.message || "Error al guardar protocolo");
+            console.error(error.response?.data?.message || "Error al guardar protocolo");
         }
     };
 
-    const handleDelete = async (id: number) => {
-        if (!window.confirm("¿Está seguro de que desea eliminar este protocolo?")) return;
+    const confirmDelete = async () => {
+        if (!deleteId) return;
         try {
-            await refService.deleteProtocolo(id);
+            await refService.deleteProtocolo(deleteId);
+            setDeleteId(null);
             await loadData();
         } catch (error: any) {
-            alert(error.response?.data?.message || "Error al eliminar protocolo");
+            console.error(error.response?.data?.message || "Error al eliminar protocolo");
+            setDeleteId(null);
         }
     };
 
     return (
         <div style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+            <ConfirmModal 
+                isOpen={deleteId !== null} 
+                title="Eliminar Protocolo" 
+                message="¿Está seguro de que desea eliminar este protocolo?" 
+                onConfirm={confirmDelete} 
+                onCancel={() => setDeleteId(null)} 
+            />
             <header className="glass-panel" style={{ padding: '24px' }}>
                 <h1 style={{ margin: 0, color: 'var(--brand-color)', textShadow: '0 0 10px rgba(117, 229, 97, 0.3)' }}>Gestión de Protocolos</h1>
                 <p style={{ color: 'var(--text-secondary)', margin: '8px 0 0 0' }}>Definí las capacidades lógicas de cada puerto físico.</p>
@@ -112,7 +124,8 @@ export default function ProtocolManagerPage() {
                             {funciones.map(f => <option key={f.id} value={f.id}>{f.nombre}</option>)}
                         </select>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                        {formError && <div style={{ color: 'var(--danger-color)', fontSize: '0.85rem', marginBottom: '5px' }}>{formError}</div>}
                         <Button type="submit" variant="success" style={{ minWidth: '150px' }}>Agregar Protocolo</Button>
                     </div>
                 </form>
@@ -137,13 +150,14 @@ export default function ProtocolManagerPage() {
                                     <td style={tdStyle}>{p.puerto.nombre}</td>
                                     <td style={tdStyle}>{p.categoriaFuncion.nombre}</td>
                                     <td style={{ ...tdStyle, textAlign: 'center' }}>
-                                        <Button 
-                                            onClick={() => p.id !== undefined && handleDelete(p.id)} 
-                                            variant="danger" 
-                                            style={{ padding: '2px 8px', fontSize: '0.8rem' }}
+                                        <button 
+                                            type="button"
+                                            onClick={() => p.id !== undefined && setDeleteId(p.id)} 
+                                            style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', padding: '4px 8px' }}
+                                            title="Eliminar"
                                         >
-                                            Eliminar
-                                        </Button>
+                                            ×
+                                        </button>
                                     </td>
                                 </tr>
                             ))}

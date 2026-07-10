@@ -4,6 +4,7 @@ import type {
 } from '../../types/Item.ts';
 import { refService } from '../../services/refService.ts';
 import { Button } from '../ui/Button.tsx';
+import { PromptModal } from '../ui/PromptModal.tsx';
 import { ColorPickerPalette } from '../shared/ColorPickerPalette.tsx';
 
 interface ItemFormProps {
@@ -36,6 +37,9 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
     
     // Filtro de funciones para el selector de puertos
     const [selectedFilterFunction, setSelectedFilterFunction] = useState<number | null>(null);
+
+    const [formError, setFormError] = useState<string | null>(null);
+    const [showBrandPrompt, setShowBrandPrompt] = useState(false);
 
     const getInitialConexiones = () => {
         if (!initialData?.conexiones) return [];
@@ -145,15 +149,21 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
         loadData();
     }, []);
 
-    const handleQuickAddMarca = async () => {
-        const nombre = prompt("Ingrese el nombre de la nueva marca:");
-        if (!nombre || !nombre.trim()) return;
+    const handleQuickAddMarca = () => setShowBrandPrompt(true);
+
+    const onConfirmBrandPrompt = async (nombre: string) => {
+        if (!nombre || !nombre.trim()) {
+            setShowBrandPrompt(false);
+            return;
+        }
         try {
             const nueva = await refService.saveMarca({ nombre: nombre.trim() });
             setMarcas(prev => [...prev, nueva]);
             setIdMarca(nueva.id);
         } catch (e: any) {
             console.error("Error agregando marca:", e);
+        } finally {
+            setShowBrandPrompt(false);
         }
     };
 
@@ -249,12 +259,13 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!idEstado) return alert("El estado es obligatorio");
-        if (!idContenedor) return alert("El contenedor es obligatorio");
-        if (conexiones.length === 0) return alert("Debe agregar al menos una conexión");
+        setFormError(null);
+        if (!idEstado) return setFormError("El estado es obligatorio");
+        if (!idContenedor) return setFormError("El contenedor es obligatorio");
+        if (conexiones.length === 0) return setFormError("Debe agregar al menos una conexión");
 
         if (conexiones.some(c => c.idsCategoriasFuncion.length === 0)) {
-            alert("Hay conexiones sin función definida. Seleccione un protocolo o función manual.");
+            setFormError("Hay conexiones sin función definida. Seleccione un protocolo o función manual.");
             return;
         }
 
@@ -291,8 +302,16 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
     };
 
     return (
-        <form onSubmit={handleSubmit} className="glass-panel" style={formStyle}>
-            {/* 1. TIPO DE COMPONENTE (AHORA PRIMERO) */}
+        <>
+            <PromptModal 
+                isOpen={showBrandPrompt}
+                title="Nueva Marca"
+                message="Ingrese el nombre de la nueva marca:"
+                onConfirm={onConfirmBrandPrompt}
+                onCancel={() => setShowBrandPrompt(false)}
+            />
+            <form onSubmit={handleSubmit} className="glass-panel" style={formStyle}>
+                {/* 1. TIPO DE COMPONENTE (AHORA PRIMERO) */}
             <div style={sectionStyle}>
                 <label style={labelStyle}>Tipo de Componente:</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
@@ -547,11 +566,17 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
                 </div>
             </div>
 
+            {formError && (
+                <div style={{ color: 'var(--danger-color)', marginBottom: '15px', fontWeight: 'bold', textAlign: 'right' }}>
+                    {formError}
+                </div>
+            )}
             <div style={footerStyle}>
                 <Button type="button" variant="secondary" onClick={onCancel}>Cancelar</Button>
                 <Button type="submit" variant="success">Guardar Item Completo</Button>
             </div>
         </form>
+        </>
     );
 };
 

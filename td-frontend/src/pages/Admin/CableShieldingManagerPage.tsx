@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { refService } from '../../services/refService';
 import type { RefBase } from '../../types/Item';
 import { Button } from '../../components/ui/Button';
+import { ConfirmModal } from '../../components/ui/ConfirmModal';
 
 export default function CableShieldingManagerPage() {
     const [externos, setExternos] = useState<RefBase[]>([]);
@@ -11,6 +12,7 @@ export default function CableShieldingManagerPage() {
     const [intName, setIntName] = useState('');
     
     const [loading, setLoading] = useState(true);
+    const [deleteInfo, setDeleteInfo] = useState<{type: 'externo' | 'interno', id: number} | null>(null);
 
     const loadData = async () => {
         try {
@@ -40,7 +42,7 @@ export default function CableShieldingManagerPage() {
             setExtName('');
             await loadData();
         } catch (error: any) {
-            alert(error.response?.data?.message || "Error al guardar blindaje externo");
+            console.error(error.response?.data?.message || "Error al guardar blindaje externo");
         }
     };
 
@@ -52,32 +54,35 @@ export default function CableShieldingManagerPage() {
             setIntName('');
             await loadData();
         } catch (error: any) {
-            alert(error.response?.data?.message || "Error al guardar blindaje interno");
+            console.error(error.response?.data?.message || "Error al guardar blindaje interno");
         }
     };
 
-    const handleDeleteExterno = async (id: number) => {
-        if (!window.confirm("¿Está seguro de que desea eliminar este blindaje externo?")) return;
+    const confirmDelete = async () => {
+        if (!deleteInfo) return;
         try {
-            await refService.deleteBlindajeExterno(id);
+            if (deleteInfo.type === 'externo') {
+                await refService.deleteBlindajeExterno(deleteInfo.id);
+            } else {
+                await refService.deleteBlindajeInterno(deleteInfo.id);
+            }
+            setDeleteInfo(null);
             await loadData();
         } catch (error: any) {
-            alert(error.response?.data?.message || "Error al eliminar blindaje externo");
-        }
-    };
-
-    const handleDeleteInterno = async (id: number) => {
-        if (!window.confirm("¿Está seguro de que desea eliminar este blindaje interno?")) return;
-        try {
-            await refService.deleteBlindajeInterno(id);
-            await loadData();
-        } catch (error: any) {
-            alert(error.response?.data?.message || "Error al eliminar blindaje interno");
+            console.error(error.response?.data?.message || "Error al eliminar blindaje");
+            setDeleteInfo(null);
         }
     };
 
     return (
         <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+            <ConfirmModal 
+                isOpen={deleteInfo !== null} 
+                title={`Eliminar Blindaje ${deleteInfo?.type === 'externo' ? 'Externo' : 'Interno'}`} 
+                message={`¿Está seguro de que desea eliminar este blindaje ${deleteInfo?.type}?`} 
+                onConfirm={confirmDelete} 
+                onCancel={() => setDeleteInfo(null)} 
+            />
             <header className="glass-panel" style={{ padding: '24px' }}>
                 <h1 style={{ margin: 0, color: 'var(--brand-color)', textShadow: '0 0 10px rgba(117, 229, 97, 0.3)' }}>Gestión de Blindajes de Cables</h1>
                 <p style={{ color: 'var(--text-secondary)', margin: '8px 0 0 0' }}>Administrá las propiedades físicas de aislamiento para los cables del inventario.</p>
@@ -115,13 +120,14 @@ export default function CableShieldingManagerPage() {
                                     <tr key={b.id} style={rowStyle}>
                                         <td style={{ ...tdStyle, fontWeight: 'bold', color: 'var(--text-primary)' }}>{b.nombre}</td>
                                         <td style={{ ...tdStyle, textAlign: 'center', width: '80px' }}>
-                                            <Button 
-                                                onClick={() => b.id !== undefined && handleDeleteExterno(b.id)} 
-                                                variant="danger" 
-                                                style={{ padding: '2px 8px', fontSize: '0.8rem' }}
+                                            <button 
+                                                type="button"
+                                                onClick={() => b.id !== undefined && setDeleteInfo({ type: 'externo', id: b.id })} 
+                                                style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', padding: '4px 8px' }}
+                                                title="Eliminar"
                                             >
-                                                Eliminar
-                                            </Button>
+                                                ×
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
@@ -161,13 +167,14 @@ export default function CableShieldingManagerPage() {
                                     <tr key={b.id} style={rowStyle}>
                                         <td style={{ ...tdStyle, fontWeight: 'bold', color: 'var(--text-primary)' }}>{b.nombre}</td>
                                         <td style={{ ...tdStyle, textAlign: 'center', width: '80px' }}>
-                                            <Button 
-                                                onClick={() => b.id !== undefined && handleDeleteInterno(b.id)} 
-                                                variant="danger" 
-                                                style={{ padding: '2px 8px', fontSize: '0.8rem' }}
+                                            <button 
+                                                type="button"
+                                                onClick={() => b.id !== undefined && setDeleteInfo({ type: 'interno', id: b.id })} 
+                                                style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', padding: '4px 8px' }}
+                                                title="Eliminar"
                                             >
-                                                Eliminar
-                                            </Button>
+                                                ×
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}

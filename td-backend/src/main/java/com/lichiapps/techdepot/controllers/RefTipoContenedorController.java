@@ -14,4 +14,5 @@ public class RefTipoContenedorController {
     
     @GetMapping public List<RefTipoContenedor> getAll() { return repository.findAll(); }
     @PostMapping public RefTipoContenedor save(@RequestBody RefTipoContenedor entity) { return repository.save(entity); }
+    @DeleteMapping("/{id}") public void delete(@PathVariable Integer id) { repository.deleteById(id); }
 }

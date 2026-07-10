@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { refService } from '../../services/refService';
 import type { RefMarca } from '../../types/Item';
 import { Button } from '../../components/ui/Button';
+import { ConfirmModal } from '../../components/ui/ConfirmModal';
 
 export default function BrandManagerPage() {
     const [marcas, setMarcas] = useState<RefMarca[]>([]);
     const [name, setName] = useState('');
     const [loading, setLoading] = useState(true);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const loadData = async () => {
         try {
@@ -33,22 +35,31 @@ export default function BrandManagerPage() {
             setName('');
             await loadData();
         } catch (error: any) {
-            alert(error.response?.data?.message || "Error al guardar marca");
+            console.error(error.response?.data?.message || "Error al guardar marca");
         }
     };
 
-    const handleDelete = async (id: number) => {
-        if (!window.confirm("¿Está seguro de que desea eliminar esta marca?")) return;
+    const confirmDelete = async () => {
+        if (!deleteId) return;
         try {
-            await refService.deleteMarca(id);
+            await refService.deleteMarca(deleteId);
+            setDeleteId(null);
             await loadData();
         } catch (error: any) {
-            alert(error.response?.data?.message || "Error al eliminar marca");
+            console.error(error.response?.data?.message || "Error al eliminar marca");
+            setDeleteId(null);
         }
     };
 
     return (
         <div style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+            <ConfirmModal 
+                isOpen={deleteId !== null} 
+                title="Eliminar Marca" 
+                message="¿Está seguro de que desea eliminar esta marca?" 
+                onConfirm={confirmDelete} 
+                onCancel={() => setDeleteId(null)} 
+            />
             <header className="glass-panel" style={{ padding: '24px' }}>
                 <h1 style={{ margin: 0, color: 'var(--brand-color)', textShadow: '0 0 10px rgba(117, 229, 97, 0.3)' }}>Gestión de Marcas</h1>
                 <p style={{ color: 'var(--text-secondary)', margin: '8px 0 0 0' }}>Administrá las marcas de los fabricantes del equipamiento físico.</p>
@@ -78,7 +89,7 @@ export default function BrandManagerPage() {
                     <table style={tableStyle}>
                         <thead>
                             <tr style={headerRowStyle}>
-                                <th style={thStyle}>ID</th>
+
                                 <th style={thStyle}>Nombre de la Marca</th>
                                 <th style={{ ...thStyle, textAlign: 'center' }}>Acciones</th>
                             </tr>
@@ -86,22 +97,23 @@ export default function BrandManagerPage() {
                         <tbody>
                             {marcas.map(m => (
                                 <tr key={m.id} style={rowStyle}>
-                                    <td style={{ ...tdStyle, color: 'var(--text-secondary)', width: '80px' }}>{m.id}</td>
+
                                     <td style={{ ...tdStyle, fontWeight: 'bold', color: 'var(--text-primary)' }}>{m.nombre}</td>
                                     <td style={{ ...tdStyle, textAlign: 'center', width: '150px' }}>
-                                        <Button 
-                                            onClick={() => m.id !== undefined && handleDelete(m.id)} 
-                                            variant="danger" 
-                                            style={{ padding: '2px 8px', fontSize: '0.8rem' }}
+                                        <button 
+                                            type="button"
+                                            onClick={() => m.id !== undefined && setDeleteId(m.id)} 
+                                            style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', padding: '4px 8px' }}
+                                            title="Eliminar"
                                         >
-                                            Eliminar
-                                        </Button>
+                                            ×
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
                             {marcas.length === 0 && (
                                 <tr>
-                                    <td colSpan={3} style={{ ...tdStyle, textAlign: 'center', color: 'var(--text-secondary)' }}>
+                                    <td colSpan={2} style={{ ...tdStyle, textAlign: 'center', color: 'var(--text-secondary)' }}>
                                         No hay marcas registradas.
                                     </td>
                                 </tr>

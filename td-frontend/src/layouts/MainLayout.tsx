@@ -27,6 +27,7 @@ export const MainLayout: React.FC = () => {
                     <NavLink to="/admin/protocolos" style={getLinkStyle}>Gestionar Protocolos</NavLink>
                     <NavLink to="/admin/marcas" style={getLinkStyle}>Gestionar Marcas</NavLink>
                     <NavLink to="/admin/blindajes" style={getLinkStyle}>Gestionar Blindajes</NavLink>
+                    <NavLink to="/admin/colores" style={getLinkStyle}>Gestionar Colores</NavLink>
                     <NavLink to="/admin/categorias-hardware" style={getLinkStyle}>Categorías Hardware</NavLink>
                 </nav>
                 <div style={{ marginTop: 'auto', paddingTop: '20px' }}>

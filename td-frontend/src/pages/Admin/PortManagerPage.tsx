@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { refService } from '../../services/refService';
 import type { RefPuerto, RefCategoriaFuncion, LinkPuertoCapacidad } from '../../types/Item';
 import { Button } from '../../components/ui/Button';
+import { ConfirmModal } from '../../components/ui/ConfirmModal';
 
 export default function PortManagerPage() {
     const [puertos, setPuertos] = useState<RefPuerto[]>([]);
@@ -11,6 +12,7 @@ export default function PortManagerPage() {
     const [newPortName, setNewPortName] = useState('');
     const [selectedPortId, setSelectedPortPortId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
+    const [deleteInfo, setDeleteInfo] = useState<{id: number, nombre: string} | null>(null);
 
     const loadData = async () => {
         try {
@@ -42,26 +44,23 @@ export default function PortManagerPage() {
             await refService.savePuerto({ nombre: newPortName });
             setNewPortName('');
             await loadData();
-            alert("Puerto guardado correctamente");
         } catch (error: any) {
-            alert(error.response?.data?.message || "Error al guardar puerto");
+            console.error("Error al guardar puerto", error);
         }
     };
 
-    const handleDeletePort = async (id: number, nombre: string) => {
-        if (!confirm(`¿Estás seguro de que deseas eliminar el puerto "${nombre}"? Esto también eliminará todos sus protocolos y capacidades asociadas.`)) {
-            return;
-        }
+    const confirmDelete = async () => {
+        if (!deleteInfo) return;
         try {
-            await refService.deletePuerto(id);
-            if (selectedPortId === id) {
+            await refService.deletePuerto(deleteInfo.id);
+            if (selectedPortId === deleteInfo.id) {
                 setSelectedPortPortId(null);
             }
+            setDeleteInfo(null);
             await loadData();
-            alert("Puerto eliminado correctamente");
         } catch (error: any) {
             console.error("Error al eliminar puerto:", error);
-            alert(error.response?.data?.message || "Error al eliminar el puerto");
+            setDeleteInfo(null);
         }
     };
 
@@ -75,9 +74,8 @@ export default function PortManagerPage() {
             await refService.saveCategoriaFuncion({ nombre: newFuncName.trim() });
             setNewFuncName('');
             await loadData();
-            alert("Categoría de función guardada correctamente");
         } catch (error: any) {
-            alert(error.response?.data?.message || "Error al guardar la función");
+            console.error("Error al guardar la función", error);
         }
     };
 
@@ -91,10 +89,10 @@ export default function PortManagerPage() {
                 await refService.savePuertoCapacidad(selectedPortId, idFuncion);
                 await loadData();
             } else {
-                alert("Para eliminar una capacidad, debés hacerlo desde la base de datos (por seguridad de integridad).");
+                console.error("Para eliminar una capacidad, debés hacerlo desde la base de datos (por seguridad de integridad).");
             }
         } catch (error: any) {
-            alert(error.response?.data?.message || "Error al actualizar capacidad");
+            console.error("Error al actualizar capacidad", error);
         }
     };
 
@@ -102,6 +100,13 @@ export default function PortManagerPage() {
 
     return (
         <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+            <ConfirmModal 
+                isOpen={deleteInfo !== null} 
+                title="Eliminar Puerto" 
+                message={`¿Estás seguro de que deseas eliminar el puerto "${deleteInfo?.nombre}"? Esto también eliminará todos sus protocolos y capacidades asociadas.`} 
+                onConfirm={confirmDelete} 
+                onCancel={() => setDeleteInfo(null)} 
+            />
             <header className="glass-panel" style={{ padding: '24px' }}>
                 <h1 style={{ margin: 0, color: 'var(--brand-color)', textShadow: '0 0 10px rgba(117, 229, 97, 0.3)' }}>Gestión de Infraestructura Física</h1>
                 <p style={{ color: 'var(--text-secondary)', margin: '8px 0 0 0' }}>Administrá puertos y definí sus capacidades lógicas.</p>
@@ -112,86 +117,101 @@ export default function PortManagerPage() {
                 <div>
                     <div className="glass-panel" style={cardStyle}>
                         <h3 style={{ color: 'var(--text-primary)' }}>Nuevo Puerto</h3>
-                        <form onSubmit={handleSavePort} style={{ display: 'flex', gap: '10px' }}>
-                            <input 
-                                type="text" 
-                                placeholder="Ej: USB-C, HDMI..." 
-                                value={newPortName}
-                                onChange={(e) => setNewPortName(e.target.value)}
-                                style={inputStyle}
-                                required
-                            />
-                            <Button type="submit" variant="success" style={{ minWidth: '120px' }}>Crear</Button>
-                        </form>
-                    </div>
-
-                    <div className="glass-panel" style={cardStyle}>
-                        <h3 style={{ color: 'var(--text-primary)' }}>Puertos</h3>
-                        {loading ? <p style={{ color: 'var(--brand-color)' }}>Cargando...</p> : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {puertos.map(p => (
-                                    <div 
-                                        key={p.id} 
-                                        onClick={() => setSelectedPortPortId(p.id!)}
-                                        style={{
-                                            ...itemStyle, 
-                                            backgroundColor: selectedPortId === p.id ? 'rgba(117, 229, 97, 0.15)' : 'var(--surface-hover)',
-                                            borderColor: selectedPortId === p.id ? 'var(--brand-color)' : 'var(--border-color)',
-                                            color: 'var(--text-primary)',
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center'
-                                        }}
-                                    >
-                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <span style={{ fontWeight: selectedPortId === p.id ? 'bold' : 'normal' }}>{p.nombre}</span>
-                                            <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>ID: {p.id}</span>
-                                        </div>
-                                        <button 
-                                            type="button" 
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDeletePort(p.id!, p.nombre);
-                                            }}
-                                            style={{
-                                                background: 'none',
-                                                border: 'none',
-                                                color: 'var(--danger-color)',
-                                                cursor: 'pointer',
-                                                fontWeight: 'bold',
-                                                fontSize: '1.2rem',
-                                                padding: '4px 8px'
-                                            }}
-                                            title="Eliminar Puerto"
-                                        >
-                                            ×
-                                        </button>
-                                    </div>
-                                ))}
+                        <form onSubmit={handleSavePort} style={formStyle}>
+                            <div style={{ flex: 1 }}>
+                                <label style={labelStyle}>Nombre del Puerto:</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="Ej: USB-C, HDMI..." 
+                                    value={newPortName}
+                                    onChange={(e) => setNewPortName(e.target.value)}
+                                    style={inputStyle}
+                                    required
+                                />
                             </div>
+                            <Button type="submit" variant="success" style={{ minWidth: '120px' }}>Agregar Puerto</Button>
+                        </form>
+
+                        <h3 style={{ color: 'var(--text-primary)', marginTop: '24px' }}>Puertos Registrados</h3>
+                        {loading ? <p style={{ color: 'var(--brand-color)' }}>Cargando...</p> : (
+                            <table style={tableStyle}>
+                                <thead>
+                                    <tr style={headerRowStyle}>
+                                        <th style={thStyle}>Nombre del Puerto</th>
+                                        <th style={{ ...thStyle, textAlign: 'center' }}>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {puertos.map(p => (
+                                        <tr 
+                                            key={p.id} 
+                                            onClick={() => setSelectedPortPortId(p.id!)}
+                                            style={{ 
+                                                ...rowStyle, 
+                                                cursor: 'pointer',
+                                                backgroundColor: selectedPortId === p.id ? 'rgba(117, 229, 97, 0.15)' : 'transparent' 
+                                            }}
+                                        >
+                                            <td style={{ ...tdStyle, fontWeight: selectedPortId === p.id ? 'bold' : 'normal', color: 'var(--text-primary)' }}>{p.nombre}</td>
+                                            <td style={{ ...tdStyle, textAlign: 'center', width: '80px' }}>
+                                                <button 
+                                                    type="button" 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setDeleteInfo({ id: p.id!, nombre: p.nombre });
+                                                    }}
+                                                    style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        color: 'var(--danger-color)',
+                                                        cursor: 'pointer',
+                                                        fontWeight: 'bold',
+                                                        fontSize: '1.2rem',
+                                                        padding: '4px 8px'
+                                                    }}
+                                                    title="Eliminar Puerto"
+                                                >
+                                                    ×
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {puertos.length === 0 && (
+                                        <tr>
+                                            <td colSpan={2} style={{ ...tdStyle, textAlign: 'center', color: 'var(--text-secondary)' }}>
+                                                No hay puertos registrados.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
                         )}
                     </div>
 
                     <div className="glass-panel" style={cardStyle}>
                         <h3 style={{ color: 'var(--text-primary)' }}>Nueva Función Física</h3>
-                        <form onSubmit={handleSaveFunction} style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-                            <input 
-                                type="text" 
-                                placeholder="Ej: Redes, Video..." 
-                                value={newFuncName}
-                                onChange={(e) => setNewFuncName(e.target.value)}
-                                style={inputStyle}
-                                required
-                            />
-                            <Button type="submit" variant="success" style={{ minWidth: '120px' }}>Crear</Button>
+                        <form onSubmit={handleSaveFunction} style={{ ...formStyle, marginBottom: '24px' }}>
+                            <div style={{ flex: 1 }}>
+                                <label style={labelStyle}>Nombre de la Función:</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="Ej: Redes, Video..." 
+                                    value={newFuncName}
+                                    onChange={(e) => setNewFuncName(e.target.value)}
+                                    style={inputStyle}
+                                    required
+                                />
+                            </div>
+                            <Button type="submit" variant="success" style={{ minWidth: '120px' }}>Agregar Función</Button>
                         </form>
-                        <h4 style={{ color: 'var(--text-secondary)', marginBottom: '8px' }}>Funciones Existentes</h4>
+
+                        <h3 style={{ color: 'var(--text-primary)' }}>Funciones Existentes</h3>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                             {funciones.map(f => (
                                 <span 
                                     key={f.id} 
                                     style={{
-                                        padding: '4px 10px',
+                                        padding: '6px 12px',
                                         backgroundColor: 'var(--surface-color)',
                                         border: '1px solid var(--border-color)',
                                         borderRadius: '20px',
@@ -208,7 +228,7 @@ export default function PortManagerPage() {
 
                 {/* LADO DERECHO: CAPACIDADES DEL PUERTO SELECCIONADO */}
                 <div>
-                    <div className="glass-panel" style={{ ...cardStyle, minHeight: '300px' }}>
+                    <div className="glass-panel" style={{ ...cardStyle, minHeight: '300px', position: 'sticky', top: '24px' }}>
                         <h3 style={{ color: 'var(--text-primary)' }}>Capacidades de: <span style={{color: 'var(--brand-color)'}}>{selectedPort ? selectedPort.nombre : 'Seleccione un puerto'}</span></h3>
                         {!selectedPort ? (
                             <p style={{ color: 'var(--text-secondary)', marginTop: '20px' }}>Seleccioná un puerto de la lista para gestionar qué puede hacer (Energía, Datos, etc.).</p>
@@ -258,8 +278,23 @@ const cardStyle: React.CSSProperties = {
     marginBottom: '24px',
 };
 
+const formStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'flex-end',
+    gap: '15px'
+};
+
+const labelStyle: React.CSSProperties = {
+    display: 'block',
+    fontSize: '0.85rem',
+    color: 'var(--text-secondary)',
+    marginBottom: '8px',
+    fontWeight: 'bold',
+    textTransform: 'uppercase'
+};
+
 const inputStyle: React.CSSProperties = {
-    flex: 1,
+    width: '100%',
     padding: '10px',
     borderRadius: '6px',
     border: '1px solid var(--border-color)',
@@ -270,14 +305,32 @@ const inputStyle: React.CSSProperties = {
     transition: 'border-color 0.2s',
 };
 
-const itemStyle: React.CSSProperties = {
-    padding: '12px',
-    borderRadius: '6px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    cursor: 'pointer',
-    transition: 'all 0.2s'
+const tableStyle: React.CSSProperties = {
+    width: '100%',
+    borderCollapse: 'collapse',
+    marginTop: '10px'
+};
+
+const headerRowStyle: React.CSSProperties = {
+    borderBottom: '2px solid var(--border-color)',
+    textAlign: 'left'
+};
+
+const thStyle: React.CSSProperties = {
+    padding: '12px 10px',
+    fontSize: '0.9rem',
+    color: 'var(--text-secondary)',
+    textTransform: 'uppercase'
+};
+
+const rowStyle: React.CSSProperties = {
+    borderBottom: '1px solid var(--border-color)',
+    transition: 'background-color 0.2s'
+};
+
+const tdStyle: React.CSSProperties = {
+    padding: '12px 10px',
+    fontSize: '0.9rem'
 };
 
 const checkboxLabelStyle = (isActive: boolean): React.CSSProperties => ({
@@ -288,6 +341,6 @@ const checkboxLabelStyle = (isActive: boolean): React.CSSProperties => ({
     backgroundColor: isActive ? 'rgba(117, 229, 97, 0.1)' : 'var(--surface-hover)',
     cursor: 'pointer',
     border: `1px solid ${isActive ? 'rgba(117, 229, 97, 0.3)' : 'var(--border-color)'}`,
-    color: 'var(--text-primary)'
+    color: 'var(--text-primary)',
+    transition: 'all 0.2s'
 });
-

@@ -5,11 +5,13 @@ import { itemService } from '../../services/itemService.ts';
 import type { ItemFilterDTO } from '../../services/itemService.ts';
 import { ItemTable } from '../../components/inventory/ItemTable.tsx';
 import { FilterSidebar } from '../../components/inventory/FilterSidebar.tsx';
+import { ConfirmModal } from '../../components/ui/ConfirmModal.tsx';
 
 export default function InventoryPage() {
     const [items, setItems] = useState<Item[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [filters, setFilters] = useState<ItemFilterDTO>({});
+    const [deleteId, setDeleteId] = useState<number | null>(null);
     const navigate = useNavigate();
 
     const cargarDatos = useCallback(async (currentFilters: ItemFilterDTO = {}) => {
@@ -41,19 +43,27 @@ export default function InventoryPage() {
         setFilters(newFilters);
     };
 
-    const handleEliminar = async (id: number) => {
-        if (window.confirm("¿Estás seguro de eliminar este item?")) {
-            try {
-                await itemService.delete(id);
-                await cargarDatos(filters);
-            } catch (error) {
-                alert("Error al eliminar el item");
-            }
+    const confirmDelete = async () => {
+        if (!deleteId) return;
+        try {
+            await itemService.delete(deleteId);
+            await cargarDatos(filters);
+        } catch (error) {
+            console.error("Error al eliminar el item");
+        } finally {
+            setDeleteId(null);
         }
     };
 
     return (
         <div style={pageContainerStyle}>
+            <ConfirmModal 
+                isOpen={deleteId !== null} 
+                title="Eliminar Item" 
+                message="¿Estás seguro de eliminar este item del inventario?" 
+                onConfirm={confirmDelete} 
+                onCancel={() => setDeleteId(null)} 
+            />
             <FilterSidebar onFilterChange={handleFilterChange} />
             
             <div style={contentAreaStyle}>
@@ -74,7 +84,7 @@ export default function InventoryPage() {
                             </div>
                             <ItemTable 
                                 items={items} 
-                                onDeleteItem={handleEliminar} 
+                                onDeleteItem={(id) => setDeleteId(id)} 
                                 onEditItem={(id) => navigate(`/admin/items/edit/${id}`)}
                             />
                         </>

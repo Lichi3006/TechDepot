@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { refService } from '../../services/refService';
 import type { Contenedor, RefTipoContenedor } from '../../types/Item';
 import { Button } from '../../components/ui/Button';
+import { ConfirmModal } from '../../components/ui/ConfirmModal';
 
 export default function ContainerManagerPage() {
     const [contenedores, setContenedores] = useState<Contenedor[]>([]);
@@ -13,6 +14,7 @@ export default function ContainerManagerPage() {
 
     const [newTypeName, setNewTypeName] = useState('');
     const [newTypePrefix, setNewTypePrefix] = useState('');
+    const [deleteInfo, setDeleteInfo] = useState<{type: 'contenedor' | 'tipo', id: number, nombre: string} | null>(null);
 
     const handleCreateType = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -26,9 +28,8 @@ export default function ContainerManagerPage() {
             setNewTypeName('');
             setNewTypePrefix('');
             await loadData();
-            alert("Tipo de contenedor creado correctamente.");
         } catch (error: any) {
-            alert(error.response?.data?.message || "Error al crear tipo de contenedor");
+            console.error(error.response?.data?.message || "Error al crear tipo de contenedor");
         }
     };
 
@@ -60,9 +61,8 @@ export default function ContainerManagerPage() {
             await refService.saveContenedor({ tipoContenedor: { id: selectedTipoId } });
             setSelectedTipoId(0);
             await loadData();
-            alert("Contenedor creado y nombre generado.");
         } catch (error) {
-            alert("Error al crear contenedor");
+            console.error("Error al crear contenedor");
         }
     };
 
@@ -71,33 +71,48 @@ export default function ContainerManagerPage() {
             await refService.updateContenedor(id, { tipoContenedor: { id: newTipoId } });
             setEditingId(null);
             await loadData();
-            alert("Tipo actualizado (el nombre técnico se ha regenerado)");
         } catch (error) {
-            alert("Error al actualizar tipo");
+            console.error("Error al actualizar tipo");
         }
     };
 
-    const handleDelete = async (id: number, nombre: string) => {
-        const confirmMsg = `¿ESTÁS SEGURO? Eliminar el contenedor "${nombre}" borrará TODOS los ítems que tiene adentro permanentemente.`;
-        if (window.confirm(confirmMsg)) {
-            try {
-                await refService.deleteContenedor(id);
-                await loadData();
-                alert("Contenedor y su contenido eliminados.");
-            } catch (error) {
-                alert("Error al eliminar contenedor");
+    const confirmDelete = async () => {
+        if (!deleteInfo) return;
+        try {
+            if (deleteInfo.type === 'contenedor') {
+                await refService.deleteContenedor(deleteInfo.id);
+            } else if (deleteInfo.type === 'tipo') {
+                await refService.deleteTipoContenedor(deleteInfo.id);
             }
+            setDeleteInfo(null);
+            await loadData();
+        } catch (error) {
+            console.error("Error al eliminar");
+            setDeleteInfo(null);
         }
     };
 
     return (
         <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+            <ConfirmModal 
+                isOpen={deleteInfo !== null} 
+                title={deleteInfo?.type === 'contenedor' ? "Eliminar Contenedor" : "Eliminar Tipo de Contenedor"} 
+                message={deleteInfo?.type === 'contenedor' 
+                    ? `¿ESTÁS SEGURO? Eliminar el contenedor "${deleteInfo?.nombre}" borrará TODOS los ítems que tiene adentro permanentemente.`
+                    : `¿Estás seguro de que deseas eliminar el tipo "${deleteInfo?.nombre}"?`
+                } 
+                onConfirm={confirmDelete} 
+                onCancel={() => setDeleteInfo(null)} 
+            />
             <header className="glass-panel" style={{ padding: '24px' }}>
                 <h1 style={{ margin: 0, color: 'var(--brand-color)', textShadow: '0 0 10px rgba(117, 229, 97, 0.3)' }}>Gestión de Contenedores</h1>
-                <p style={{ color: 'var(--text-secondary)', margin: '8px 0 0 0' }}>Administrá las unidades de almacenamiento y su contenido.</p>
+                <p style={{ color: 'var(--text-secondary)', margin: '8px 0 0 0' }}>Administrá las unidades de almacenamiento y sus tipos.</p>
             </header>
 
-            <div className="glass-panel" style={cardStyle}>
+            <div style={gridStyle}>
+                {/* LADO IZQUIERDO: CONTENEDORES */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div className="glass-panel" style={cardStyle}>
                 <h3 style={{ color: 'var(--text-primary)' }}>Nuevo Contenedor</h3>
                 <form onSubmit={handleCreate} style={{ display: 'flex', gap: '15px', alignItems: 'flex-end' }}>
                     <div style={{ flex: 1 }}>
@@ -160,11 +175,12 @@ export default function ContainerManagerPage() {
                                                 {editingId === c.id ? 'Cancelar' : 'Cambiar Tipo'}
                                             </Button>
                                             <button 
-                                                onClick={() => handleDelete(c.id!, c.nombre)}
-                                                className="btn-danger"
-                                                style={{ padding: '4px 10px', fontSize: '0.8rem' }}
+                                                type="button"
+                                                onClick={() => setDeleteInfo({ type: 'contenedor', id: c.id!, nombre: c.nombre })}
+                                                style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', padding: '4px 8px' }}
+                                                title="Eliminar Contenedor"
                                             >
-                                                Eliminar
+                                                ×
                                             </button>
                                         </div>
                                     </td>
@@ -175,8 +191,11 @@ export default function ContainerManagerPage() {
                 )}
             </div>
 
-            <div className="glass-panel" style={cardStyle}>
-                <h3 style={{ color: 'var(--text-primary)' }}>Tipos de Contenedor</h3>
+                </div>
+                
+                {/* LADO DERECHO: TIPOS DE CONTENEDOR */}
+                <div className="glass-panel" style={cardStyle}>
+                    <h3 style={{ color: 'var(--text-primary)' }}>Tipos de Contenedor</h3>
                 <form onSubmit={handleCreateType} style={{ display: 'flex', gap: '15px', alignItems: 'flex-end', marginBottom: '24px' }}>
                     <div style={{ flex: 2 }}>
                         <label style={labelStyle}>Nombre del Tipo:</label>
@@ -220,16 +239,33 @@ export default function ContainerManagerPage() {
                             }}
                         >
                             <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{t.nombre}</span>
-                            <span className="badge" style={{ backgroundColor: 'var(--brand-color)', color: '#000', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                                {t.prefijo}
-                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span className="badge" style={{ backgroundColor: 'var(--brand-color)', color: '#000', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                    {t.prefijo}
+                                </span>
+                                <button 
+                                    type="button"
+                                    onClick={() => setDeleteInfo({ type: 'tipo', id: t.id!, nombre: t.nombre })}
+                                    style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', padding: '0 4px' }}
+                                    title="Eliminar Tipo"
+                                >
+                                    ×
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
             </div>
+            </div>
         </div>
     );
 }
+
+const gridStyle: React.CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '24px'
+};
 
 const cardStyle: React.CSSProperties = {
     padding: '24px',

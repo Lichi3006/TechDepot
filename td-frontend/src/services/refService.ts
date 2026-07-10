@@ -25,6 +25,7 @@ export const refService = {
     // Colores
     getColores: () => api.get<RefColor[]>('/colores').then(r => r.data),
     saveColor: (data: RefColor) => api.post<RefColor>('/colores', data).then(r => r.data),
+    deleteColor: (id: number) => api.delete(`/colores/${id}`),
 
     // Contenedores
     getContenedores: () => api.get<Contenedor[]>('/contenedores').then(r => r.data),
@@ -35,6 +36,7 @@ export const refService = {
     // Tipos de Contenedor
     getTiposContenedor: () => api.get<RefTipoContenedor[]>('/tipos-contenedor').then(r => r.data),
     saveTipoContenedor: (data: RefTipoContenedor) => api.post<RefTipoContenedor>('/tipos-contenedor', data).then(r => r.data),
+    deleteTipoContenedor: (id: number) => api.delete(`/tipos-contenedor/${id}`),
 
     // Categorías de Función
     getCategoriasFuncion: () => api.get<RefCategoriaFuncion[]>('/categorias-funcion').then(r => r.data),

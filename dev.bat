@@ -50,4 +50,3 @@ echo [2/2] Lanzando Frontend...
 start powershell -NoExit -Command "cd td-frontend; npm run dev"
 echo.
 echo Backend y Frontend lanzados en ventanas separadas.
-pause

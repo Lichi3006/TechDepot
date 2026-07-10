@@ -9,6 +9,7 @@ export default function ContainerEditorPage() {
     const [tipos, setTipos] = useState<RefTipoContenedor[]>([]);
     const [idTipo, setIdTipo] = useState<number>(0);
     const [loading, setLoading] = useState(true);
+    const [formError, setFormError] = useState<string | null>(null);
 
     useEffect(() => {
         const load = async () => {
@@ -27,18 +28,18 @@ export default function ContainerEditorPage() {
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
+        setFormError(null);
         if (!idTipo) {
-            alert("Debe seleccionar un tipo de contenedor");
+            setFormError("Debe seleccionar un tipo de contenedor");
             return;
         }
 
         try {
             await refService.saveContenedor({ tipoContenedor: { id: idTipo } });
-            alert("Contenedor creado exitosamente");
-            navigate('/admin/parametros');
+            navigate('/admin/containers');
         } catch (e) {
             console.error("Error al crear contenedor", e);
-            alert("Error al crear el contenedor");
+            setFormError("Error al crear el contenedor");
         }
     };
 
@@ -66,6 +67,8 @@ export default function ContainerEditorPage() {
                         </option>
                     ))}
                 </select>
+
+                {formError && <div style={{ color: 'var(--danger-color)', marginBottom: '15px', fontWeight: 'bold' }}>{formError}</div>}
 
                 <div style={footerStyle}>
                     <Button type="button" variant="secondary" onClick={() => navigate(-1)}>Cancelar</Button>

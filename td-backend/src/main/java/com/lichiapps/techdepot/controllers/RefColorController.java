@@ -13,4 +13,5 @@ public class RefColorController {
     @Autowired private RefColorService service;
     @GetMapping public List<RefColor> getAll() { return service.getAllRefColores(); }
     @PostMapping public RefColor save(@RequestBody RefColor entity) { return service.saveRefColor(entity); }
+    @DeleteMapping("/{id}") public void delete(@PathVariable Long id) { service.deleteRefColorById(id); }
 }

@@ -8,6 +8,7 @@ import ProtocolManagerPage from './pages/Admin/ProtocolManagerPage.tsx';
 import BrandManagerPage from './pages/Admin/BrandManagerPage.tsx';
 import CableShieldingManagerPage from './pages/Admin/CableShieldingManagerPage.tsx';
 import HardwareCategoryManagerPage from './pages/Admin/HardwareCategoryManagerPage.tsx';
+import ColorManagerPage from './pages/Admin/ColorManagerPage.tsx';
 
 export default function App() {
     return (
@@ -23,6 +24,7 @@ export default function App() {
                     <Route path="admin/marcas" element={<BrandManagerPage />} />
                     <Route path="admin/blindajes" element={<CableShieldingManagerPage />} />
                     <Route path="admin/categorias-hardware" element={<HardwareCategoryManagerPage />} />
+                    <Route path="admin/colores" element={<ColorManagerPage />} />
                 </Route>
             </Routes>
         </BrowserRouter>

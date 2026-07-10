@@ -101,15 +101,14 @@ export default function ItemEditorPage() {
         try {
             if (isEditing) {
                 await itemService.update(Number(id), dto);
-                alert("Item actualizado correctamente");
+                console.log("Item actualizado correctamente");
             } else {
                 await itemService.create(dto);
-                alert("Item guardado correctamente");
+                console.log("Item guardado correctamente");
             }
             navigate('/');
-        } catch (error) {
-            console.error("Error al guardar:", error);
-            alert("Error al guardar el item.");
+        } catch (error: any) {
+            console.error("Error al guardar el item:", error);
         }
     };
 

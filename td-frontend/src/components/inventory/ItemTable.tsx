@@ -188,12 +188,12 @@ export const ItemTable: React.FC<ItemTableProps> = ({ items, onDeleteItem, onEdi
                                         ✏️
                                     </button>
                                     <button 
+                                        type="button"
                                         onClick={() => onDeleteItem?.(item.id)}
-                                        className="btn-danger"
-                                        style={{ padding: '6px 10px' }}
+                                        style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', padding: '4px 8px' }}
                                         title="Eliminar"
                                     >
-                                        🗑️
+                                        ×
                                     </button>
                                 </div>
                             </td>
