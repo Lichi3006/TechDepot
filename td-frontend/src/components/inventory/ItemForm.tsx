@@ -152,22 +152,18 @@ export const ItemForm: React.FC<ItemFormProps> = ({ onSave, onCancel, initialDat
             const nueva = await refService.saveMarca({ nombre: nombre.trim() });
             setMarcas(prev => [...prev, nueva]);
             setIdMarca(nueva.id);
-            alert("Marca agregada correctamente.");
         } catch (e: any) {
             console.error("Error agregando marca:", e);
-            alert(e.response?.data?.message || "Error al agregar marca.");
         }
     };
 
-    const handleSaveColorPreset = async (nombre: string, codigoHex: string) => {
+    const handleSaveColorPreset = async (codigoHex: string) => {
         try {
-            const nuevo = await refService.saveColor({ nombre, codigoHex });
+            const nuevo = await refService.saveColor({ codigoHex });
             setColoresPresets(prev => [...prev, nuevo]);
             setSelectedColoresHex(prev => [...prev, nuevo.codigoHex]);
-            alert("Color agregado correctamente.");
         } catch (e: any) {
             console.error("Error agregando color:", e);
-            alert(e.response?.data?.message || "Error al agregar color.");
         }
     };
 

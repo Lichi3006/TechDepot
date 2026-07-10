@@ -6,5 +6,5 @@ import lombok.Data;
 public class RefCategoriaFuncion {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "IdREF_CategoriaFuncion")
     private Long id;
-    @Column(name = "Nombre", unique = true, nullable = false, length = 20) private String nombre;
+    @Column(name = "Nombre", unique = true, nullable = false, length = 50) private String nombre;
 }

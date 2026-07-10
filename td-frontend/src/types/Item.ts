@@ -6,7 +6,8 @@ export interface RefBase {
 
 export interface RefMarca extends RefBase {}
 export interface RefEstado extends RefBase {}
-export interface RefColor extends RefBase {
+export interface RefColor {
+    id?: number;
     codigoHex: string;
 }
 export interface RefTipoContenedor extends RefBase {

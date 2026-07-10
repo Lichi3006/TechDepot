@@ -39,7 +39,6 @@ CREATE TABLE REF_Puerto
 CREATE TABLE REF_Color
 (
     IdREF_Color BIGINT IDENTITY(1,1),
-    Nombre VARCHAR(36) UNIQUE NOT NULL,
     CodigoHex VARCHAR(7) NOT NULL, -- Agregado para soporte de Color Picker
     CONSTRAINT PK_RefColor PRIMARY KEY (IdREF_Color)
 );
@@ -377,17 +376,17 @@ INSERT INTO REF_Protocolo (IdREF_Puerto, IdREF_CategoriaFuncion, Nombre) VALUES 
 GO
 
 -- 9.7 Colores Comunes (Presets)
-INSERT INTO REF_Color (Nombre, CodigoHex) VALUES 
-('Negro', '#000000'),
-('Blanco', '#FFFFFF'),
-('Gris', '#808080'),
-('Rojo', '#FF0000'),
-('Azul', '#0000FF'),
-('Verde', '#00FF00'),
-('Amarillo', '#FFFF00'),
-('Naranja', '#FFA500'),
-('Violeta', '#8A2BE2'),
-('Rosa', '#FFC0CB');
+INSERT INTO REF_Color (CodigoHex) VALUES 
+('#000000'),
+('#FFFFFF'),
+('#808080'),
+('#FF0000'),
+('#0000FF'),
+('#00FF00'),
+('#FFFF00'),
+('#FFA500'),
+('#8A2BE2'),
+('#FFC0CB');
 
 -- 9.8 Blindajes
 INSERT INTO REF_BlindajeExternoCable (Nombre) VALUES ('PVC'), ('Trenzado Nylon'), ('Goma'), ('UTP (Sin blindaje)'), ('STP (Blindaje trenzado)'), ('FTP (Lámina aluminio)');

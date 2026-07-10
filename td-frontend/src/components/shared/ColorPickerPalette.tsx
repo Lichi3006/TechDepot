@@ -5,7 +5,7 @@ interface ColorPickerPaletteProps {
     selectedColors: string[];
     presets: RefColor[];
     onChange: (colors: string[]) => void;
-    onSavePreset?: (nombre: string, hex: string) => Promise<void>;
+    onSavePreset?: (hex: string) => Promise<void>;
 }
 
 export const ColorPickerPalette: React.FC<ColorPickerPaletteProps> = ({ selectedColors, presets, onChange, onSavePreset }) => {
@@ -27,32 +27,12 @@ export const ColorPickerPalette: React.FC<ColorPickerPaletteProps> = ({ selected
                 <div style={presetsSectionStyle}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                         <label style={{ ...labelStyle, marginBottom: 0 }}>Colores Comunes:</label>
-                        {onSavePreset && (
-                            <button 
-                                type="button" 
-                                onClick={async () => {
-                                    const nombre = prompt("Nombre para el color común (ej: Gris Espacial):");
-                                    const hex = prompt("Código HEX (ej: #808080):", currentColor);
-                                    if (nombre && hex) {
-                                        if (!/^#[0-9A-F]{6}$/i.test(hex)) {
-                                            alert("Formato HEX inválido (debe ser #RRGGBB)");
-                                            return;
-                                        }
-                                        await onSavePreset(nombre.trim(), hex.trim());
-                                    }
-                                }}
-                                className="btn-glass"
-                                style={{ padding: '2px 8px', fontSize: '0.75rem' }}
-                            >
-                                + Nuevo Preset
-                            </button>
-                        )}
                     </div>
                     <div style={gridStyle}>
                         {presets.map(p => (
                             <div 
                                 key={p.id} 
-                                title={p.nombre}
+                                title={p.codigoHex}
                                 onClick={() => handleAddColor(p.codigoHex)}
                                 style={{ ...presetSquareStyle, backgroundColor: p.codigoHex }}
                             ></div>
@@ -77,6 +57,17 @@ export const ColorPickerPalette: React.FC<ColorPickerPaletteProps> = ({ selected
                         >
                             + Agregar
                         </button>
+                        {onSavePreset && (
+                            <button 
+                                type="button" 
+                                onClick={() => onSavePreset(currentColor)}
+                                className="btn-glass"
+                                style={{ padding: '0 12px', fontSize: '0.85rem', color: 'var(--brand-color)' }}
+                                title="Guardar como color común"
+                            >
+                                Guardar
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

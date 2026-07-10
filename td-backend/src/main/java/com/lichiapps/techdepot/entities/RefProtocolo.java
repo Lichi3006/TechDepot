@@ -9,5 +9,5 @@ public class RefProtocolo {
 
     @ManyToOne @JoinColumn(name = "IdREF_Puerto", nullable = false) private RefPuerto puerto;
     @ManyToOne @JoinColumn(name = "IdREF_CategoriaFuncion", nullable = false) private RefCategoriaFuncion categoriaFuncion;
-    @Column(name = "Nombre", unique = true, nullable = false, length = 50) private String nombre;
+    @Column(name = "Nombre", nullable = false, length = 50) private String nombre;
 }

@@ -9,5 +9,5 @@ import java.util.Optional;
 @Repository
 public interface RefColorRepository extends  JpaRepository<RefColor, Long>{
 
-    Optional<RefColor> findByNombre(String nombre);
+    Optional<RefColor> findByCodigoHex(String codigoHex);
 }

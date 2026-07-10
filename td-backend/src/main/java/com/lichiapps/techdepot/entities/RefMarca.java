@@ -13,6 +13,6 @@ public class RefMarca {
     @Column(name = "IdREF_Marca")
     private Long id;
 
-    @Column(name = "Nombre", unique = true, nullable = false, length = 20)
+    @Column(name = "Nombre", unique = true, nullable = false, length = 50)
     private String nombre;
 }

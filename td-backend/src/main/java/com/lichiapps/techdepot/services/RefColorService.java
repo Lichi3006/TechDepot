@@ -2,6 +2,7 @@ package com.lichiapps.techdepot.services;
 
 import com.lichiapps.techdepot.entities.RefColor;
 import com.lichiapps.techdepot.repositories.RefColorRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,32 +14,26 @@ public class RefColorService {
     @Autowired private RefColorRepository refColorRepository;
 
     public RefColor saveRefColor(RefColor newRefColor){
-        if (newRefColor.getNombre() == null || newRefColor.getNombre().isBlank()){
-            throw new IllegalArgumentException("El nombre del color no puede ser nulo");
+        if (newRefColor.getCodigoHex() == null || newRefColor.getCodigoHex().isBlank()){
+            throw new IllegalArgumentException("El color no puede estar vacio");
         }
-        if (refColorRepository.findByNombre(newRefColor.getNombre()).isPresent()){
-            throw new IllegalArgumentException("El color '" + newRefColor.getNombre() + "' ya existe");
+        if (refColorRepository.findByCodigoHex(newRefColor.getCodigoHex()).isPresent()){
+            throw new IllegalArgumentException("El color '" + newRefColor.getCodigoHex() + "' ya existe");
         }
         return refColorRepository.save(newRefColor);
     }
 
     public RefColor getRefColorById(Long id){
-        return refColorRepository.findById(id).orElse(null);
+        return refColorRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Color con ID " + id + " no encontrado"));
     }
 
     public void deleteRefColorById(Long id){
+        getRefColorById(id);
         refColorRepository.deleteById(id);
     }
 
     public List<RefColor> getAllRefColores(){
         return refColorRepository.findAll();
-    }
-
-    public void updateNombreRefColor(Long id, String nombre){
-        RefColor color = getRefColorById(id);
-        if (color != null) {
-            color.setNombre(nombre);
-            refColorRepository.save(color);
-        }
     }
 }

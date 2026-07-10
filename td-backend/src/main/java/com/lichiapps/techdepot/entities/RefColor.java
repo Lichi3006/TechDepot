@@ -13,9 +13,6 @@ public class RefColor {
     @Column(name = "IdREF_Color")
     private Long id;
 
-    @Column(name = "Nombre", nullable = false)
-    private String nombre;
-
     @Column(name = "CodigoHex", nullable = false, length = 7)
     private String codigoHex;
 }
