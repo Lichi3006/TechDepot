@@ -25,7 +25,7 @@ Every day I waste hours digging through boxes of tangled cables and random hardw
 
 This project uses a decoupled architecture, separating the robust backend API from a dynamic, reactive user interface:
 
-### ✨ Key Features
+### Key Features
 * **Smart QR Code Scanner:** Rapid inventory lookup via mobile camera, scanning custom QR UUIDs attached to physical containers.
 * **Mobile-First Responsive UI:** Seamlessly switches from a desktop data-table to modern, MercadoLibre-style item cards on mobile devices.
 * **Advanced Filtering & Search:** Dynamic sidebar to filter hardware by categories, brands, ports, protocols, and more.
