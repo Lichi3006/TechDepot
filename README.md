@@ -73,9 +73,10 @@ Before you start, make sure you have the following installed:
 
 ## <img src="https://api.iconify.design/heroicons/arrow-down-tray.svg?color=white" width="24" height="24" align="center"/> Local Setup & Configuration
 
-TechDepot has been engineered for a **plug-and-play** development experience. You don't need to manually create databases, copy property files, or run npm installs. Our automated scripts handle everything for you.
+TechDepot has been engineered for a **plug-and-play** development experience. You don't need to manually copy property files or run npm installs. Our automated scripts handle everything for you.
 
-### 1. Database Configuration (Run once)
+### 1. Database Setup (Run once)
+We created a script to automate the entire SQL Server setup so **you don't need to open SQL Server Management Studio (SSMS)**. 
 
 If you have **SQL Server Express** installed, simply run the setup script **as Administrator**:
 
@@ -87,10 +88,23 @@ If you have **SQL Server Express** installed, simply run the setup script **as A
 **What this does automatically:**
 - Enables TCP/IP connections on port 1433 (required by Java/Spring Boot).
 - Starts the SQL Server and SQL Browser services.
-- Connects to SQL Server and executes `/database/TechDepotTablesQuery.sql` to generate the `TechDepot` database, schemas, and default data.
+- Connects to SQL Server silently and executes `/database/TechDepotTablesQuery.sql` to generate the database and default data.
 
-*(If you are using SQL Server Developer/Standard edition, TCP/IP is usually enabled by default on port 1433. You can still run this script to automatically create the database).*
-### 2. Frontend Permissions (Windows Users)
+*(If you prefer not to use the script, you can always open SSMS and execute the SQL file manually).*
+
+### 2. Configure Database Password (Mandatory)
+
+By default, Java needs your SQL Server credentials to connect safely. 
+1. Run `./dev.ps1` for the first time. It will auto-generate a file located at:
+   `td-backend/src/main/resources/application.properties`
+2. Open that file and set your SQL Server user and password:
+```properties
+spring.datasource.username=sa
+spring.datasource.password=tu_contraseña_aqui
+```
+*(Tip: `sa` is the default System Administrator user in SQL Server).*
+
+### 3. Frontend Permissions (Windows Users)
 
 If you encounter a **"scripts is disabled on this system"** error when running the frontend, it's due to PowerShell's default security policy. Fix it by running this in an Administrator PowerShell:
 
