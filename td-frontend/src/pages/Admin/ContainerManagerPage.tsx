@@ -237,8 +237,8 @@ export default function ContainerManagerPage() {
                 {/* LADO DERECHO: TIPOS DE CONTENEDOR */}
                 <div className="glass-panel admin-card">
                     <h3 style={{ color: 'var(--text-primary)' }}>Tipos de Contenedor</h3>
-                    <form onSubmit={handleCreateType} className="admin-form-row" style={{ marginBottom: '24px' }}>
-                        <div style={{ flex: 2 }}>
+                    <form onSubmit={handleCreateType} style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'flex-end', marginBottom: '24px' }}>
+                        <div style={{ flex: '1 1 200px' }}>
                             <label style={labelStyle}>Nombre del Tipo:</label>
                             <input 
                                 type="text" 
@@ -249,8 +249,8 @@ export default function ContainerManagerPage() {
                                 required
                             />
                         </div>
-                        <div style={{ flex: 1 }}>
-                            <label style={labelStyle}>Prefijo (max 5 letras):</label>
+                        <div style={{ flex: '0 1 150px' }}>
+                            <label style={labelStyle}>Prefijo (max 5):</label>
                             <input 
                                 type="text" 
                                 placeholder="Ej: NET, SSD" 
@@ -261,41 +261,45 @@ export default function ContainerManagerPage() {
                                 required
                             />
                         </div>
-                        <Button type="submit" variant="success" style={{ minWidth: '150px' }}>Crear Tipo</Button>
+                        <div style={{ flex: '1 1 150px' }}>
+                            <Button type="submit" variant="success" style={{ width: '100%' }}>Crear Tipo</Button>
+                        </div>
                     </form>
 
                     <h4 style={{ color: 'var(--text-secondary)', marginBottom: '12px' }}>Tipos Existentes</h4>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
-                        {tipos.map(t => (
-                            <div 
-                                key={t.id} 
-                                style={{ 
-                                    padding: '12px', 
-                                    backgroundColor: 'var(--surface-hover)', 
-                                    border: '1px solid var(--border-color)', 
-                                    borderRadius: '6px',
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center'
-                                }}
-                            >
-                                <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{t.nombre}</span>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span className="badge" style={{ backgroundColor: 'var(--brand-color)', color: '#000', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                                        {t.prefijo}
-                                    </span>
-                                    <button 
-                                        type="button"
-                                        onClick={() => setDeleteInfo({ type: 'tipo', id: t.id!, nombre: t.nombre })}
-                                        style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', padding: '0 4px' }}
-                                        title="Eliminar Tipo"
-                                    >
-                                        ×
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    {tipos.length === 0 ? <p style={{ color: 'var(--text-secondary)' }}>No hay tipos registrados.</p> : (
+                        <table className="admin-table" style={tableStyle}>
+                            <thead>
+                                <tr style={headerRowStyle}>
+                                    <th style={thStyle}>Nombre</th>
+                                    <th style={thStyle}>Prefijo</th>
+                                    <th style={{ ...thStyle, textAlign: 'center' }}>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {tipos.map(t => (
+                                    <tr key={t.id} style={rowStyle}>
+                                        <td style={{ ...tdStyle, fontWeight: 'bold', color: 'var(--text-primary)' }}>{t.nombre}</td>
+                                        <td style={tdStyle}>
+                                            <span style={{ backgroundColor: 'var(--surface-hover)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold', fontFamily: 'monospace' }}>
+                                                {t.prefijo}
+                                            </span>
+                                        </td>
+                                        <td style={{ ...tdStyle, textAlign: 'center' }}>
+                                            <button 
+                                                type="button"
+                                                onClick={() => setDeleteInfo({ type: 'tipo', id: t.id!, nombre: t.nombre })}
+                                                style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', padding: '4px 8px' }}
+                                                title="Eliminar Tipo"
+                                            >
+                                                ×
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
             </div>
         </div>
