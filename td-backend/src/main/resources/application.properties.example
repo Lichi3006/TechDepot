@@ -1,6 +1,16 @@
 spring.application.name=techdepot
 
 # =============================================
+# SSL CONFIGURATION (HTTPS)
+# =============================================
+server.port=8080
+server.ssl.enabled=true
+server.ssl.key-store=classpath:keystore.p12
+server.ssl.key-store-password=TechDepotSSL
+server.ssl.key-store-type=PKCS12
+server.ssl.key-alias=techdepot
+
+# =============================================
 # CONFIGURACIÓN DE BASE DE DATOS LIGERA (SQLite)
 # =============================================
 # La base de datos será un archivo local llamado techdepot.db

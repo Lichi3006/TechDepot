@@ -20,6 +20,13 @@ Copy-Item -Recurse -Force "td-frontend/dist/*" $staticDir
 
 # 3. Package Backend
 Write-Host "`n[3/3] Packaging Executable (Java)..."
+
+$keystorePath = "td-backend/src/main/resources/keystore.p12"
+if (-Not (Test-Path $keystorePath)) {
+    Write-Host "  -> Generating self-signed SSL certificate for HTTPS..."
+    keytool -genkeypair -alias techdepot -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore $keystorePath -validity 3650 -storepass "TechDepotSSL" -dname "CN=localhost, OU=Dev, O=TechDepot, L=City, S=State, C=US"
+}
+
 $propsPath = "td-backend/src/main/resources/application.properties"
 $examplePath = "td-backend/src/main/resources/application.properties.example"
 if (-Not (Test-Path $propsPath)) {

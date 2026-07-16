@@ -53,14 +53,20 @@ To start the application, simply double-click:
 1. The server will start on port `8080`.
 2. An SQLite database (`techdepot.db`) will be automatically created in the same folder.
 3. The database will automatically populate itself with the seed data (Ports, Colors, Categories, etc.).
-4. Your default web browser will automatically open at `http://localhost:8080`.
+4. Your default web browser will automatically open at `https://localhost:8080`.
 
 ### Accessing the Application
 
-- **From the same PC:** Open your browser and go to `http://localhost:8080`
-- **From another device (e.g. Mobile Phone):** Connect to the same WiFi network and go to `http://<YOUR_PRIVATE_IP>:8080` (e.g. `http://192.168.1.50:8080`)
+- **From the same PC:** Open your browser and go to `https://localhost:8080`
+- **From another device (e.g. Mobile Phone):** Connect to the same WiFi network and go to `https://<YOUR_PRIVATE_IP>:8080` (e.g. `https://192.168.1.50:8080`)
 
-> [!NOTE]
-> **Mobile QR Scanner Limitation:** Modern mobile browsers block access to the camera unless the site is served over HTTPS. Because this standalone version serves over standard HTTP, the QR scanner will be blocked on mobile devices. (Accessing via `localhost` on the host PC is allowed).
+> [!WARNING]
+> **Why does my browser say "Not Secure" or "Connection is not private"?**
+>
+> Modern browsers (both on PC and Mobile) strictly block the camera unless a website uses **HTTPS**. Because TechDepot runs entirely on your local private network, it's impossible to get a "real" internet certificate (like Google or Facebook have) for a private IP address (like `192.168.x.x`) or `localhost`. 
+> 
+> To solve this and allow the QR scanner to work, the build script generates a **"self-signed" certificate** (a fake, but encrypted badge). Because the browser doesn't recognize the creator of this certificate, it will show a scary red screen saying **"Your connection is not private"** when you access the app. 
+>
+> **This is 100% normal and safe.** Simply click on **"Advanced"** -> **"Proceed anyway"** (or "Continue to localhost / 192.168.x.x"). Once inside, the connection will be encrypted, and you will be able to grant camera permissions to scan QR codes seamlessly.
 
 To stop the server, simply press `CTRL + C` in the terminal window or close it.
