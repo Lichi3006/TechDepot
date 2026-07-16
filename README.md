@@ -48,13 +48,10 @@ This project uses a decoupled architecture, separating the robust backend API fr
 
 ## <img src="https://api.iconify.design/heroicons/document-check.svg?color=white" width="24" height="24" align="center"/> Prerequisites
 
-Before you start, make sure you have the following installed:
+Because TechDepot is fully containerized, you **do not** need to manually install Java, Node.js, or SQL Server. You only need:
 
-* **JDK 21:** The version required to compile and run the backend.
-* **Node.js (v18+) & npm:** Essential to run the React development server.
-* **Microsoft SQL Server:** Either Express or Developer edition.
-* **SQL Server Management Studio (SSMS):** To run the database scripts easily.
-* **An IDE:** I recommend **IntelliJ IDEA** for the backend and **Web Storm** for the frontend.
+* **[Docker Desktop](https://www.docker.com/products/docker-desktop/):** Required to run the containers.
+* **Git:** To clone the repository.
 
 ## <img src="https://api.iconify.design/heroicons/key.svg?color=white" width="24" height="24" align="center"/> Key Dependencies
 
@@ -83,9 +80,9 @@ Before you start, make sure you have the following installed:
 
 ## <img src="https://api.iconify.design/heroicons/arrow-down-tray.svg?color=white" width="24" height="24" align="center"/> Local Setup & Configuration
 
-TechDepot has been engineered for a **plug-and-play** development experience. Choose one of the two options below:
+TechDepot has been engineered for a **plug-and-play** development experience via Docker.
 
-### <img src="https://api.iconify.design/heroicons/cube.svg?color=white" width="20" height="20" align="center"/> Option A: Docker (Recommended — Zero Config)
+### <img src="https://api.iconify.design/heroicons/cube.svg?color=white" width="20" height="20" align="center"/> Quick Start
 
 The fastest way to get everything running. **You only need [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed.**
 
