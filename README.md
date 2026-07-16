@@ -41,6 +41,9 @@ Run the provided build script from the root of the project:
 
 ## <img src="https://api.iconify.design/heroicons/play.svg?color=white" width="24" height="24" align="center"/> Running the Application
 
+> [!WARNING]
+> **Did you just download this branch?** Compiled `.jar` files are not stored in GitHub. You **MUST** run `./build-standalone.ps1` at least once to build the project before trying to run it!
+
 Once built, you can distribute the `.jar` file alongside the `Run.bat` file to any computer. The end-user **only needs Java installed**.
 
 To start the application, simply double-click:
