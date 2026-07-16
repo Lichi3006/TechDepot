@@ -23,6 +23,13 @@ RUN npx tsc -b && npx vite build
 # =============================================================================
 FROM nginx:alpine
 
+# Install openssl and generate a self-signed certificate
+RUN apk add --no-cache openssl && \
+    mkdir -p /etc/nginx/ssl && \
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/nginx/ssl/nginx.key -out /etc/nginx/ssl/nginx.crt \
+    -subj "/C=US/ST=State/L=City/O=TechDepot/CN=localhost"
+
 # Remove the default nginx site config
 RUN rm /etc/nginx/conf.d/default.conf
 
@@ -33,7 +40,12 @@ RUN rm /etc/nginx/conf.d/default.conf
 RUN cat <<'EOF' > /etc/nginx/conf.d/default.conf
 server {
     listen 80;
+    listen 443 ssl;
     server_name localhost;
+    
+    ssl_certificate /etc/nginx/ssl/nginx.crt;
+    ssl_certificate_key /etc/nginx/ssl/nginx.key;
+
     root /usr/share/nginx/html;
     index index.html;
 
@@ -42,6 +54,7 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 
     location / {
@@ -53,6 +66,6 @@ EOF
 # Copy the production build from the builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-EXPOSE 80
+EXPOSE 80 443
 
 # nginx runs in the foreground by default with the base image's CMD

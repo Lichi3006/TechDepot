@@ -105,6 +105,7 @@ services:
     container_name: techdepot-frontend
     ports:
       - "5173:80"
+      - "5174:443"
     depends_on:
       - backend
     restart: unless-stopped
