@@ -55,4 +55,12 @@ To start the application, simply double-click:
 3. The database will automatically populate itself with the seed data (Ports, Colors, Categories, etc.).
 4. Your default web browser will automatically open at `http://localhost:8080`.
 
+### Accessing the Application
+
+- **From the same PC:** Open your browser and go to `http://localhost:8080`
+- **From another device (e.g. Mobile Phone):** Connect to the same WiFi network and go to `http://<YOUR_PRIVATE_IP>:8080` (e.g. `http://192.168.1.50:8080`)
+
+> [!NOTE]
+> **Mobile QR Scanner Limitation:** Modern mobile browsers block access to the camera unless the site is served over HTTPS. Because this standalone version serves over standard HTTP, the QR scanner will be blocked on mobile devices. (Accessing via `localhost` on the host PC is allowed).
+
 To stop the server, simply press `CTRL + C` in the terminal window or close it.
