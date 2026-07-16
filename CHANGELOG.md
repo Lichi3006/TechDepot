@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Docker Compose**: Infraestructura completa de contenedores para levantar todo el proyecto con un solo comando (`docker compose up`). Incluye SQL Server 2022 Express, inicialización automática de la base de datos, backend Spring Boot y frontend React+Nginx.
+- **Dockerfiles multi-stage**: Dockerfiles optimizados con compilación en capas para el backend (Java 21 + Maven) y el frontend (Node 20 + Nginx), reduciendo el tamaño de las imágenes finales.
+- **Inicialización automática de BD**: Contenedor `db-init` que detecta si la base de datos `TechDepot` ya existe y solo ejecuta el script SQL en la primera ejecución.
+
 ## [0.2.0-alpha] - 2026-07-10
 
 ### Added

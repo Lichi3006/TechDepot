@@ -82,7 +82,47 @@ Before you start, make sure you have the following installed:
 
 ## <img src="https://api.iconify.design/heroicons/arrow-down-tray.svg?color=white" width="24" height="24" align="center"/> Local Setup & Configuration
 
-TechDepot has been engineered for a **plug-and-play** development experience. You don't need to manually copy property files or run npm installs. Our automated scripts handle everything for you.
+TechDepot has been engineered for a **plug-and-play** development experience. Choose one of the two options below:
+
+### <img src="https://api.iconify.design/heroicons/cube.svg?color=white" width="20" height="20" align="center"/> Option A: Docker (Recommended — Zero Config)
+
+The fastest way to get everything running. **You only need [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed.**
+
+```bash
+# Clone the repository
+git clone https://github.com/Lichi3006/TechDepot.git
+cd TechDepot
+
+# Launch everything (SQL Server + Backend + Frontend)
+docker compose up -d
+```
+
+That's it. On the first run, Docker will:
+1. Download and start **SQL Server 2022 Express** automatically.
+2. **Create the database** and seed it with initial data (tables, ports, brands, etc.).
+3. **Compile and launch** the Spring Boot backend.
+4. **Build and serve** the React frontend via Nginx.
+
+| Service  | URL                     |
+|----------|-------------------------|
+| Frontend | http://localhost:5173   |
+| Backend  | http://localhost:8080   |
+| SQL Server | `localhost:1433` (user: `sa` / pass: `TechDepot2026!`) |
+
+**Useful commands:**
+```bash
+docker compose down        # Stop all services
+docker compose down -v     # Stop and delete database (full reset)
+docker compose logs -f     # Watch live logs
+```
+
+> **Note:** The first build takes a few minutes while Docker downloads images and compiles the code. Subsequent starts are near-instant.
+
+---
+
+### <img src="https://api.iconify.design/heroicons/wrench.svg?color=white" width="20" height="20" align="center"/> Option B: Manual Setup (Without Docker)
+
+If you prefer to install everything natively on your machine, follow the steps below.
 
 ### 1. Database Setup (Run once)
 We created a script to automate the entire SQL Server setup so **you don't need to open SQL Server Management Studio (SSMS)**. 
