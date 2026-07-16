@@ -3,11 +3,12 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange" alt="Status">
-  <img src="https://img.shields.io/badge/Stage-Alpha-yellow" alt="Stage">
+  <img src="https://img.shields.io/badge/Status-Active-brightgreen" alt="Status">
+  <img src="https://img.shields.io/badge/Stage-Beta-blue" alt="Stage">
 </p>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker">
   <img src="https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java">
   <img src="https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=Hibernate&logoColor=white" alt="Hibernate">
   <img src="https://img.shields.io/badge/SQL_Server-CC292B?style=for-the-badge&logo=microsoft&logoColor=white" alt="SQL Server">  <img src="https://img.shields.io/badge/spring_boot-%236DB33F.svg?style=for-the-badge&logo=spring-boot&logoColor=white" alt="Spring Boot">
@@ -118,101 +119,4 @@ docker compose logs -f     # Watch live logs
 
 > **Note:** The first build takes a few minutes while Docker downloads images and compiles the code. Subsequent starts are near-instant.
 
----
 
-### <img src="https://api.iconify.design/heroicons/wrench.svg?color=white" width="20" height="20" align="center"/> Option B: Manual Setup (Without Docker)
-
-If you prefer to install everything natively on your machine, follow the steps below.
-
-### 1. Database Setup (Run once)
-We created a script to automate the entire SQL Server setup so **you don't need to open SQL Server Management Studio (SSMS)**. 
-
-If you have **SQL Server Express** installed, simply run the setup script **as Administrator**:
-
-```powershell
-# Open PowerShell as Administrator and run:
-./setup-sqlserver.ps1
-```
-
-**What this does automatically:**
-- Enables TCP/IP connections on port 1433 (required by Java/Spring Boot).
-- Starts the SQL Server and SQL Browser services.
-- Connects to SQL Server silently and executes `/database/TechDepotTablesQuery.sql` to generate the database and default data.
-
-*(If you prefer not to use the script, you can always open SSMS and execute the SQL file manually).*
-
-### 2. Configure Database Password (Mandatory)
-
-By default, Java needs your SQL Server credentials to connect safely. 
-1. Run `./dev.ps1` for the first time. It will auto-generate a file located at:
-   `td-backend/src/main/resources/application.properties`
-2. Open that file and set your SQL Server user and password:
-```properties
-spring.datasource.username=sa
-spring.datasource.password=tu_contraseña_aqui
-```
-*(Tip: `sa` is the default System Administrator user in SQL Server).*
-
-### 3. Frontend Permissions (Windows Users)
-
-If you encounter a **"scripts is disabled on this system"** error when running the frontend, it's due to PowerShell's default security policy. Fix it by running this in an Administrator PowerShell:
-
-```powershell
-Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
-```
-*(Press `Y` or `S` to accept).*
-
----
-
-## <img src="https://api.iconify.design/heroicons/play.svg?color=white" width="24" height="24" align="center"/> Running the Project
-
-To start both the Backend and Frontend simultaneously with zero hassle:
-
-```powershell
-# From the project root directory:
-./dev.ps1
-```
-
-**The `dev.ps1` script will automatically:**
-1. ⚙️ **Configure Environment:** Create `application.properties` from the `.example` template if it doesn't exist.
-2. 📦 **Install Dependencies:** Detect if the frontend is missing `node_modules` and run `npm install` automatically.
-3. 🚀 **Launch Backend:** Start the Spring Boot API on `http://localhost:8080`.
-4. 🚀 **Launch Frontend:** Start the Vite React app on `http://localhost:5173`.
-
-Everything will open in separate background terminal windows. You can close the main script window once they launch.
-
-### Manual Configuration (Optional)
-If you prefer not to use Windows Integrated Authentication or have a specific SQL Server user, you can manually edit `td-backend/src/main/resources/application.properties` after the first run:
-```properties
-spring.datasource.username= YOUR_USER
-spring.datasource.password= YOUR_PASSWORD
-```
-
----
-
-## <img src="https://api.iconify.design/heroicons/exclamation-triangle.svg?color=white" width="24" height="24" align="center"/> Troubleshooting
-
-<details>
-<summary><strong>Connection refused on port 1433</strong></summary>
-
-This means SQL Server is not listening on TCP/IP port 1433. Solutions:
-1. **If you have SQL Server Express:** Use `instanceName=SQLEXPRESS` in the URL instead of port `1433`. See *Option A* above.
-2. **If you need port 1433:** Enable TCP/IP in SQL Server Configuration Manager and restart the service.
-3. Make sure the SQL Server service is running: `Get-Service MSSQL*`
-</details>
-
-<details>
-<summary><strong>"Unable to determine Dialect" error</strong></summary>
-
-This cascading error happens when Hibernate can't connect to the database. Fix the connection first (see above). The `application.properties.example` already includes the explicit dialect to prevent this error.
-</details>
-
-<details>
-<summary><strong>SQL Server Browser won't start</strong></summary>
-
-The Browser service might be set to "Disabled". Change it with:
-```powershell
-Set-Service SQLBrowser -StartupType Manual
-Start-Service SQLBrowser
-```
-</details>
