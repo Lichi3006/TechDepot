@@ -1,8 +1,0 @@
-target/
-*.iml
-*.iws
-*.ipr
-.idea/
-.git/
-node_modules/
-*.dll
