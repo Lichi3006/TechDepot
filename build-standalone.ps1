@@ -20,6 +20,13 @@ Copy-Item -Recurse -Force "td-frontend/dist/*" $staticDir
 
 # 3. Package Backend
 Write-Host "`n[3/3] Packaging Executable (Java)..."
+$propsPath = "td-backend/src/main/resources/application.properties"
+$examplePath = "td-backend/src/main/resources/application.properties.example"
+if (-Not (Test-Path $propsPath)) {
+    Write-Host "  -> Auto-generating application.properties from template..."
+    Copy-Item $examplePath $propsPath
+}
+
 cd td-backend
 ./mvnw clean package -DskipTests
 cd ..
