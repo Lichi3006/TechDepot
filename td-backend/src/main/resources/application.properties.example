@@ -14,3 +14,7 @@ spring.jpa.show-sql=true
 spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
 spring.jpa.properties.hibernate.format_sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.community.dialect.SQLiteDialect
+
+# Reglas de inicialización (IMPORTANTE: Espera a que se creen las tablas para inyectar data.sql)
+spring.sql.init.mode=always
+spring.jpa.defer-datasource-initialization=true
