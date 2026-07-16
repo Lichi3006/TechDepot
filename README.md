@@ -107,6 +107,14 @@ That's it. On the first run, Docker will:
 | Backend  | http://localhost:8080   |
 | SQL Server | `localhost:1433` (user: `sa` / pass: `TechDepot2026!`) |
 
+### Accessing the Application
+
+- **From the same PC:** Open your browser and go to `http://localhost:5173`
+- **From another device (e.g. Mobile Phone):** Connect to the same WiFi network and go to `http://<YOUR_PRIVATE_IP>:5173` (e.g. `http://192.168.1.50:5173`)
+
+> [!NOTE]
+> **Mobile QR Scanner Limitation:** Modern mobile browsers block access to the camera unless the site is served over HTTPS. Because this production Docker setup serves the frontend over standard HTTP via Nginx, the QR scanner will be blocked on mobile devices. (Accessing via `localhost` on the host PC is allowed).
+
 **Useful commands:**
 ```bash
 docker compose down        # Stop all services
