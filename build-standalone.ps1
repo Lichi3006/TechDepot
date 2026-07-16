@@ -5,8 +5,8 @@ Write-Host "========================================="
 # 1. Compile Frontend
 Write-Host "`n[1/3] Compiling Frontend (React)..."
 cd td-frontend
-npm ci
-npm run build
+npm ci --silent --no-audit --no-fund
+npm run build --silent
 cd ..
 
 # 2. Move Frontend to Backend
